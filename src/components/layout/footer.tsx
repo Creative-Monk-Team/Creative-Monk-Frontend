@@ -1,174 +1,206 @@
 import Link from "next/link";
+
 import {
   Facebook,
-  Twitter,
   Instagram,
-  Linkedin,
-  Mail,
+  Youtube,
+  ArrowRight,
   Phone,
+  Mail,
   MapPin,
 } from "lucide-react";
 
+const footerLinks = {
+  Company: [
+    { name: "About Us", href: "/about" },
+    { name: "Our Clients", href: "/portfolio" },
+    { name: "Our Previous Work", href: "/portfolio" },
+    { name: "Career", href: "/career" },
+    { name: "Our Blogs", href: "/blog" },
+    { name: "Contact Us", href: "/contact" },
+  ],
+  Services: [
+    { name: "Web Development", href: "/services/web-design" },
+    {
+      name: "Ecommerce Web Development",
+      href: "/services/ecommerce-development",
+    },
+    { name: "Digital Marketing", href: "/services/digital-marketing" },
+    { name: "Graphic Designing", href: "/services/graphic-designing" },
+    { name: "Search Engine Optimization", href: "/services/seo" },
+    {
+      name: "Social Media Marketing",
+      href: "/services/social-media-marketing",
+    },
+    { name: "Pay Per Click", href: "/services/ppc" },
+  ],
+};
+
+const socials = [
+  {
+    Icon: Facebook,
+    href: "https://www.facebook.com/creativemonkindia/",
+    label: "Facebook",
+  },
+  {
+    Icon: Instagram,
+    href: "https://www.instagram.com/creativemonkindia/",
+    label: "Instagram",
+  },
+  {
+    Icon: Youtube,
+    href: "https://www.youtube.com/@creativemonkindia",
+    label: "YouTube",
+  },
+];
+
 export function Footer() {
   return (
-    <footer className="border-t bg-muted/30">
-      <div className="container py-12 md:py-16">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-          <div className="flex flex-col gap-4">
-            <Link href="/" className="text-2xl font-bold text-primary">
-              Creative Monk
+    <footer style={{ background: "#1a1a1a" }}>
+      {/* Main Footer */}
+      <div className="container py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+          {/* Brand */}
+          <div className="lg:col-span-1">
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <img
+                src="/logo.webp"
+                alt="Creative Monk"
+                className="h-10 w-auto brightness-0 invert"
+              />
             </Link>
-            <p className="text-sm text-muted-foreground">
-              Helping brands transform their digital presence through innovative
-              design and strategic marketing solutions.
+            <p className="text-gray-400 text-sm leading-relaxed mb-4">
+              At CREATIVE MONK, we are focused on enhancing the value of your
+              business through our innovative and economic Web Development,
+              Social Media Promotions and Graphic Designing, Video Edit and
+              Animations.
             </p>
-            <div className="flex gap-4">
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-primary"
+            <div className="space-y-3 mb-6">
+              <a
+                href="https://g.page/creativemonk?we"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-2 text-sm text-gray-400 hover:text-[#FF6600] transition-colors"
               >
-                <Facebook className="h-5 w-5" />
-              </Link>
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-primary"
+                <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5 text-[#FF6600]" />
+                <span>
+                  Office No.11-12, 9th floor, Sushma Infinium, Zirakpur, Punjab,
+                  140603
+                </span>
+              </a>
+              <a
+                href="tel:+919463445566"
+                className="flex items-center gap-2 text-sm text-gray-400 hover:text-[#FF6600] transition-colors"
               >
-                <Twitter className="h-5 w-5" />
-              </Link>
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-primary"
+                <Phone className="h-4 w-4 flex-shrink-0 text-[#FF6600]" />
+                <span>+91 94634 45566</span>
+              </a>
+              <a
+                href="mailto:info@thecreativemonk.in"
+                className="flex items-center gap-2 text-sm text-gray-400 hover:text-[#FF6600] transition-colors"
               >
-                <Instagram className="h-5 w-5" />
-              </Link>
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-primary"
-              >
-                <Linkedin className="h-5 w-5" />
-              </Link>
+                <Mail className="h-4 w-4 flex-shrink-0 text-[#FF6600]" />
+                <span>info@thecreativemonk.in</span>
+              </a>
+            </div>
+            <div className="flex gap-3">
+              {socials.map(({ Icon, href, label }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="h-9 w-9 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                  style={{
+                    background: "rgba(255,102,0,0.15)",
+                    color: "#FF6600",
+                  }}
+                >
+                  <Icon className="h-4 w-4" />
+                </Link>
+              ))}
             </div>
           </div>
 
-          <div>
-            <h3 className="mb-4 text-lg font-semibold">Quick Links</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/services"
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  Our Services
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/portfolio"
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  Portfolio
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/about"
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/blog"
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Links */}
+          {Object.entries(footerLinks).map(([title, links]) => (
+            <div key={title}>
+              <h4
+                className="text-white font-bold text-base mb-5 underline-orange"
+                style={{ fontFamily: "var(--font-poppins)" }}
+              >
+                {title}
+              </h4>
+              <ul className="space-y-3">
+                {links.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="flex items-center gap-2 text-sm text-gray-400 hover:text-[#FF6600] transition-colors group"
+                    >
+                      <ArrowRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity -ml-2 group-hover:ml-0" />
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
+          {/* Get Quotation & Quick Links */}
           <div>
-            <h3 className="mb-4 text-lg font-semibold">Services</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="#"
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  Web Design
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  SEO Optimization
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  Social Media
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  Brand Identity
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  Content Writing
-                </Link>
-              </li>
+            <h4
+              className="text-white font-bold text-base mb-5"
+              style={{ fontFamily: "var(--font-poppins)" }}
+            >
+              Quick Links
+            </h4>
+            <ul className="space-y-3 mb-6">
+              {[
+                { name: "Get A Quotation", href: "/contact" },
+                { name: "Our Clients", href: "/portfolio" },
+                { name: "Join Our Team", href: "/career" },
+                { name: "Request A Free Quote", href: "/contact" },
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-[#FF6600] transition-colors group"
+                  >
+                    <ArrowRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity -ml-2 group-hover:ml-0" />
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
-          </div>
-
-          <div>
-            <h3 className="mb-4 text-lg font-semibold">Contact Us</h3>
-            <ul className="space-y-4 text-sm">
-              <li className="flex gap-3">
-                <MapPin className="h-5 w-5 text-primary" />
-                <span className="text-muted-foreground">
-                  123 Creative Street, Digital City, India
-                </span>
-              </li>
-              <li className="flex gap-3">
-                <Phone className="h-5 w-5 text-primary" />
-                <span className="text-muted-foreground">+91 98765 43210</span>
-              </li>
-              <li className="flex gap-3">
-                <Mail className="h-5 w-5 text-primary" />
-                <span className="text-muted-foreground">
-                  hello@thecreativemonk.in
-                </span>
-              </li>
-            </ul>
+            <Link href="/contact" className="btn-primary text-sm inline-flex">
+              Request Quote <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
+      </div>
 
-        <div className="mt-12 border-t pt-8 text-center text-sm text-muted-foreground">
-          <p>
-            © {new Date().getFullYear()} Creative Monk. All rights reserved.
+      {/* Bottom Bar */}
+      <div style={{ background: "#FF6600" }}>
+        <div className="container py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-white/90 text-sm">
+            © Creative Monk {new Date().getFullYear()} – All Rights Reserved
           </p>
+          <div className="flex gap-5">
+            <Link
+              href="/privacy"
+              className="text-white/80 text-sm hover:text-white transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="/terms"
+              className="text-white/80 text-sm hover:text-white transition-colors"
+            >
+              Terms & Conditions
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

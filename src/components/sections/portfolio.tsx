@@ -1,76 +1,254 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  portfolioProjects,
+  portfolioCategories,
+  type PortfolioProject,
+} from "@/data/portfolio";
 
-const projects = [
-  {
-    title: "Brand Identity for Monk",
-    category: "Branding",
-    image:
-      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    title: "E-commerce Platform",
-    category: "Web Development",
-    image:
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    title: "Social Media Campaign",
-    category: "Marketing",
-    image:
-      "https://images.unsplash.com/photo-1432888622747-4eb9a8fdf43f?auto=format&fit=crop&q=80&w=800",
-  },
-];
+// Swiper imports
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
 
 export function Portfolio() {
+  const [active, setActive] = useState("All");
+  const tabContainerRef = useRef<HTMLDivElement>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
+
+  const filtered =
+    active === "All"
+      ? portfolioProjects
+      : portfolioProjects.filter((p) => p.category === active);
+
+  // Handle Tab Scroll Arrows
+  const handleScroll = () => {
+    if (tabContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabContainerRef.current;
+      setShowLeftArrow(scrollLeft > 10);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  const scrollTabs = (direction: "left" | "right") => {
+    if (tabContainerRef.current) {
+      const scrollAmount = 200;
+      tabContainerRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  useEffect(() => {
+    const el = tabContainerRef.current;
+    if (el) {
+      el.addEventListener("scroll", handleScroll);
+      // Check initial state
+      setTimeout(handleScroll, 100);
+      return () => el.removeEventListener("scroll", handleScroll);
+    }
+  }, []);
+
   return (
-    <section className="py-24">
+    <section
+      className="py-24 overflow-hidden"
+      style={{ background: "#fafafa" }}
+    >
       <div className="container">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight md:text-5xl">
-              Our <span className="text-primary">Work</span>
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
-              A showcase of our recent projects and creative successes.
-            </p>
-          </div>
-          <Button variant="outline">View All Projects</Button>
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <motion.span
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="section-label block mb-3"
+          >
+            Digital Excellence
+          </motion.span>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-6xl font-black mb-6 tracking-tight"
+            style={{ fontFamily: "var(--font-outfit)" }}
+          >
+            Work That <span style={{ color: "#FF6600" }}>Speaks</span>
+          </motion.h2>
+          <p className="text-gray-500 text-lg">
+            Explore our lately delivered projects across diverse digital
+            landscapes.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map((project, index) => (
-            <motion.div
-              key={project.title}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="group cursor-pointer overflow-hidden rounded-xl bg-muted"
-            >
-              <div className="relative h-64 w-full overflow-hidden">
-                <Image
-                  src={project.image}
-                  alt={project.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center text-white p-6">
-                  <span className="text-sm font-medium uppercase tracking-wider text-primary mb-2">
-                    {project.category}
-                  </span>
-                  <h3 className="text-xl font-bold text-center">
-                    {project.title}
-                  </h3>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+        {/* Horizontal Scrollable Tabs with Arrows */}
+        <div className="relative max-w-5xl mx-auto mb-16 group/tabs">
+          <AnimatePresence>
+            {showLeftArrow && (
+              <motion.button
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                onClick={() => scrollTabs("left")}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-2.5 bg-white rounded-full shadow-xl text-[#FF6600] border border-orange-100 hover:bg-[#FF6600] hover:text-white transition-all duration-300 -ml-4"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </motion.button>
+            )}
+          </AnimatePresence>
+
+          <div
+            ref={tabContainerRef}
+            className="flex overflow-x-auto gap-3 no-scrollbar py-4 px-2 scroll-smooth items-center"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {portfolioCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActive(cat)}
+                className="px-8 py-3 rounded-full text-sm font-bold transition-all whitespace-nowrap shrink-0 relative isolate"
+                style={{
+                  fontFamily: "var(--font-outfit)",
+                  background: active === cat ? "#FF6600" : "white",
+                  color: active === cat ? "white" : "#666",
+                  border:
+                    active === cat ? "2px solid #FF6600" : "2px solid #eef2f6",
+                  boxShadow:
+                    active === cat
+                      ? "0 10px 20px -5px rgba(255,102,0,0.3)"
+                      : "0 4px 6px -1px rgba(0,0,0,0.02)",
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <AnimatePresence>
+            {showRightArrow && (
+              <motion.button
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                onClick={() => scrollTabs("right")}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2.5 bg-white rounded-full shadow-xl text-[#FF6600] border border-orange-100 hover:bg-[#FF6600] hover:text-white transition-all duration-300 -mr-4"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Mobile: Swiper Carousel */}
+        <div className="md:hidden -mx-4 px-4 overflow-visible">
+          <Swiper
+            modules={[Pagination, Autoplay]}
+            spaceBetween={20}
+            slidesPerView={1.2}
+            centeredSlides={true}
+            loop={filtered.length > 2}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            pagination={{ clickable: true }}
+            className="pb-14 portfolio-swiper !overflow-visible"
+          >
+            {filtered.map((project) => (
+              <SwiperSlide key={project.id}>
+                <ProjectCard project={project} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+
+        {/* Desktop: Grid Layout */}
+        <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+          <AnimatePresence mode="popLayout">
+            {filtered.map((project) => (
+              <motion.div
+                key={project.id}
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <ProjectCard project={project} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        <div className="text-center mt-20">
+          <Link href="/portfolio" className="btn-outline-orange group">
+            <span>View All Case Studies</span>
+            <ExternalLink className="w-4 h-4 ml-2 group-hover:rotate-45 transition-transform" />
+          </Link>
         </div>
       </div>
     </section>
+  );
+}
+
+function ProjectCard({ project }: { project: PortfolioProject }) {
+  return (
+    <div className="group relative bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-700 h-full flex flex-col">
+      <div className="relative h-80 overflow-hidden shrink-0">
+        <img
+          src={project.image}
+          alt={project.title}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+          loading="lazy"
+        />
+
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 flex flex-col justify-end p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-t from-black/90 via-black/40 to-transparent translate-y-4 group-hover:translate-y-0">
+          <div className="flex gap-2 flex-wrap mb-4">
+            {project.tags.map((tag: string) => (
+              <span
+                key={tag}
+                className="px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-widest bg-white/10 text-white backdrop-blur-md border border-white/20"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+          <h4
+            className="text-white font-black text-2xl mb-1 tracking-tight"
+            style={{ fontFamily: "var(--font-outfit)" }}
+          >
+            {project.title}
+          </h4>
+          <p className="text-white/70 text-sm font-medium">
+            Click to view project
+          </p>
+        </div>
+      </div>
+
+      <div className="p-8 flex items-center justify-between flex-1">
+        <div>
+          <span
+            className="text-xs font-black uppercase tracking-[0.2em] mb-2 block"
+            style={{ color: "#FF6600" }}
+          >
+            {project.category}
+          </span>
+          <h3
+            className="font-black text-gray-900 text-xl group-hover:text-[#FF6600] transition-colors leading-tight"
+            style={{ fontFamily: "var(--font-outfit)" }}
+          >
+            {project.title}
+          </h3>
+        </div>
+        <div className="h-12 w-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#FF6600] group-hover:text-white transition-all duration-500 transform group-hover:-rotate-45 shadow-sm">
+          <ExternalLink className="h-5 w-5" />
+        </div>
+      </div>
+    </div>
   );
 }

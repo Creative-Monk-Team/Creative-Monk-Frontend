@@ -4,12 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/button"; // Note: Card is under button in shadcn init sometimes if not careful, but usually card
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Note: Card is under button in shadcn init sometimes if not careful, but usually card
 import { Lock } from "lucide-react";
 
 export default function AdminLoginPage() {
