@@ -36,7 +36,11 @@ export function PageHeader({
           animate={{ opacity: 1, scale: 1 }}
           className="inline-flex items-center gap-3 px-6 py-2 rounded-full glass-dark border-primary/30 mb-8 md:mb-10"
         >
-          <Sparkles className="h-4 w-4 text-[#FF6600]" />
+          <img
+            src="/images/icon-logo.png"
+            alt="Brand Icon"
+            className="h-5 w-5 object-contain"
+          />
           <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-white/80">
             {badge}
           </span>

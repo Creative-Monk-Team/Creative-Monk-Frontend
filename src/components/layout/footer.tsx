@@ -65,7 +65,9 @@ export function Footer() {
             <Link href="/" className="flex items-center gap-2 mb-4">
               <img
                 src="/logo.webp"
-                alt="Creative Monk"
+                alt="Creative Monk Official Logo"
+                width={160}
+                height={50}
                 className="h-10 w-auto brightness-0 invert"
               />
             </Link>

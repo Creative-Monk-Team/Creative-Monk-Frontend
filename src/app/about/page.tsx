@@ -90,7 +90,11 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             <div className="lg:col-span-7 flex flex-col justify-center">
               <span className="inline-flex items-center gap-2 py-2 px-4 rounded-full bg-orange-50 text-[#FF6600] text-xs font-black uppercase tracking-widest w-max mb-8 border border-orange-100">
-                <span className="w-2 h-2 rounded-full bg-[#FF6600] animate-pulse" />
+                <img
+                  src="/images/icon-logo.png"
+                  alt="Monk Icon"
+                  className="w-4 h-4 object-contain"
+                />
                 The Creative Monk Story
               </span>
               <h2

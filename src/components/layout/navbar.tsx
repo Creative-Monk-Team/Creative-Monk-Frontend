@@ -138,7 +138,9 @@ export function Navbar() {
         <Link href="/" className="flex items-center group shrink-0">
           <img
             src="/logo.webp"
-            alt="Creative Monk - Digital Marketing Company"
+            alt="Creative Monk Logo"
+            width={200}
+            height={60}
             className="h-12 md:h-16 w-auto transition-transform group-hover:scale-105"
           />
         </Link>

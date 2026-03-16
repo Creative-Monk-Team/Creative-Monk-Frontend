@@ -243,9 +243,13 @@ export function Hero() {
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 1, type: "spring" }}
-                className="w-36 h-36 bg-gradient-to-br from-orange-400 to-orange-600 rounded-3xl shadow-2xl shadow-orange-500/40 rotate-[15deg] flex items-center justify-center border-4 border-white/20 backdrop-blur-sm"
+                className="w-36 h-36 bg-gradient-to-br from-orange-400 to-orange-600 rounded-3xl shadow-2xl shadow-orange-500/40 rotate-[15deg] flex items-center justify-center border-4 border-white/20 backdrop-blur-sm overflow-hidden"
               >
-                <BarChart3 className="w-16 h-16 text-white" />
+                <img
+                  src="/images/icon-logo.png"
+                  alt="Creative Monk Brand Mark"
+                  className="w-20 h-20 object-contain brightness-0 invert"
+                />
               </motion.div>
             </div>
           </div>

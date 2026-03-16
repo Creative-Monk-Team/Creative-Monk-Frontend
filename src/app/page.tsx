@@ -38,6 +38,10 @@ export const metadata: Metadata = {
     description:
       "Build Revenue Engines with the top-rated digital marketing agency.",
   },
+  icons: {
+    icon: "/images/icon-logo.png",
+    apple: "/images/icon-logo.png",
+  },
   alternates: {
     canonical: "https://thecreativemonk.in",
   },
@@ -50,7 +54,7 @@ export default function Home() {
       {
         "@type": "LocalBusiness",
         name: "Creative Monk",
-        image: "https://thecreativemonk.in/logo.png",
+        image: "https://thecreativemonk.in/logo.webp",
         "@id": "https://thecreativemonk.in",
         url: "https://thecreativemonk.in",
         telephone: "+919463445566",

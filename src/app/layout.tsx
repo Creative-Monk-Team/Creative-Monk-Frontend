@@ -39,28 +39,34 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Creative Monk" }],
   creator: "Creative Monk",
+  icons: {
+    icon: "/images/icon-logo.png",
+    shortcut: "/images/icon-logo.png",
+    apple: "/images/icon-logo.png",
+  },
   openGraph: {
     type: "website",
     locale: "en_IN",
     url: "https://thecreativemonk.in",
     siteName: "Creative Monk",
-    title: "Top Digital Marketing Company in Chandigarh | The Creative Monk",
+    title: "The Creative Monk | #1 Digital Marketing Agency in Chandigarh",
     description:
-      "Boost your business with The Creative Monk, the leading digital marketing company in Chandigarh. Expert strategies for maximum ROI. Contact us today!",
+      "Transform your business with Chandigarh's top digital marketing agency. We specialize in high-converting websites, SEO that ranks, and ROI-driven marketing strategies.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/logo.webp",
         width: 1200,
         height: 630,
-        alt: "Creative Monk - Digital Marketing Company in Chandigarh",
+        alt: "Creative Monk - Digital Marketing Company",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Creative Monk | Digital Marketing Company Chandigarh",
+    title: "Creative Monk | Growth-Focused Digital Agency",
     description:
-      "Leading digital marketing company in Chandigarh - Web Design, SEO, Social Media & Graphic Design.",
+      "Leading digital marketing agency in Chandigarh - Web Design, SEO, Social Media & Brand Strategy.",
+    images: ["/logo.webp"],
   },
   robots: {
     index: true,
