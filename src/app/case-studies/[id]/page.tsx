@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { apiService } from "@/lib/api";
 
 interface Metric {
   label: string;
@@ -53,12 +54,7 @@ export default function CaseStudyDetailPage() {
   useEffect(() => {
     async function fetchCaseStudy() {
       try {
-        const res = await fetch(`http://localhost:5000/api/portfolio/${id}`);
-        if (!res.ok) {
-          if (res.status === 404) setProject(null);
-          throw new Error("Failed to fetch");
-        }
-        const data = await res.json();
+        const data = await apiService.getCaseStudyById(id as string);
         setProject(data);
       } catch (error) {
         console.error("Failed to fetch case study:", error);

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
+import { apiService } from "@/lib/api";
 
 interface Project {
   id: string;
@@ -22,8 +23,7 @@ export default function CaseStudiesPage() {
   useEffect(() => {
     async function fetchCaseStudies() {
       try {
-        const res = await fetch("http://localhost:5000/api/portfolio");
-        const data = await res.json();
+        const data = await apiService.getPortfolio();
         // Assuming data is an array of projects or data.data
         const projectList = Array.isArray(data) ? data : data.data || [];
         setProjects(projectList);

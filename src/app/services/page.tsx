@@ -7,6 +7,8 @@ import { CTA } from "@/components/sections/cta";
 import { PageHeader } from "@/components/layout/page-header";
 import { useEffect, useState } from "react";
 import { getIcon } from "@/lib/icon-utils";
+import { apiService } from "@/lib/api";
+
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
@@ -40,8 +42,8 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/services")
-      .then((res) => res.json())
+    apiService
+      .getServices()
       .then((data) => {
         setServices(data);
         setLoading(false);

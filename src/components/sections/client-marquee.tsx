@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { apiService } from "@/lib/api";
 
 interface Client {
   id: string;
@@ -16,12 +17,12 @@ export function ClientMarquee() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/clients")
-      .then((res) => res.json())
+    apiService
+      .getClients()
       .then((data) => {
         // Filter out inactive clients
         const activeClients = Array.isArray(data)
-          ? data.filter((c) => c.status !== "inactive")
+          ? data.filter((c: Client) => c.status !== "inactive")
           : [];
         setClients(activeClients);
         setLoading(false);
