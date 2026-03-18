@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   TrendingUp,
@@ -13,15 +14,27 @@ import {
   Users2,
   BarChart3,
 } from "lucide-react";
+import { getSiteSettings } from "@/lib/api";
+import type { SiteSettings } from "@/lib/types";
 
-const stats = [
+// Map labels to icons
+const iconMap: Record<string, any> = {
+  "startup projects": Briefcase,
+  "happy clients": Users,
+  "industries served": TrendingUp,
+  "years experience": Award,
+  projects: Briefcase,
+  clients: Users,
+};
+
+const defaultStats = [
   { icon: Briefcase, number: "180+", label: "Startup Projects" },
   { icon: Users, number: "250+", label: "Happy Clients" },
   { icon: TrendingUp, number: "15+", label: "Industries Served" },
   { icon: Award, number: "5+", label: "Years Experience" },
 ];
 
-const features = [
+const defaultFeatures = [
   {
     icon: Rocket,
     title: "Optimized Performance",
@@ -61,14 +74,45 @@ const features = [
 ];
 
 export function Stats() {
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const data = await getSiteSettings();
+        setSettings(data);
+      } catch (error) {
+        console.error("Failed to fetch settings:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSettings();
+  }, []);
+
+  const displayStats = settings?.stats?.length
+    ? settings.stats.map((s) => ({
+        icon: iconMap[s.label.toLowerCase()] || Zap,
+        number: s.value,
+        label: s.label,
+      }))
+    : defaultStats;
+
+  const displayFeatures = settings?.values?.length
+    ? settings.values.map((v, i) => ({
+        icon: defaultFeatures[i]?.icon || Zap,
+        title: v.title,
+        description: v.description,
+      }))
+    : defaultFeatures;
+
   return (
     <section className="py-24 bg-gray-50 relative overflow-hidden">
-      {/* Decorative blurred backgrounds */}
       <div className="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 rounded-full bg-orange-500/10 blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 -ml-32 -mb-32 w-96 h-96 rounded-full bg-orange-600/10 blur-3xl pointer-events-none" />
 
       <div className="container relative z-10">
-        {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-20">
           <motion.span
             initial={{ opacity: 0, y: 20 }}
@@ -98,15 +142,13 @@ export function Stats() {
             transition={{ delay: 0.2 }}
             className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto"
           >
-            We are focused on enhancing the value of your business through our
-            innovative and economic Web Development, Social Media Promotions,
-            Graphic Designing, and Video Animations.
+            {settings?.description ||
+              "We are focused on enhancing the value of your business through our innovative and economic digital solutions."}
           </motion.p>
         </div>
 
-        {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24 cursor-default">
-          {features.map((feature, idx) => (
+          {displayFeatures.map((feature, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 30 }}
@@ -115,7 +157,6 @@ export function Stats() {
               transition={{ delay: idx * 0.1 }}
               className="bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(255,102,0,0.12)] transition-all duration-300 border border-gray-100/50 group hover:-translate-y-2 relative overflow-hidden"
             >
-              {/* Card Hover Gradient */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-100 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
               <div className="relative z-10">
@@ -136,7 +177,6 @@ export function Stats() {
           ))}
         </div>
 
-        {/* Stats Banner */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -144,12 +184,11 @@ export function Stats() {
           className="rounded-[2.5rem] p-10 md:p-16 relative overflow-hidden shadow-2xl shadow-orange-500/20"
           style={{ background: "linear-gradient(135deg, #FF6600, #e55500)" }}
         >
-          {/* Banner inner glowing effects */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-white opacity-[0.07] rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-black opacity-[0.05] rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
 
           <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-8 divide-x-0 md:divide-x divide-white/20">
-            {stats.map((stat, idx) => (
+            {displayStats.map((stat, idx) => (
               <div
                 key={idx}
                 className="text-center px-4 flex flex-col items-center group cursor-default"

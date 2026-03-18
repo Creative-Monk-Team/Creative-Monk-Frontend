@@ -4,11 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  portfolioProjects,
-  portfolioCategories,
-  type PortfolioProject,
-} from "@/data/portfolio";
+import { getCaseStudies } from "@/lib/api";
+import type { CaseStudy } from "@/lib/types";
 
 // Swiper imports
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -18,16 +15,31 @@ import "swiper/css/pagination";
 
 export function Portfolio() {
   const [active, setActive] = useState("All");
+  const [projects, setProjects] = useState<CaseStudy[]>([]);
+  const [loading, setLoading] = useState(true);
   const tabContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
 
-  const filtered =
-    active === "All"
-      ? portfolioProjects
-      : portfolioProjects.filter((p) => p.category === active);
+  useEffect(() => {
+    async function fetchProjects() {
+      try {
+        const data = await getCaseStudies();
+        setProjects(data);
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProjects();
+  }, []);
 
-  // Handle Tab Scroll Arrows
+  const categories = ["All", ...new Set(projects.map((p) => p.category))];
+
+  const filtered =
+    active === "All" ? projects : projects.filter((p) => p.category === active);
+
   const handleScroll = () => {
     if (tabContainerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = tabContainerRef.current;
@@ -50,11 +62,14 @@ export function Portfolio() {
     const el = tabContainerRef.current;
     if (el) {
       el.addEventListener("scroll", handleScroll);
-      // Check initial state
       setTimeout(handleScroll, 100);
       return () => el.removeEventListener("scroll", handleScroll);
     }
-  }, []);
+  }, [categories.length]);
+
+  if (!loading && projects.length === 0) {
+    return null;
+  }
 
   return (
     <section
@@ -62,7 +77,6 @@ export function Portfolio() {
       style={{ background: "#fafafa" }}
     >
       <div className="container">
-        {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
           <motion.span
             initial={{ opacity: 0, y: 10 }}
@@ -88,7 +102,7 @@ export function Portfolio() {
           </p>
         </div>
 
-        {/* Horizontal Scrollable Tabs with Arrows */}
+        {/* Tabs */}
         <div className="relative max-w-5xl mx-auto mb-16 group/tabs">
           <AnimatePresence>
             {showLeftArrow && (
@@ -109,7 +123,7 @@ export function Portfolio() {
             className="flex overflow-x-auto gap-3 no-scrollbar py-4 px-2 scroll-smooth items-center"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {portfolioCategories.map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActive(cat)}
@@ -146,43 +160,56 @@ export function Portfolio() {
           </AnimatePresence>
         </div>
 
-        {/* Mobile: Swiper Carousel */}
-        <div className="md:hidden -mx-6 px-6 overflow-visible">
-          <Swiper
-            modules={[Pagination, Autoplay]}
-            spaceBetween={20}
-            slidesPerView={1.2}
-            centeredSlides={true}
-            loop={filtered.length > 2}
-            autoplay={{ delay: 4000, disableOnInteraction: false }}
-            pagination={{ clickable: true }}
-            className="pb-14 portfolio-swiper !overflow-visible"
-          >
-            {filtered.map((project) => (
-              <SwiperSlide key={project.id}>
-                <ProjectCard project={project} />
-              </SwiperSlide>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-[400px] bg-gray-100 animate-pulse rounded-[2.5rem]"
+              />
             ))}
-          </Swiper>
-        </div>
-
-        {/* Desktop: Grid Layout */}
-        <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-          <AnimatePresence mode="popLayout">
-            {filtered.map((project) => (
-              <motion.div
-                key={project.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          </div>
+        ) : (
+          <>
+            {/* Mobile: Swiper */}
+            <div className="md:hidden -mx-6 px-6 overflow-visible">
+              <Swiper
+                modules={[Pagination, Autoplay]}
+                spaceBetween={20}
+                slidesPerView={1.2}
+                centeredSlides={true}
+                loop={filtered.length > 2}
+                autoplay={{ delay: 4000, disableOnInteraction: false }}
+                pagination={{ clickable: true }}
+                className="pb-14 portfolio-swiper !overflow-visible"
               >
-                <ProjectCard project={project} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+                {filtered.map((project) => (
+                  <SwiperSlide key={project._id}>
+                    <ProjectCard project={project} />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+
+            {/* Desktop: Grid */}
+            <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+              <AnimatePresence mode="popLayout">
+                {filtered.map((project) => (
+                  <motion.div
+                    key={project._id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <ProjectCard project={project} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </>
+        )}
 
         <div className="text-center mt-20">
           <Link href="/portfolio" className="btn-outline-orange group">
@@ -195,7 +222,7 @@ export function Portfolio() {
   );
 }
 
-function ProjectCard({ project }: { project: PortfolioProject }) {
+function ProjectCard({ project }: { project: CaseStudy }) {
   return (
     <div className="group relative bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-700 h-full flex flex-col">
       <div className="relative h-80 overflow-hidden shrink-0">
@@ -206,10 +233,9 @@ function ProjectCard({ project }: { project: PortfolioProject }) {
           loading="lazy"
         />
 
-        {/* Hover Overlay */}
         <div className="absolute inset-0 flex flex-col justify-end p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-t from-black/90 via-black/40 to-transparent translate-y-4 group-hover:translate-y-0">
           <div className="flex gap-2 flex-wrap mb-4">
-            {project.tags.map((tag: string) => (
+            {project.services?.map((tag: string) => (
               <span
                 key={tag}
                 className="px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-widest bg-white/10 text-white backdrop-blur-md border border-white/20"

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -10,43 +11,56 @@ import {
   Rocket,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { getSiteSettings } from "@/lib/api";
+import type { SiteSettings } from "@/lib/types";
 
 export function Hero() {
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const data = await getSiteSettings();
+        setSettings(data);
+      } catch (error) {
+        console.error("Failed to fetch settings:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSettings();
+  }, []);
+
+  const heroData = settings?.hero || {
+    eyebrow: "Award-Winning Agency",
+    title: "Ignite Your",
+    highlight: "Revenue Engine",
+    description:
+      "We engineer high-performance marketing ecosystems that transform ambitious brands into market leaders through data-driven precision.",
+    primaryCtaLabel: "Claim Your Free Audit",
+    primaryCtaHref: "/contact",
+    secondaryCtaLabel: "Explore Case Studies",
+    secondaryCtaHref: "/portfolio",
+    trustPoints: [],
+  };
+
+  const trustMetrics = settings?.stats?.slice(0, 2).map((s) => ({
+    label: s.label,
+    value: s.value,
+  })) || [
+    { label: "Avg. Client ROI", value: "342%" },
+    { label: "Projects Won", value: "500+" },
+  ];
+
   return (
     <section className="relative pb-16 pt-24 md:pb-24 md:pt-32 lg:pt-10 lg:pb-20 bg-white overflow-hidden min-h-[85vh] flex items-center">
-      {/* Background gradients */}
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-50 via-white to-white"></div>
       <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-orange-200/40 rounded-full blur-[40px] md:blur-[80px]" />
       <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[250px] md:w-[500px] h-[250px] md:h-[500px] bg-orange-100/50 rounded-full blur-[30px] md:blur-[60px]" />
 
-      {/* Animated floating elements for mobile visibility */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none lg:hidden">
-        <motion.div
-          animate={{
-            y: [0, -20, 0],
-            rotate: [0, 5, 0],
-          }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[15%] right-[10%] w-12 h-12 bg-orange-500/10 rounded-xl blur-[1px]"
-        />
-        <motion.div
-          animate={{
-            y: [0, 20, 0],
-            rotate: [0, -5, 0],
-          }}
-          transition={{
-            duration: 7,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1,
-          }}
-          className="absolute bottom-[20%] left-[5%] w-16 h-16 bg-orange-200/20 rounded-full blur-[1px]"
-        />
-      </div>
-
       <div className="container">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-8 items-center">
-          {/* Left Column Component */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -66,14 +80,8 @@ export function Hero() {
                   className="w-4 h-4 object-contain relative z-10"
                 />
                 <motion.div
-                  animate={{
-                    rotate: [0, 360],
-                  }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                   className="absolute inset-0 bg-gradient-to-tr from-orange-100 to-transparent opacity-40"
                 />
               </div>
@@ -81,15 +89,15 @@ export function Hero() {
                 className="text-[#FF6600] text-[10px] md:text-xs font-black tracking-[0.2em] uppercase"
                 style={{ fontFamily: "var(--font-outfit)" }}
               >
-                Award-Winning Agency
+                {heroData.eyebrow}
               </span>
               <Sparkles className="w-3 h-3 text-orange-400 group-hover:rotate-12 transition-transform" />
             </motion.div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-gray-900 tracking-tight leading-[1.1] mb-6">
-              Ignite Your <br className="hidden lg:block" />
+              {heroData.title} <br className="hidden lg:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-orange-400 relative inline-block pb-3 mt-2 lg:mt-0">
-                Revenue Engine
+                {heroData.highlight}
                 <motion.svg
                   initial={{ pathLength: 0, opacity: 0 }}
                   whileInView={{ pathLength: 1, opacity: 1 }}
@@ -113,14 +121,12 @@ export function Hero() {
             </h1>
 
             <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-10 leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium">
-              We engineer high-performance marketing ecosystems that transform
-              ambitious brands into market leaders through data-driven
-              precision.
+              {heroData.description}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-16 px-4 sm:px-0">
               <Link
-                href="/contact"
+                href={heroData.primaryCtaHref || "/contact"}
                 className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl transition-all shadow-2xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-1 overflow-hidden"
               >
                 <motion.div
@@ -129,46 +135,40 @@ export function Hero() {
                   transition={{ duration: 0.8 }}
                   className="absolute inset-0 bg-white/20 -skew-x-12"
                 />
-                Claim Your Free Audit
+                {heroData.primaryCtaLabel}
                 <Rocket className="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
-                href="/portfolio"
+                href={heroData.secondaryCtaHref || "/portfolio"}
                 className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-white/50 backdrop-blur-sm hover:bg-white text-gray-800 font-bold rounded-2xl border-2 border-orange-100 hover:border-orange-200 transition-all hover:shadow-xl hover:-translate-y-1"
               >
                 <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center group-hover:bg-orange-100 transition-colors">
                   <TrendingUp className="w-4 h-4 text-orange-600" />
                 </div>
-                Explore Case Studies
+                {heroData.secondaryCtaLabel}
               </Link>
             </div>
 
-            {/* Trust Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-8 pt-10 border-t border-gray-100 relative">
               <div className="absolute -top-px left-1/2 -translate-x-1/2 lg:left-0 lg:translate-x-0 w-20 h-[2px] bg-orange-500" />
 
-              <div className="text-center lg:text-left">
-                <p
-                  className="text-3xl font-black text-gray-900 mb-1 tracking-tight"
-                  style={{ fontFamily: "var(--font-outfit)" }}
+              {trustMetrics.map((mt, i) => (
+                <div
+                  key={i}
+                  className={`text-center lg:text-left ${i > 0 ? "border-l border-gray-100 md:border-none pl-4 md:pl-0" : ""}`}
                 >
-                  342%
-                </p>
-                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-extrabold">
-                  Avg. Client ROI
-                </p>
-              </div>
-              <div className="text-center lg:text-left border-l border-gray-100 md:border-none pl-4 md:pl-0">
-                <p
-                  className="text-3xl font-black text-gray-900 mb-1 tracking-tight"
-                  style={{ fontFamily: "var(--font-outfit)" }}
-                >
-                  500+
-                </p>
-                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-extrabold">
-                  Projects Won
-                </p>
-              </div>
+                  <p
+                    className="text-3xl font-black text-gray-900 mb-1 tracking-tight"
+                    style={{ fontFamily: "var(--font-outfit)" }}
+                  >
+                    {mt.value}
+                  </p>
+                  <p className="text-[11px] uppercase tracking-wider text-gray-500 font-extrabold">
+                    {mt.label}
+                  </p>
+                </div>
+              ))}
+
               <div className="col-span-2 md:col-span-1 flex flex-col items-center lg:items-start pt-6 md:pt-0 border-t border-gray-50 md:border-none">
                 <div className="flex mb-2 gap-0.5">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -185,17 +185,13 @@ export function Hero() {
             </div>
           </motion.div>
 
-          {/* Right Column Component - Visuals */}
           <div className="relative h-[500px] lg:h-[600px] w-full hidden lg:block">
-            {/* Main Center Geometry */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative w-80 h-80 rounded-full border border-orange-100 bg-white/50 backdrop-blur-3xl shadow-2xl shadow-orange-500/10 flex items-center justify-center animate-[spin_30s_linear_infinite]">
-                {/* Inner dashed circle */}
                 <div className="absolute w-64 h-64 rounded-full border-2 border-dashed border-orange-200" />
               </div>
             </div>
 
-            {/* Floating Card 1: Traffic Growth */}
             <motion.div
               initial={{ opacity: 0, x: 50, y: -20 }}
               animate={{ opacity: 1, x: 0, y: 0 }}
@@ -232,7 +228,6 @@ export function Hero() {
               </div>
             </motion.div>
 
-            {/* Floating Card 2: Active Leads */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -255,9 +250,6 @@ export function Hero() {
                   <div className="w-10 h-10 rounded-full border-2 border-white bg-green-100 flex items-center justify-center">
                     <span className="text-xs font-bold text-green-700">K</span>
                   </div>
-                  <div className="w-10 h-10 rounded-full border-2 border-white bg-purple-100 flex items-center justify-center">
-                    <span className="text-xs font-bold text-purple-700">S</span>
-                  </div>
                   <div className="w-10 h-10 rounded-full border-2 border-white bg-orange-50 flex items-center justify-center">
                     <span className="text-xs font-bold text-orange-600">
                       +89
@@ -265,15 +257,8 @@ export function Hero() {
                   </div>
                 </div>
               </div>
-              <div className="mt-4 flex items-center gap-2 text-sm pt-4 border-t border-gray-50">
-                <Zap className="w-4 h-4 text-orange-500 fill-orange-500" />
-                <span className="text-gray-600 font-medium text-xs">
-                  High converting cohort
-                </span>
-              </div>
             </motion.div>
 
-            {/* Floating Card 3: SEO Score */}
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -320,7 +305,6 @@ export function Hero() {
               </div>
             </motion.div>
 
-            {/* Decorative Central Element */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -330,7 +314,7 @@ export function Hero() {
               >
                 <img
                   src="/images/icon-logo.png"
-                  alt="Creative Monk Brand Mark"
+                  alt="Creative Monk"
                   className="w-20 h-20 object-contain brightness-0 invert"
                 />
               </motion.div>

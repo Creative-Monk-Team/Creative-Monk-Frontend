@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -7,9 +8,31 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { HelpCircle } from "lucide-react";
-import { homeFaqs } from "@/data/site";
+import { getFaqs } from "@/lib/api";
+import type { FAQ as FAQType } from "@/lib/types";
 
 export function FAQ() {
+  const [faqs, setFaqs] = useState<FAQType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchFaqs() {
+      try {
+        const data = await getFaqs("home"); // Assuming a specific 'home' tag or just all
+        setFaqs(data);
+      } catch (error) {
+        console.error("Failed to fetch FAQs:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchFaqs();
+  }, []);
+
+  if (!loading && faqs.length === 0) {
+    return null; // Hide if empty
+  }
+
   return (
     <section className="section-padding bg-white">
       <div className="container max-w-4xl mx-auto">
@@ -30,33 +53,42 @@ export function FAQ() {
           </p>
         </div>
 
-        {/* FAQ Accordion */}
-        <Accordion type="single" collapsible className="space-y-3">
-          {homeFaqs.map((faq, index) => (
-            <AccordionItem
-              key={index}
-              value={`item-${index}`}
-              className="rounded-2xl overflow-hidden px-6"
-              style={{
-                background: "#fafafa",
-                border: "1px solid #f0f0f0",
-              }}
-            >
-              <AccordionTrigger
-                className="text-left text-base md:text-lg font-black py-5 hover:no-underline"
+        {loading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-16 bg-gray-50 animate-pulse rounded-xl border border-gray-100"
+              />
+            ))}
+          </div>
+        ) : (
+          <Accordion type="single" collapsible className="w-full">
+            {faqs.map((faq, index) => (
+              <AccordionItem
+                key={faq._id || index}
+                value={`item-${index}`}
+                className="mb-4 border border-gray-100 px-6 rounded-2xl bg-gray-50/30 overflow-hidden"
                 style={{
-                  fontFamily: "var(--font-outfit)",
-                  color: "#1a1a1a",
+                  boxShadow: "0 4px 15px rgba(0,0,0,0.02)",
                 }}
               >
-                {faq.question}
-              </AccordionTrigger>
-              <AccordionContent className="text-gray-500 leading-relaxed pb-5 text-base">
-                {faq.answer}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+                <AccordionTrigger
+                  className="text-left text-base md:text-lg font-black py-5 hover:no-underline"
+                  style={{
+                    fontFamily: "var(--font-outfit)",
+                    color: "#1a1a1a",
+                  }}
+                >
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-gray-500 text-sm md:text-base leading-relaxed pb-5">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        )}
       </div>
     </section>
   );

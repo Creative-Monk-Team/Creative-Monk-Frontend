@@ -3,6 +3,7 @@ import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { Toaster } from "sonner";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -91,6 +92,7 @@ export default function RootLayout({
         className="overflow-x-hidden"
       >
         <div className="flex min-h-screen flex-col overflow-x-hidden">
+          <Toaster richColors position="top-center" />
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />

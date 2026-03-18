@@ -1,37 +1,41 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-import {
-  serviceCategories,
-  services as allServicesData,
-} from "@/data/services";
+import { getServiceCategories, getServices } from "@/lib/api";
+import type { Service, ServiceCategory } from "@/lib/types";
 
 export function Services() {
-  const categoryColors: Record<
-    string,
-    { bg: string; border: string; accent: string }
-  > = {
-    "web-design": {
-      bg: "linear-gradient(135deg, #FFF7ED, #FFF1E6)",
-      border: "rgba(255,102,0,0.15)",
-      accent: "#FF6600",
-    },
-    "digital-marketing": {
-      bg: "linear-gradient(135deg, #FFF7ED, #FFF3E8)",
-      border: "rgba(255,102,0,0.15)",
-      accent: "#FF6600",
-    },
-    "graphic-designing": {
-      bg: "linear-gradient(135deg, #FFF7ED, #FFF1E6)",
-      border: "rgba(255,102,0,0.15)",
-      accent: "#FF6600",
-    },
-  };
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [allServices, setAllServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [catData, servData] = await Promise.all([
+          getServiceCategories(),
+          getServices(),
+        ]);
+        setCategories(catData);
+        setAllServices(servData);
+      } catch (error) {
+        console.error("Failed to fetch services:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  if (!loading && categories.length === 0) {
+    return null;
+  }
 
   return (
-    <section className="section-padding bg-white">
+    <section className="section-padding bg-white relative overflow-hidden">
       <div className="container">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-20">
@@ -66,108 +70,79 @@ export function Services() {
         </div>
 
         {/* Main Service Categories — Large Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-20">
-          {serviceCategories.map((category, index) => {
-            const colors =
-              categoryColors[category.slug] || categoryColors["web-design"];
-            const subServices = category.services
-              .map((slug) => allServicesData.find((s) => s.slug === slug))
-              .filter(Boolean);
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-20">
+          {loading
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-[400px] bg-gray-50 rounded-[2.5rem] animate-pulse"
+                />
+              ))
+            : categories.map((category, index) => {
+                const subServices = allServices.filter(
+                  (s) => s.category === category.slug,
+                );
 
-            return (
-              <motion.div
-                key={category.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Link
-                  href="/services"
-                  className="group relative block h-full rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-1"
-                  style={{
-                    background: colors.bg,
-                    border: `1px solid ${colors.border}`,
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
-                  }}
-                >
-                  {/* Hover glow */}
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    style={{
-                      background:
-                        "radial-gradient(circle at 50% 0%, rgba(255,102,0,0.08), transparent 70%)",
-                    }}
-                  />
-
-                  <div className="relative p-7">
-                    {/* Icon + Arrow */}
-                    <div className="flex items-start justify-between mb-5">
-                      <div
-                        className="h-14 w-14 rounded-2xl flex items-center justify-center shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md"
-                        style={{
-                          background: "white",
-                          border: `1px solid ${colors.border}`,
-                        }}
-                      >
-                        <category.icon
-                          className="h-6 w-6"
-                          style={{ color: colors.accent }}
-                        />
-                      </div>
-                      <div
-                        className="h-9 w-9 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300"
-                        style={{ background: colors.accent }}
-                      >
-                        <ArrowUpRight className="h-4 w-4 text-white" />
-                      </div>
-                    </div>
-
-                    {/* Title */}
-                    <h3
-                      className="text-xl font-black mb-3 text-gray-900 group-hover:text-[#FF6600] transition-colors line-clamp-2"
-                      style={{ fontFamily: "var(--font-outfit)" }}
+                return (
+                  <motion.div
+                    key={category._id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Link
+                      href="/services"
+                      className="group relative block h-full rounded-[2.5rem] overflow-hidden transition-all duration-500 hover:-translate-y-2 bg-orange-50/30 border border-orange-100/50 hover:bg-white hover:border-orange-100 hover:shadow-2xl hover:shadow-orange-500/5"
                     >
-                      {category.title}
-                    </h3>
+                      <div className="relative p-10">
+                        {/* Icon + Arrow */}
+                        <div className="flex items-start justify-between mb-8">
+                          <div className="h-16 w-16 rounded-[1.25rem] bg-white shadow-sm border border-orange-100 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-[#FF6600] group-hover:text-white group-hover:shadow-lg group-hover:shadow-orange-500/20">
+                            <span className="text-2xl text-[#FF6600] group-hover:text-white transition-colors">
+                              {/* Better handling of dynamic icons would be to mapping icons by slug if needed */}
+                              ⚡
+                            </span>
+                          </div>
+                          <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300 shadow-sm">
+                            <ArrowUpRight className="h-5 w-5 text-[#FF6600]" />
+                          </div>
+                        </div>
 
-                    {/* Description — truncated */}
-                    <p className="text-gray-500 text-sm leading-relaxed mb-5 line-clamp-2">
-                      {category.description}
-                    </p>
+                        {/* Title */}
+                        <h3
+                          className="text-2xl font-black mb-4 text-gray-900 group-hover:text-[#FF6600] transition-colors leading-tight"
+                          style={{ fontFamily: "var(--font-outfit)" }}
+                        >
+                          {category.title}
+                        </h3>
 
-                    {/* Service pills */}
-                    <div className="flex flex-wrap gap-1.5">
-                      {subServices.slice(0, 4).map((s) => (
-                        <span
-                          key={s!.slug}
-                          className="text-[11px] px-2.5 py-1 rounded-full font-medium"
-                          style={{
-                            background: "white",
-                            color: "#555",
-                            border: "1px solid rgba(0,0,0,0.06)",
-                          }}
-                        >
-                          {s!.shortTitle}
-                        </span>
-                      ))}
-                      {subServices.length > 4 && (
-                        <span
-                          className="text-[11px] px-2.5 py-1 rounded-full font-bold"
-                          style={{
-                            background: "rgba(255,102,0,0.1)",
-                            color: "#FF6600",
-                          }}
-                        >
-                          +{subServices.length - 4} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            );
-          })}
+                        <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-3">
+                          {category.description}
+                        </p>
+
+                        {/* Service pills */}
+                        <div className="flex flex-wrap gap-2">
+                          {subServices.slice(0, 4).map((s) => (
+                            <span
+                              key={s._id}
+                              className="text-[11px] px-3 py-1.5 rounded-full font-bold bg-white text-gray-500 border border-gray-100/50"
+                              style={{ fontFamily: "var(--font-outfit)" }}
+                            >
+                              {s.shortTitle}
+                            </span>
+                          ))}
+                          {subServices.length > 4 && (
+                            <span className="text-[11px] px-3 py-1.5 rounded-full font-bold bg-orange-100 text-[#FF6600]">
+                              +{subServices.length - 4} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
         </div>
 
         {/* All Services Grid — Compact Cards */}
@@ -191,67 +166,41 @@ export function Services() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {allServicesData.slice(0, 10).map((service, index) => (
-              <motion.div
-                key={service.slug}
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.02 }}
-              >
-                <Link
-                  href={`/services/${service.slug}`}
-                  className="group flex items-center gap-3 p-3.5 rounded-xl bg-white transition-all duration-300 hover:-translate-y-0.5"
-                  style={{
-                    border: "1px solid #f0f0f0",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor =
-                      "rgba(255,102,0,0.3)";
-                    (e.currentTarget as HTMLElement).style.boxShadow =
-                      "0 8px 25px rgba(255,102,0,0.08)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor =
-                      "#f0f0f0";
-                    (e.currentTarget as HTMLElement).style.boxShadow =
-                      "0 1px 3px rgba(0,0,0,0.02)";
-                  }}
-                >
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {loading
+              ? Array.from({ length: 10 }).map((_, i) => (
                   <div
-                    className="h-9 w-9 rounded-lg flex-shrink-0 flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-                    style={{ background: "#FFF5F0" }}
+                    key={i}
+                    className="h-16 bg-gray-50 rounded-2xl animate-pulse"
+                  />
+                ))
+              : allServices.slice(0, 10).map((service, index) => (
+                  <motion.div
+                    key={service._id}
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.02 }}
                   >
-                    <service.icon className="h-4 w-4 text-[#FF6600]" />
-                  </div>
-                  <span
-                    className="text-[13px] font-black tracking-tight text-gray-700 group-hover:text-[#FF6600] transition-colors leading-tight"
-                    style={{ fontFamily: "var(--font-outfit)" }}
-                  >
-                    {service.shortTitle}
-                  </span>
-                </Link>
-              </motion.div>
-            ))}
+                    <Link
+                      href={`/services/${service.slug}`}
+                      className="group flex items-center gap-3 p-4 rounded-2xl bg-white transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-orange-100 hover:shadow-xl hover:shadow-orange-100/20"
+                    >
+                      <div className="h-10 w-10 rounded-xl bg-orange-50 flex-shrink-0 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-[#FF6600] group-hover:text-white">
+                        <span className="text-sm font-bold opacity-70 group-hover:opacity-100">
+                          ⚙️
+                        </span>
+                      </div>
+                      <span
+                        className="text-[13px] font-black tracking-tight text-gray-900 group-hover:text-[#FF6600] transition-colors leading-tight"
+                        style={{ fontFamily: "var(--font-outfit)" }}
+                      >
+                        {service.shortTitle}
+                      </span>
+                    </Link>
+                  </motion.div>
+                ))}
           </div>
-        </motion.div>
-
-        {/* Mobile CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mt-10 md:hidden"
-        >
-          <Link
-            href="/services"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white"
-            style={{ background: "#FF6600" }}
-          >
-            View All Services <ArrowRight className="h-4 w-4" />
-          </Link>
         </motion.div>
       </div>
     </section>

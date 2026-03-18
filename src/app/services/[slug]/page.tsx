@@ -94,7 +94,7 @@ export default function ServicePage({
                   className="max-w-5xl"
                 >
                   <h1
-                    className="text-6xl md:text-8xl lg:text-[10rem] font-black text-white mb-8 tracking-tighter leading-[0.85] uppercase line-clamp-2"
+                    className="text-5xl md:text-7xl lg:text-[7rem] font-black text-white mb-8 tracking-tighter leading-[0.95] uppercase"
                     style={{ fontFamily: "var(--font-outfit)" }}
                   >
                     <span className="text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/20">
@@ -107,7 +107,7 @@ export default function ServicePage({
                       Premium Solution
                     </p>
                   </div>
-                  <p className="text-white/90 text-xl md:text-2xl font-medium max-w-3xl leading-none truncate border-l-4 border-[#FF6600] pl-6 py-1">
+                  <p className="text-white/90 text-xl md:text-2xl font-medium max-w-3xl leading-relaxed border-l-4 border-[#FF6600] pl-6 py-2">
                     {service.tagline}
                   </p>
                 </motion.div>
