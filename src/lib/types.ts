@@ -120,6 +120,19 @@ export type Service = {
   process: ProcessStep[];
   outcomes: string[];
   faqs: FAQ[];
+  detailContent?: {
+    heroEyebrow?: string;
+    overviewTitle?: string;
+    partnerTitle?: string;
+    partnerDescription?: string;
+    bestFitTitle?: string;
+    bestFitDescription?: string;
+    capabilitiesTitle?: string;
+    processTitle?: string;
+    faqTitle?: string;
+    deliveryLabel?: string;
+    deliveryDescription?: string;
+  };
   seo?: Seo;
   order: number;
   isFeatured: boolean;

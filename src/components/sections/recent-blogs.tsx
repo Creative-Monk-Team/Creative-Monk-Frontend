@@ -80,9 +80,9 @@ export function RecentBlogs() {
                     >
                       {post.category}
                     </div>
-                    {post.image ? (
+                    {post.coverImage ? (
                       <img
-                        src={post.image}
+                        src={post.coverImage}
                         alt={post.title}
                         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-in-out"
                       />
@@ -98,7 +98,7 @@ export function RecentBlogs() {
                     <div className="flex items-center gap-4 text-xs font-medium text-gray-400 mb-4">
                       <div className="flex items-center gap-1.5">
                         <Calendar className="h-3.5 w-3.5" />{" "}
-                        {new Date(post.createdAt || "").toLocaleDateString()}
+                        {new Date(post.publishedAt || "").toLocaleDateString()}
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5" />{" "}

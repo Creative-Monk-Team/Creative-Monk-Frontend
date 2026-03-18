@@ -3,28 +3,18 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, ExternalLink } from "lucide-react";
-import { apiService } from "@/lib/api";
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  category: string;
-  link?: string;
-}
+import { getCaseStudies } from "@/lib/api";
+import type { CaseStudy } from "@/lib/types";
 
 export function CaseStudies() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<CaseStudy[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchCaseStudies() {
       try {
-        const data = await apiService.getPortfolio();
-        // Assuming data is an array of projects or data.data
-        const projectList = Array.isArray(data) ? data : data.data || [];
-        setProjects(projectList.slice(0, 3)); // Only show top 3 on homepage
+        const data = await getCaseStudies({ limit: 3 });
+        setProjects(data);
       } catch (error) {
         console.error("Failed to fetch case studies:", error);
       } finally {
@@ -90,7 +80,7 @@ export function CaseStudies() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((project, idx) => (
             <motion.div
-              key={project.id}
+              key={project._id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -119,11 +109,9 @@ export function CaseStudies() {
                 <p className="text-gray-600 mb-6 line-clamp-3 flex-1">
                   {project.description}
                 </p>
-                {project.link && (
+                {project.id && (
                   <a
-                    href={project.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`/case-studies/${project.id}`}
                     className="inline-flex items-center gap-2 text-sm font-bold text-gray-900 group-hover:text-[#FF6600] transition-colors mt-auto"
                   >
                     Read Full Case Study

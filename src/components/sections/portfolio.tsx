@@ -3,9 +3,10 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
+import { ExternalLink, ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { getCaseStudies } from "@/lib/api";
 import type { CaseStudy } from "@/lib/types";
+import { PortfolioLightbox } from "@/components/site/portfolio-lightbox";
 
 // Swiper imports
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -20,6 +21,7 @@ export function Portfolio() {
   const tabContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
+  const [activeProjectIndex, setActiveProjectIndex] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchProjects() {
@@ -185,7 +187,10 @@ export function Portfolio() {
               >
                 {filtered.map((project) => (
                   <SwiperSlide key={project._id}>
-                    <ProjectCard project={project} />
+                    <ProjectCard
+                      project={project}
+                      onOpen={() => setActiveProjectIndex(filtered.findIndex((item) => item._id === project._id))}
+                    />
                   </SwiperSlide>
                 ))}
               </Swiper>
@@ -203,7 +208,10 @@ export function Portfolio() {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    <ProjectCard project={project} />
+                    <ProjectCard
+                      project={project}
+                      onOpen={() => setActiveProjectIndex(filtered.findIndex((item) => item._id === project._id))}
+                    />
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -217,14 +225,31 @@ export function Portfolio() {
             <ExternalLink className="w-4 h-4 ml-2 group-hover:rotate-45 transition-transform" />
           </Link>
         </div>
+
+        <PortfolioLightbox
+          projects={filtered}
+          index={activeProjectIndex}
+          onClose={() => setActiveProjectIndex(null)}
+          onChange={setActiveProjectIndex}
+        />
       </div>
     </section>
   );
 }
 
-function ProjectCard({ project }: { project: CaseStudy }) {
+function ProjectCard({
+  project,
+  onOpen,
+}: {
+  project: CaseStudy;
+  onOpen: () => void;
+}) {
   return (
-    <div className="group relative bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-700 h-full flex flex-col">
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group relative w-full overflow-hidden rounded-[2.5rem] border border-gray-100 bg-white text-left shadow-sm transition-all duration-700 hover:shadow-2xl"
+    >
       <div className="relative h-80 overflow-hidden shrink-0">
         <img
           src={project.image}
@@ -234,6 +259,9 @@ function ProjectCard({ project }: { project: CaseStudy }) {
         />
 
         <div className="absolute inset-0 flex flex-col justify-end p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-t from-black/90 via-black/40 to-transparent translate-y-4 group-hover:translate-y-0">
+          <div className="absolute top-5 right-5 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-white backdrop-blur-md">
+            <Expand className="h-4 w-4" />
+          </div>
           <div className="flex gap-2 flex-wrap mb-4">
             {project.services?.map((tag: string) => (
               <span
@@ -275,6 +303,6 @@ function ProjectCard({ project }: { project: CaseStudy }) {
           <ExternalLink className="h-5 w-5" />
         </div>
       </div>
-    </div>
+    </button>
   );
 }

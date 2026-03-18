@@ -1,60 +1,50 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
-  ExternalLink,
   CheckCircle2,
-  TrendingUp,
-  Target,
+  ChevronLeft,
+  ChevronRight,
   Clock,
-  Zap,
+  Expand,
+  ExternalLink,
   Quote,
+  Target,
+  TrendingUp,
+  X,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { apiService } from "@/lib/api";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { getCaseStudy } from "@/lib/api";
+import type { CaseStudy } from "@/lib/types";
 
-interface Metric {
-  label: string;
-  value: string;
-}
+function splitResults(results: string[] = []) {
+  if (results.length <= 3) return [results];
 
-interface Testimonial {
-  text: string;
-  author: string;
-  role: string;
-}
-
-interface ProjectDetail {
-  id: string;
-  title: string;
-  description: string;
-  content?: string;
-  image: string;
-  category: string;
-  client?: string;
-  link?: string;
-  duration?: string;
-  services?: string[];
-  challenges?: string[];
-  solutions?: string[];
-  results?: string[];
-  metrics?: Metric[];
-  gallery?: string[];
-  testimonial?: Testimonial;
+  const chunkSize = Math.ceil(results.length / 3);
+  return Array.from({ length: Math.ceil(results.length / chunkSize) }, (_, index) =>
+    results.slice(index * chunkSize, index * chunkSize + chunkSize),
+  );
 }
 
 export default function CaseStudyDetailPage() {
   const { id } = useParams();
-  const [project, setProject] = useState<ProjectDetail | null>(null);
+  const [project, setProject] = useState<CaseStudy | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchCaseStudy() {
       try {
-        const data = await apiService.getCaseStudyById(id as string);
+        const data = await getCaseStudy(id as string);
         setProject(data);
       } catch (error) {
         console.error("Failed to fetch case study:", error);
@@ -68,14 +58,50 @@ export default function CaseStudyDetailPage() {
     }
   }, [id]);
 
+  const galleryImages = useMemo(() => {
+    if (!project) return [];
+
+    const items = [...(project.gallery || [])];
+    if (project.image && !items.includes(project.image)) {
+      items.unshift(project.image);
+    }
+
+    return items;
+  }, [project]);
+
+  useEffect(() => {
+    if (lightboxIndex === null || galleryImages.length === 0) return undefined;
+
+    function handleKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setLightboxIndex(null);
+      }
+
+      if (event.key === "ArrowRight") {
+        setLightboxIndex((current) =>
+          current === null ? current : (current + 1) % galleryImages.length,
+        );
+      }
+
+      if (event.key === "ArrowLeft") {
+        setLightboxIndex((current) =>
+          current === null
+            ? current
+            : (current - 1 + galleryImages.length) % galleryImages.length,
+        );
+      }
+    }
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [galleryImages.length, lightboxIndex]);
+
   if (loading) {
     return (
       <main className="min-h-screen bg-white flex items-center justify-center pt-8">
         <div className="flex flex-col items-center justify-center">
-          <div className="w-12 h-12 rounded-full border-4 border-orange-500 border-t-transparent animate-spin mb-4"></div>
-          <p className="text-gray-500 font-medium text-lg">
-            Loading Case Study...
-          </p>
+          <div className="mb-4 h-12 w-12 rounded-full border-4 border-orange-500 border-t-transparent animate-spin" />
+          <p className="text-lg font-medium text-gray-500">Loading Case Study...</p>
         </div>
       </main>
     );
@@ -86,12 +112,12 @@ export default function CaseStudyDetailPage() {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <h2
-            className="text-3xl font-bold text-gray-900 mb-4"
+            className="mb-4 text-3xl font-bold text-gray-900"
             style={{ fontFamily: "var(--font-poppins)" }}
           >
             Case Study Not Found
           </h2>
-          <p className="text-gray-600 mb-8">
+          <p className="mb-8 text-gray-600">
             We couldn't find the case study you were looking for.
           </p>
           <Link href="/case-studies" className="btn-primary inline-flex gap-2">
@@ -102,46 +128,73 @@ export default function CaseStudyDetailPage() {
     );
   }
 
+  const resultColumns = splitResults(project.results || []);
+  const activeLightboxImage =
+    lightboxIndex !== null && galleryImages[lightboxIndex]
+      ? galleryImages[lightboxIndex]
+      : null;
+
   return (
     <>
-      {/* Hero Section */}
-      <section className="bg-white border-b border-gray-100 py-16 md:py-24 relative overflow-hidden">
+      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(255,122,26,0.18),_transparent_34%),linear-gradient(180deg,_#1e1c1b_0%,_#161412_48%,_#ffffff_100%)] pt-14 pb-16 md:pt-20 md:pb-22 lg:pt-24 lg:pb-26">
+        <div className="absolute inset-0">
+          <img
+            src={project.image || "/placeholder.jpg"}
+            alt={project.title}
+            className="h-full w-full object-cover opacity-16"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(15,12,10,0.96)_14%,rgba(15,12,10,0.86)_52%,rgba(15,12,10,0.45)_100%)]" />
+          <div className="absolute right-[-10%] top-20 h-72 w-72 rounded-full bg-orange-500/18 blur-3xl" />
+          <div className="absolute bottom-0 left-[-8%] h-64 w-64 rounded-full bg-white/8 blur-3xl" />
+        </div>
         <div className="container relative z-10">
           <Link
             href="/case-studies"
-            className="inline-flex items-center gap-2 text-gray-500 hover:text-[#FF6600] transition-colors mb-8 md:mb-12 font-medium"
+            className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.22em] text-white/72 backdrop-blur-sm transition-all hover:border-orange-400/40 hover:bg-white/10 hover:text-white md:mb-10 md:px-5 md:py-3 md:text-xs"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Case Studies
+            <ArrowLeft className="h-4 w-4" /> Back to Case Studies
           </Link>
 
-          <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
-            <div className="flex-1 w-full order-2 lg:order-1">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1 }}
-                className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-orange-500/10 aspect-video lg:aspect-[4/3] w-full"
-              >
+          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:gap-14">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.05 }}
+              className="order-2 w-full lg:order-2"
+            >
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] border border-white/10 bg-black/20 shadow-[0_30px_80px_rgba(0,0,0,0.28)]">
                 <img
                   src={project.image || "/placeholder.jpg"}
                   alt={project.title}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
-              </motion.div>
-            </div>
-            <div className="flex-1 w-full order-1 lg:order-2">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+                {galleryImages.length > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setLightboxIndex(0)}
+                    className="absolute right-4 bottom-4 inline-flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm transition-colors hover:bg-black/75"
+                  >
+                    <Expand className="h-4 w-4" />
+                    Open Gallery
+                  </button>
+                ) : null}
+              </div>
+            </motion.div>
+
+            <div className="order-1 w-full lg:order-1">
               <motion.span
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="inline-block py-1.5 px-4 rounded-full bg-orange-100 text-[#FF6600] text-sm font-bold tracking-widest uppercase mb-6"
+                className="mb-5 inline-flex rounded-full border border-orange-400/30 bg-orange-500/12 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.24em] text-orange-200 md:mb-6"
               >
                 {project.category}
               </motion.span>
               <motion.h1
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 leading-tight mb-6"
+                transition={{ delay: 0.08 }}
+                className="mb-5 text-[3rem] font-black leading-[0.95] tracking-[-0.055em] text-white md:mb-6 md:text-5xl lg:text-[5.5rem]"
                 style={{ fontFamily: "var(--font-poppins)" }}
               >
                 {project.title}
@@ -149,8 +202,8 @@ export default function CaseStudyDetailPage() {
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-gray-600 text-lg md:text-xl leading-relaxed mb-8"
+                transition={{ delay: 0.16 }}
+                className="mb-7 max-w-2xl text-[1.05rem] leading-8 text-white/76 md:mb-8 md:text-xl"
               >
                 {project.description}
               </motion.p>
@@ -158,38 +211,28 @@ export default function CaseStudyDetailPage() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="grid grid-cols-2 md:grid-cols-3 gap-4"
+                transition={{ delay: 0.24 }}
+                className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
               >
                 {project.client && (
-                  <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                    <div className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">
-                      Client
-                    </div>
-                    <div className="text-gray-900 font-bold text-sm">
-                      {project.client}
-                    </div>
-                  </div>
+                  <InfoCard label="Client" value={project.client} dark />
                 )}
                 {project.duration && (
-                  <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                    <div className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> Duration
-                    </div>
-                    <div className="text-gray-900 font-bold text-sm">
-                      {project.duration}
-                    </div>
-                  </div>
+                  <InfoCard
+                    label="Duration"
+                    value={project.duration}
+                    icon={<Clock className="h-3.5 w-3.5" />}
+                    dark
+                  />
                 )}
                 {project.services && project.services.length > 0 && (
-                  <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm md:col-span-1 col-span-2">
-                    <div className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
-                      <Zap className="w-3 h-3" /> Services
-                    </div>
-                    <div className="text-gray-900 font-bold text-xs leading-relaxed">
-                      {project.services.join(", ")}
-                    </div>
-                  </div>
+                  <InfoCard
+                    label="Services"
+                    value={project.services.join(", ")}
+                    icon={<Zap className="h-3.5 w-3.5" />}
+                    wide
+                    dark
+                  />
                 )}
               </motion.div>
             </div>
@@ -197,139 +240,152 @@ export default function CaseStudyDetailPage() {
         </div>
       </section>
 
-      {/* Main Content Sections */}
-      <section className="py-20">
-        <div className="container max-w-[1000px] space-y-24 mx-auto px-4">
-          {/* Project Overview Content */}
+      <section className="py-14 md:py-18 lg:py-20">
+        <div className="container mx-auto max-w-[1120px] space-y-16 md:space-y-20">
           {project.content && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="prose prose-lg md:prose-xl max-w-none text-gray-600 leading-relaxed"
+              className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm md:p-10"
             >
+              <span className="section-label">Overview</span>
               <h2
-                className="text-3xl font-bold text-gray-900 mb-6"
+                className="mt-3 text-[2rem] font-black leading-tight text-gray-900 md:text-4xl"
                 style={{ fontFamily: "var(--font-poppins)" }}
               >
                 Project Overview
               </h2>
-              <p className="whitespace-pre-line">{project.content}</p>
+              <p className="mt-5 whitespace-pre-line text-[15px] leading-8 text-gray-600 md:text-lg">
+                {project.content}
+              </p>
             </motion.div>
           )}
 
-          {/* Challenges & Solutions */}
-          <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
-            {/* Challenges */}
-            {project.challenges && project.challenges.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="space-y-6"
-              >
-                <div
-                  className="flex items-center gap-3 text-2xl font-bold text-gray-900 mb-6"
-                  style={{ fontFamily: "var(--font-poppins)" }}
-                >
-                  <Target className="text-red-500 w-8 h-8 p-1.5 bg-red-50 rounded-lg" />
-                  <h2>The Challenge</h2>
-                </div>
-                <div className="space-y-4">
-                  {project.challenges.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex gap-4 p-5 bg-white rounded-2xl border border-gray-100 shadow-sm"
-                    >
-                      <div className="w-2 h-2 mt-2 rounded-full bg-red-400 shrink-0"></div>
-                      <p className="text-gray-700 font-medium">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+          {(project.challenges?.length || project.solutions?.length) && (
+            <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
+              {project.challenges && project.challenges.length > 0 && (
+                <ContentPanel
+                  title="The Challenge"
+                  icon={
+                    <Target className="h-6 w-6 rounded-xl bg-red-50 p-1.5 text-red-500" />
+                  }
+                  items={project.challenges}
+                  itemDotClassName="bg-red-400"
+                  cardClassName="border-gray-100 bg-white"
+                />
+              )}
 
-            {/* Solutions */}
-            {project.solutions && project.solutions.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="space-y-6"
-              >
-                <div
-                  className="flex items-center gap-3 text-2xl font-bold text-gray-900 mb-6"
-                  style={{ fontFamily: "var(--font-poppins)" }}
-                >
-                  <CheckCircle2 className="text-[#FF6600] w-8 h-8 p-1.5 bg-orange-50 rounded-lg" />
-                  <h2>Our Solution</h2>
-                </div>
-                <div className="space-y-4">
-                  {project.solutions.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex gap-4 p-5 bg-orange-50/50 rounded-2xl border border-orange-100/50"
-                    >
-                      <div className="w-2 h-2 mt-2 rounded-full bg-[#FF6600] shrink-0"></div>
-                      <p className="text-gray-700 font-medium">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </div>
+              {project.solutions && project.solutions.length > 0 && (
+                <ContentPanel
+                  title="Our Solution"
+                  icon={
+                    <CheckCircle2 className="h-6 w-6 rounded-xl bg-orange-50 p-1.5 text-[#FF6600]" />
+                  }
+                  items={project.solutions}
+                  itemDotClassName="bg-[#FF6600]"
+                  cardClassName="border-orange-100 bg-orange-50/60"
+                />
+              )}
+            </div>
+          )}
 
-          {/* Gallery */}
-          {project.gallery && project.gallery.length > 0 && (
+          {galleryImages.length > 0 && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="space-y-8"
+              className="space-y-6"
             >
-              <h2
-                className="text-3xl font-bold text-gray-900"
-                style={{ fontFamily: "var(--font-poppins)" }}
-              >
-                Project Gallery
-              </h2>
-              <div
-                className={`grid grid-cols-1 ${project.gallery.length > 1 ? "md:grid-cols-2" : ""} gap-6`}
-              >
-                {project.gallery.map((img, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-3xl overflow-hidden shadow-lg aspect-[4/3]"
+              <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <span className="section-label">Showcase</span>
+                  <h2
+                    className="mt-3 text-[2rem] font-black leading-tight text-gray-900 md:text-4xl"
+                    style={{ fontFamily: "var(--font-poppins)" }}
                   >
-                    <img
-                      src={img}
-                      alt={`${project.title} gallery ${idx + 1}`}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                    />
+                    Project Gallery
+                  </h2>
+                </div>
+                <p className="max-w-xl text-sm leading-7 text-gray-500 md:text-base">
+                  Swipe through the key visuals and tap any image to open a larger preview.
+                </p>
+              </div>
+
+              <div className="relative">
+                <Swiper
+                  modules={[Navigation]}
+                  navigation={{
+                    prevEl: ".case-study-gallery-prev",
+                    nextEl: ".case-study-gallery-next",
+                  }}
+                  spaceBetween={18}
+                  slidesPerView={1.15}
+                  breakpoints={{
+                    640: { slidesPerView: 1.5 },
+                    1024: { slidesPerView: 3 },
+                  }}
+                  className="!overflow-visible"
+                >
+                  {galleryImages.map((img, idx) => (
+                    <SwiperSlide key={`${img}-${idx}`}>
+                      <button
+                        type="button"
+                        onClick={() => setLightboxIndex(idx)}
+                        className="group relative block w-full overflow-hidden rounded-[1.8rem] border border-gray-100 bg-white shadow-sm"
+                      >
+                        <div className="absolute top-4 right-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-transform group-hover:scale-105">
+                          <Expand className="h-4 w-4" />
+                        </div>
+                        <div className="aspect-[4/3] overflow-hidden">
+                          <img
+                            src={img}
+                            alt={`${project.title} gallery ${idx + 1}`}
+                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                        </div>
+                      </button>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+
+                {galleryImages.length > 1 ? (
+                  <div className="mt-6 flex items-center justify-end gap-3">
+                    <button
+                      type="button"
+                      className="case-study-gallery-prev inline-flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:text-[#FF6600]"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <button
+                      type="button"
+                      className="case-study-gallery-next inline-flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:text-[#FF6600]"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
                   </div>
-                ))}
+                ) : null}
               </div>
             </motion.div>
           )}
 
-          {/* Testimonial */}
-          {project.testimonial && (
+          {project.testimonial?.text && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-gray-900 rounded-[2.5rem] p-10 md:p-16 relative overflow-hidden"
+              className="relative overflow-hidden rounded-[2.3rem] bg-gray-900 px-6 py-10 md:px-10 md:py-14"
             >
-              <Quote className="absolute -top-6 -left-6 w-48 h-48 text-white/5 -rotate-12" />
-              <div className="relative z-10 text-center max-w-3xl mx-auto">
-                <p className="text-2xl md:text-3xl text-gray-100 leading-relaxed font-medium mb-8">
+              <Quote className="absolute -top-5 -left-5 h-36 w-36 rotate-[-12deg] text-white/5 md:h-48 md:w-48" />
+              <div className="relative z-10 mx-auto max-w-3xl text-center">
+                <p className="text-[1.45rem] leading-[1.55] text-gray-100 md:text-[2rem]">
                   "{project.testimonial.text}"
                 </p>
-                <div>
-                  <div className="text-[#FF6600] font-bold text-lg">
+                <div className="mt-8">
+                  <div className="text-lg font-bold text-[#FF6600]">
                     {project.testimonial.author}
                   </div>
-                  <div className="text-gray-400 text-sm">
+                  <div className="mt-1 text-sm text-gray-400">
                     {project.testimonial.role}
                   </div>
                 </div>
@@ -337,42 +393,44 @@ export default function CaseStudyDetailPage() {
             </motion.div>
           )}
 
-          {/* Results & Metrics */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-orange-50 rounded-[2.5rem] p-10 md:p-16 border border-orange-100"
+            className="overflow-hidden rounded-[2.3rem] border border-[#221913] bg-[radial-gradient(circle_at_top,_rgba(255,122,26,0.14),_transparent_34%),linear-gradient(180deg,_#1b1612_0%,_#14110f_100%)] px-6 py-8 text-white shadow-[0_30px_80px_rgba(17,12,10,0.24)] md:px-10 md:py-12"
           >
-            <div className="text-center max-w-2xl mx-auto mb-12">
-              <TrendingUp className="text-[#FF6600] w-12 h-12 mx-auto mb-6" />
+            <div className="mx-auto mb-8 max-w-2xl text-center md:mb-12">
+              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/6 text-[#FF6600] shadow-sm backdrop-blur-sm">
+                <TrendingUp className="h-6 w-6" />
+              </div>
               <h2
-                className="text-3xl md:text-4xl font-bold mb-4 text-gray-900"
+                className="text-[1.8rem] font-black text-white md:text-[2.6rem]"
                 style={{ fontFamily: "var(--font-poppins)" }}
               >
                 The Impact
               </h2>
-              <p className="text-gray-600 text-lg">
-                Measurable results that transformed the client's business
-                trajectory.
+              <p className="mt-4 text-[15px] leading-7 text-white/65 md:text-lg">
+                Measurable results that transformed the client's business trajectory.
               </p>
             </div>
 
-            {/* Big Metrics */}
             {project.metrics && project.metrics.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              <div className="mb-8 grid gap-4 md:mb-12 md:grid-cols-2 xl:grid-cols-3">
                 {project.metrics.map((metric, idx) => (
                   <div
                     key={idx}
-                    className="bg-white rounded-2xl p-8 border border-gray-100 text-center shadow-sm"
+                    className="rounded-[1.8rem] border border-white/10 bg-white/6 px-5 py-6 text-left shadow-[0_20px_60px_rgba(0,0,0,0.16)] backdrop-blur-sm md:px-6 md:py-8"
                   >
+                    <span className="mb-4 inline-flex rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-orange-200">
+                      Key Metric
+                    </span>
                     <span
-                      className="block text-4xl lg:text-5xl font-black text-[#FF6600] mb-2"
+                      className="block text-[2rem] font-black leading-[0.95] text-[#FF6600] md:text-[2.6rem]"
                       style={{ fontFamily: "var(--font-poppins)" }}
                     >
                       {metric.value}
                     </span>
-                    <span className="text-gray-600 font-bold text-sm uppercase tracking-wider">
+                    <span className="mt-4 block text-[11px] font-bold uppercase tracking-[0.2em] text-white/55 md:text-sm">
                       {metric.label}
                     </span>
                   </div>
@@ -380,34 +438,202 @@ export default function CaseStudyDetailPage() {
               </div>
             )}
 
-            {/* Additional Results List */}
             {project.results && project.results.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {project.results.map((item, idx) => (
-                  <div key={idx} className="flex gap-4">
-                    <div className="w-1.5 h-1.5 mt-2.5 rounded-full bg-[#FF6600] shrink-0"></div>
-                    <p className="text-gray-700 font-medium">{item}</p>
+              <div className="border-t border-white/10 pt-8 md:pt-10">
+                <div className="mb-6 flex flex-col gap-2 md:mb-8">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-orange-200">
+                    Outcome Highlights
+                  </span>
+                  <p className="max-w-2xl text-sm leading-7 text-white/60 md:text-base">
+                    The project created a stronger foundation for positioning, conversion clarity, and future growth execution.
+                  </p>
+                </div>
+
+                <div className={`grid gap-4 ${resultColumns.length > 1 ? "lg:grid-cols-3" : "md:grid-cols-2"}`}>
+                {resultColumns.map((column, columnIndex) => (
+                  <div
+                    key={columnIndex}
+                    className="space-y-4 rounded-[1.7rem] border border-white/10 bg-white/4 p-5 backdrop-blur-sm"
+                  >
+                    {column.map((item, idx) => (
+                      <div key={`${columnIndex}-${idx}`} className="flex gap-4">
+                        <div className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#FF6600]" />
+                        <p className="text-[15px] font-medium leading-8 text-white/84 md:text-base">
+                          {item}
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 ))}
+                </div>
               </div>
             )}
           </motion.div>
 
-          {/* External Link */}
           {project.link && (
-            <div className="text-center pt-8">
+            <div className="pt-2 text-center">
               <a
                 href={project.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-primary inline-flex gap-2 text-lg px-8 py-4"
+                className="btn-primary inline-flex gap-2 px-7 py-4 text-base md:text-lg"
               >
-                Visit Live Project <ExternalLink className="w-5 h-5" />
+                Visit Live Project <ExternalLink className="h-5 w-5" />
               </a>
             </div>
           )}
         </div>
       </section>
+
+      <Dialog open={lightboxIndex !== null} onOpenChange={(open) => !open && setLightboxIndex(null)}>
+        <DialogContent
+          showCloseButton={false}
+          className="max-w-[min(1200px,calc(100%-1.5rem))] overflow-hidden rounded-[1.75rem] border-0 bg-[#111111] p-0 shadow-2xl"
+        >
+          <DialogTitle className="sr-only">
+            {project.title} gallery preview
+          </DialogTitle>
+          {activeLightboxImage ? (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setLightboxIndex(null)}
+                className="absolute top-4 right-4 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              {galleryImages.length > 1 ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setLightboxIndex((current) =>
+                        current === null
+                          ? current
+                          : (current - 1 + galleryImages.length) % galleryImages.length,
+                      )
+                    }
+                    className="absolute left-4 top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setLightboxIndex((current) =>
+                        current === null ? current : (current + 1) % galleryImages.length,
+                      )
+                    }
+                    className="absolute right-4 top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              ) : null}
+
+              <div className="max-h-[82vh] overflow-hidden">
+                <img
+                  src={activeLightboxImage}
+                  alt={`${project.title} gallery preview`}
+                  className="max-h-[82vh] w-full object-contain"
+                />
+              </div>
+
+              <div className="flex items-center justify-between border-t border-white/10 bg-white/5 px-5 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
+                <span>{project.title}</span>
+                <span>
+                  {(lightboxIndex || 0) + 1} / {galleryImages.length}
+                </span>
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </>
+  );
+}
+
+function InfoCard({
+  label,
+  value,
+  icon,
+  wide = false,
+  dark = false,
+}: {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+  wide?: boolean;
+  dark?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-[1.4rem] px-4 py-4 md:px-5 md:py-5 ${
+        dark
+          ? "border border-white/10 bg-white/6 shadow-[0_20px_50px_rgba(0,0,0,0.18)] backdrop-blur-sm"
+          : "border border-gray-100 bg-white shadow-sm"
+      } ${wide ? "sm:col-span-2 xl:col-span-1" : ""}`}
+    >
+      <div
+        className={`mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.16em] ${
+          dark ? "text-white/45" : "text-gray-400"
+        }`}
+      >
+        {icon}
+        {label}
+      </div>
+      <div
+        className={`text-sm font-bold leading-6 md:text-[15px] ${
+          dark ? "text-white" : "text-gray-900"
+        }`}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function ContentPanel({
+  title,
+  icon,
+  items,
+  itemDotClassName,
+  cardClassName,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  items: string[];
+  itemDotClassName: string;
+  cardClassName: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="space-y-5"
+    >
+      <div
+        className="flex items-center gap-3 text-[1.65rem] font-bold text-gray-900 md:text-3xl"
+        style={{ fontFamily: "var(--font-poppins)" }}
+      >
+        {icon}
+        <h2>{title}</h2>
+      </div>
+      <div className="space-y-3 md:space-y-4">
+        {items.map((item, idx) => (
+          <div
+            key={idx}
+            className={`flex gap-4 rounded-[1.6rem] border p-5 shadow-sm ${cardClassName}`}
+          >
+            <div className={`mt-2 h-2 w-2 shrink-0 rounded-full ${itemDotClassName}`} />
+            <p className="text-[15px] font-medium leading-8 text-gray-700 md:text-base">
+              {item}
+            </p>
+          </div>
+        ))}
+      </div>
+    </motion.div>
   );
 }

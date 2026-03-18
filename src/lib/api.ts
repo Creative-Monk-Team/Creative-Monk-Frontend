@@ -14,10 +14,16 @@ import type {
   Testimonial,
 } from "./types";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.API_URL ||
-  "http://localhost:5000/api";
+function getApiBase() {
+  const publicApiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const serverApiUrl = process.env.API_URL;
+
+  if (typeof window !== "undefined") {
+    return publicApiUrl || "/api";
+  }
+
+  return publicApiUrl || serverApiUrl || "http://127.0.0.1:5000/api";
+}
 
 type FetchOptions = RequestInit & {
   token?: string;
@@ -25,7 +31,8 @@ type FetchOptions = RequestInit & {
 };
 
 function buildUrl(path: string, searchParams?: FetchOptions["searchParams"]) {
-  const normalizedBase = API_BASE.endsWith("/") ? API_BASE : `${API_BASE}/`;
+  const apiBase = getApiBase();
+  const normalizedBase = apiBase.endsWith("/") ? apiBase : `${apiBase}/`;
   const url = new URL(path, normalizedBase);
 
   Object.entries(searchParams || {}).forEach(([key, value]) => {

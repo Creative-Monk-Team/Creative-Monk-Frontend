@@ -2,31 +2,21 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
-import { apiService } from "@/lib/api";
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  category: string;
-  link?: string;
-}
+import { getCaseStudies } from "@/lib/api";
+import type { CaseStudy } from "@/lib/types";
 
 export default function CaseStudiesPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<CaseStudy[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchCaseStudies() {
       try {
-        const data = await apiService.getPortfolio();
-        // Assuming data is an array of projects or data.data
-        const projectList = Array.isArray(data) ? data : data.data || [];
-        setProjects(projectList);
+        const data = await getCaseStudies();
+        setProjects(data);
       } catch (error) {
         console.error("Failed to fetch case studies:", error);
       } finally {
@@ -64,10 +54,10 @@ export default function CaseStudiesPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-              {projects.map((project, idx) => (
-                <motion.div
-                  key={project.id}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                {projects.map((project, idx) => (
+                  <motion.div
+                    key={project._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05 }}
