@@ -1,101 +1,114 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import {
-  LayoutDashboard,
-  FolderKanban,
-  MessageSquare,
-  LogOut,
-  Settings,
-} from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+
+const navItems = [
+  { href: "/admin/dashboard", label: "Overview" },
+  { href: "/admin/dashboard/services", label: "Services" },
+  { href: "/admin/dashboard/case-studies", label: "Case Studies" },
+  { href: "/admin/dashboard/blogs", label: "Blogs" },
+  { href: "/admin/dashboard/social-proof", label: "Clients & Testimonials" },
+  { href: "/admin/dashboard/content", label: "Content & Settings" },
+  { href: "/admin/dashboard/enquiries", label: "Enquiries" },
+];
 
 export default function AdminDashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("adminToken");
+    const token = localStorage.getItem("creative-monk-admin-token");
     if (!token) {
-      router.push("/admin");
-    } else {
-      setLoading(false);
+      router.replace("/admin");
+      return;
     }
+
+    setReady(true);
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken");
+  function logout() {
+    localStorage.removeItem("creative-monk-admin-token");
     router.push("/admin");
-  };
+  }
 
-  if (loading) return null;
+  if (!ready) {
+    return null;
+  }
 
   return (
-    <div className="flex min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <aside className="w-64 border-r bg-background hidden md:block">
-        <div className="p-6">
-          <h1 className="text-xl font-bold text-primary">Monk Panel</h1>
+      <aside className="w-[280px] bg-gray-950 flex flex-col fixed inset-y-0 left-0 z-50 overflow-y-auto">
+        <div className="p-8 pb-6 border-b border-gray-800">
+          <p
+            className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF6600]"
+            style={{ fontFamily: "var(--font-outfit)" }}
+          >
+            Creative Monk
+          </p>
+          <h1
+            className="mt-2 text-2xl font-black text-white"
+            style={{ fontFamily: "var(--font-outfit)" }}
+          >
+            CMS Panel
+          </h1>
         </div>
-        <nav className="px-4 space-y-2">
-          <Link
-            href="/admin/dashboard"
-            className="flex items-center gap-3 px-4 py-2 rounded-lg bg-primary/10 text-primary"
+
+        <div className="flex-1 px-4 py-6">
+          <nav className="space-y-1.5">
+            <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">
+              Dashboard
+            </p>
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? "bg-[#FF6600] text-white shadow-lg shadow-orange-500/20"
+                      : "text-gray-400 hover:bg-gray-800/60 hover:text-white"
+                  }`}
+                  style={isActive ? { fontFamily: "var(--font-outfit)" } : {}}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="p-4 border-t border-gray-800">
+          <button
+            type="button"
+            onClick={logout}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 transition-all duration-200 hover:bg-red-500/10 hover:text-red-400"
           >
-            <LayoutDashboard className="h-5 w-5" />
-            Dashboard
-          </Link>
-          <Link
-            href="/admin/dashboard/portfolio"
-            className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-muted text-muted-foreground transition-all"
-          >
-            <FolderKanban className="h-5 w-5" />
-            Portfolio
-          </Link>
-          <Link
-            href="/admin/dashboard/enquiries"
-            className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-muted text-muted-foreground transition-all"
-          >
-            <MessageSquare className="h-5 w-5" />
-            Enquiries
-          </Link>
-          <div className="pt-8 mt-8 border-t">
-            <Link
-              href="/admin/dashboard/settings"
-              className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-muted text-muted-foreground transition-all"
-            >
-              <Settings className="h-5 w-5" />
-              Settings
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-destructive/10 text-destructive transition-all"
-            >
-              <LogOut className="h-5 w-5" />
-              Logout
-            </button>
-          </div>
-        </nav>
+            Sign Out
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <header className="h-16 border-b bg-background flex items-center justify-between px-8">
-          <h2 className="font-semibold text-lg">Overview</h2>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
-              Welcome, Admin
-            </span>
-          </div>
+      <div className="flex-1 pl-[280px] flex flex-col min-h-screen">
+        <header className="h-20 bg-white border-b border-gray-100 flex items-center px-8 shadow-sm">
+          <p className="text-sm font-medium text-gray-500">
+            Manage dynamic content, SEO metadata, and customer enquiries.
+          </p>
         </header>
-        <div className="p-8">{children}</div>
-      </main>
+
+        <main className="flex-1 p-8 overflow-y-auto">
+          <div className="max-w-6xl mx-auto space-y-8">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }

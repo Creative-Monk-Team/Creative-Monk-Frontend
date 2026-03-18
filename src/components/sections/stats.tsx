@@ -84,7 +84,7 @@ export function Stats() {
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 text-gray-900 leading-tight"
-            style={{ fontFamily: "var(--font-poppins)" }}
+            style={{ fontFamily: "var(--font-outfit)" }}
           >
             Why{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6600] to-orange-400">
@@ -123,8 +123,8 @@ export function Stats() {
                   <feature.icon className="w-8 h-8 text-[#FF6600] group-hover:text-white transition-colors duration-500" />
                 </div>
                 <h3
-                  className="text-xl md:text-2xl font-bold text-gray-900 mb-4 group-hover:text-[#FF6600] transition-colors duration-300"
-                  style={{ fontFamily: "var(--font-poppins)" }}
+                  className="text-xl md:text-2xl font-black text-gray-900 mb-4 group-hover:text-[#FF6600] transition-colors duration-300"
+                  style={{ fontFamily: "var(--font-outfit)" }}
                 >
                   {feature.title}
                 </h3>
@@ -159,7 +159,7 @@ export function Stats() {
                 </div>
                 <div
                   className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight group-hover:scale-105 transition-transform duration-300"
-                  style={{ fontFamily: "var(--font-poppins)" }}
+                  style={{ fontFamily: "var(--font-outfit)" }}
                 >
                   {stat.number}
                 </div>

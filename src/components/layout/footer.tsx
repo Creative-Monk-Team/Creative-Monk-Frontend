@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   Facebook,
@@ -55,6 +58,14 @@ const socials = [
 ];
 
 export function Footer() {
+  const pathname = usePathname();
+  const isAdminPath =
+    pathname?.startsWith("/admin") ||
+    (typeof window !== "undefined" &&
+      window.location.pathname.startsWith("/admin"));
+
+  if (isAdminPath) return null;
+
   return (
     <footer style={{ background: "#1a1a1a" }}>
       {/* Main Footer */}

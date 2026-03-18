@@ -36,22 +36,15 @@ export function CTA() {
           viewport={{ once: true }}
           className="max-w-3xl mx-auto"
         >
-          <span
-            className="inline-block px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-6"
-            style={{
-              background: "rgba(255,102,0,0.15)",
-              color: "#FF6600",
-              fontFamily: "var(--font-poppins)",
-            }}
-          >
+          <span className="section-label inline-block mb-6 border-white/20 text-white bg-white/10 uppercase tracking-widest text-xs font-bold px-4 py-1.5 rounded-full">
             Ready to Grow?
           </span>
           <h2
             className="text-4xl md:text-6xl font-black text-white mb-6"
-            style={{ fontFamily: "var(--font-poppins)" }}
+            style={{ fontFamily: "var(--font-outfit)" }}
           >
             Let's Build Something{" "}
-            <span style={{ color: "#FF6600" }}>Amazing</span> Together
+            <span className="text-[#FF6600]">Amazing</span> Together
           </h2>
           <p className="text-gray-400 text-xl mb-10 leading-relaxed">
             Join 250+ businesses who trusted Creative Monk to transform their

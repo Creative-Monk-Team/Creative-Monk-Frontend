@@ -34,17 +34,12 @@ export function Services() {
     <section className="section-padding bg-white">
       <div className="container">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-20">
           <motion.span
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-4"
-            style={{
-              background: "#FFF5F0",
-              color: "#FF6600",
-              border: "1px solid rgba(255,102,0,0.15)",
-            }}
+            className="section-label inline-block mb-4"
           >
             What We Offer
           </motion.span>
@@ -53,20 +48,20 @@ export function Services() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-3xl md:text-5xl font-black mb-4"
-            style={{ fontFamily: "var(--font-poppins)" }}
+            className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 text-gray-900 leading-tight"
+            style={{ fontFamily: "var(--font-outfit)" }}
           >
-            Our <span style={{ color: "#FF6600" }}>Services</span>
+            Our <span className="text-[#FF6600]">Services</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-gray-500 text-lg"
+            className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto"
           >
-            We offer a wide range of Digital Marketing Services, Web Design &
-            Development Services, and Graphic Designing Services in India.
+            Empowering brands through cutting-edge technology and data-driven
+            marketing strategies that deliver measurable results.
           </motion.p>
         </div>
 
@@ -130,8 +125,8 @@ export function Services() {
 
                     {/* Title */}
                     <h3
-                      className="text-lg font-extrabold mb-2 text-gray-900 group-hover:text-[#FF6600] transition-colors line-clamp-2"
-                      style={{ fontFamily: "var(--font-poppins)" }}
+                      className="text-xl font-black mb-3 text-gray-900 group-hover:text-[#FF6600] transition-colors line-clamp-2"
+                      style={{ fontFamily: "var(--font-outfit)" }}
                     >
                       {category.title}
                     </h3>
@@ -183,10 +178,10 @@ export function Services() {
         >
           <div className="flex items-center justify-between mb-8">
             <h3
-              className="text-2xl font-bold"
-              style={{ fontFamily: "var(--font-poppins)" }}
+              className="text-2xl font-black text-gray-900"
+              style={{ fontFamily: "var(--font-outfit)" }}
             >
-              All <span style={{ color: "#FF6600" }}>Services</span>
+              All <span className="text-[#FF6600]">Services</span>
             </h3>
             <Link
               href="/services"
@@ -232,8 +227,8 @@ export function Services() {
                     <service.icon className="h-4 w-4 text-[#FF6600]" />
                   </div>
                   <span
-                    className="text-[13px] font-semibold text-gray-700 group-hover:text-[#FF6600] transition-colors leading-tight"
-                    style={{ fontFamily: "var(--font-poppins)" }}
+                    className="text-[13px] font-black tracking-tight text-gray-700 group-hover:text-[#FF6600] transition-colors leading-tight"
+                    style={{ fontFamily: "var(--font-outfit)" }}
                   >
                     {service.shortTitle}
                   </span>

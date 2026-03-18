@@ -1,38 +1,100 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, TrendingUp, Star, BarChart3, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  TrendingUp,
+  Star,
+  Zap,
+  Sparkles,
+  Rocket,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 export function Hero() {
   return (
-    <section className="relative pt-16 pb-20 md:pt-8 md:pb-28 bg-white overflow-hidden min-h-[85vh] flex items-center">
+    <section className="relative pb-16 pt-24 md:pb-24 md:pt-32 lg:pt-10 lg:pb-20 bg-white overflow-hidden min-h-[85vh] flex items-center">
       {/* Background gradients */}
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-50 via-white to-white"></div>
-      <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[600px] h-[600px] bg-orange-200/40 rounded-full blur-[80px]" />
-      <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[500px] h-[500px] bg-orange-100/50 rounded-full blur-[60px]" />
+      <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-orange-200/40 rounded-full blur-[40px] md:blur-[80px]" />
+      <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[250px] md:w-[500px] h-[250px] md:h-[500px] bg-orange-100/50 rounded-full blur-[30px] md:blur-[60px]" />
 
-      <div className="container px-4 mx-auto max-w-7xl">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+      {/* Animated floating elements for mobile visibility */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none lg:hidden">
+        <motion.div
+          animate={{
+            y: [0, -20, 0],
+            rotate: [0, 5, 0],
+          }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[15%] right-[10%] w-12 h-12 bg-orange-500/10 rounded-xl blur-[1px]"
+        />
+        <motion.div
+          animate={{
+            y: [0, 20, 0],
+            rotate: [0, -5, 0],
+          }}
+          transition={{
+            duration: 7,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1,
+          }}
+          className="absolute bottom-[20%] left-[5%] w-16 h-16 bg-orange-200/20 rounded-full blur-[1px]"
+        />
+      </div>
+
+      <div className="container">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-8 items-center">
           {/* Left Column Component */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className="max-w-2xl text-center lg:text-left mx-auto lg:mx-0"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 border border-orange-100/50 mb-6 shadow-sm">
-              <Star className="w-4 h-4 text-orange-500 fill-orange-500" />
-              <span className="text-sm font-semibold text-orange-800 tracking-wide uppercase">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50/80 backdrop-blur-sm border border-orange-100/50 mb-8 md:mb-10 group hover:bg-orange-100/80 transition-all duration-300"
+            >
+              <div className="relative w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center overflow-hidden">
+                <img
+                  src="/images/icon-logo.png"
+                  alt="Creative Monk"
+                  className="w-4 h-4 object-contain relative z-10"
+                />
+                <motion.div
+                  animate={{
+                    rotate: [0, 360],
+                  }}
+                  transition={{
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  className="absolute inset-0 bg-gradient-to-tr from-orange-100 to-transparent opacity-40"
+                />
+              </div>
+              <span
+                className="text-[#FF6600] text-[10px] md:text-xs font-black tracking-[0.2em] uppercase"
+                style={{ fontFamily: "var(--font-outfit)" }}
+              >
                 Award-Winning Agency
               </span>
-            </div>
+              <Sparkles className="w-3 h-3 text-orange-400 group-hover:rotate-12 transition-transform" />
+            </motion.div>
 
-            <h1 className="text-5xl lg:text-7xl font-extrabold text-gray-900 tracking-tight leading-[1.1] mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-gray-900 tracking-tight leading-[1.1] mb-6">
               Ignite Your <br className="hidden lg:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-orange-400 relative inline-block pb-2 mt-2 lg:mt-0">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-orange-400 relative inline-block pb-3 mt-2 lg:mt-0">
                 Revenue Engine
-                <svg
+                <motion.svg
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  whileInView={{ pathLength: 1, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1.5, delay: 0.8 }}
                   className="absolute bottom-0 left-0 w-full"
                   height="12"
                   viewBox="0 0 100 12"
@@ -41,61 +103,82 @@ export function Hero() {
                   <path
                     d="M0,10 Q50,0 100,10"
                     stroke="#f97316"
-                    strokeWidth="3"
+                    strokeWidth="4"
                     fill="none"
-                    opacity="0.3"
+                    opacity="0.4"
+                    strokeLinecap="round"
                   />
-                </svg>
+                </motion.svg>
               </span>
             </h1>
 
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-lg mx-auto lg:mx-0">
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-10 leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium">
               We engineer high-performance marketing ecosystems that transform
               ambitious brands into market leaders through data-driven
               precision.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-16 px-4 sm:px-0">
               <Link
                 href="/contact"
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-0.5"
+                className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl transition-all shadow-2xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-1 overflow-hidden"
               >
+                <motion.div
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "100%" }}
+                  transition={{ duration: 0.8 }}
+                  className="absolute inset-0 bg-white/20 -skew-x-12"
+                />
                 Claim Your Free Audit
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <Rocket className="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 href="/portfolio"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 text-gray-800 font-semibold rounded-xl border-2 border-gray-100 transition-all hover:border-orange-100 hover:shadow-sm"
+                className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-white/50 backdrop-blur-sm hover:bg-white text-gray-800 font-bold rounded-2xl border-2 border-orange-100 hover:border-orange-200 transition-all hover:shadow-xl hover:-translate-y-1"
               >
-                <TrendingUp className="w-5 h-5 text-orange-500" />
+                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center group-hover:bg-orange-100 transition-colors">
+                  <TrendingUp className="w-4 h-4 text-orange-600" />
+                </div>
                 Explore Case Studies
               </Link>
             </div>
 
             {/* Trust Metrics */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 pt-8 border-t border-gray-100">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 pt-10 border-t border-gray-100 relative">
+              <div className="absolute -top-px left-1/2 -translate-x-1/2 lg:left-0 lg:translate-x-0 w-20 h-[2px] bg-orange-500" />
+
               <div className="text-center lg:text-left">
-                <p className="text-3xl font-bold text-gray-900 mb-1">342%</p>
-                <p className="text-sm text-gray-500 font-medium">
+                <p
+                  className="text-3xl font-black text-gray-900 mb-1 tracking-tight"
+                  style={{ fontFamily: "var(--font-outfit)" }}
+                >
+                  342%
+                </p>
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-extrabold">
                   Avg. Client ROI
                 </p>
               </div>
-              <div className="text-center lg:text-left">
-                <p className="text-3xl font-bold text-gray-900 mb-1">500+</p>
-                <p className="text-sm text-gray-500 font-medium">
-                  Projects Done
+              <div className="text-center lg:text-left border-l border-gray-100 md:border-none pl-4 md:pl-0">
+                <p
+                  className="text-3xl font-black text-gray-900 mb-1 tracking-tight"
+                  style={{ fontFamily: "var(--font-outfit)" }}
+                >
+                  500+
+                </p>
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-extrabold">
+                  Projects Won
                 </p>
               </div>
-              <div className="col-span-2 md:col-span-1 flex flex-col items-center lg:items-start">
-                <div className="flex mb-2">
+              <div className="col-span-2 md:col-span-1 flex flex-col items-center lg:items-start pt-6 md:pt-0 border-t border-gray-50 md:border-none">
+                <div className="flex mb-2 gap-0.5">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star
                       key={star}
-                      className="w-5 h-5 text-yellow-500 fill-yellow-500"
+                      className="w-4 h-4 text-orange-500 fill-orange-500"
                     />
                   ))}
                 </div>
-                <p className="text-sm text-gray-500 font-medium">
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-extrabold">
                   Rated 4.9/5 by Clients
                 </p>
               </div>

@@ -107,11 +107,18 @@
 
   .container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1280px;
     margin-left: auto;
     margin-right: auto;
     padding-left: 1.5rem;
     padding-right: 1.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 3rem;
+      padding-right: 3rem;
+    }
   }
 
   .hover-lift {
@@ -310,13 +317,17 @@
     display: none;
   }
 
-  .portfolio-swiper .swiper-pagination-bullet {
+  .portfolio-pagination .swiper-pagination-bullet {
     background: #cbd5e1 !important;
     opacity: 1 !important;
+    width: 8px !important;
+    height: 8px !important;
+    transition: all 0.3s ease;
+    margin: 0 4px !important;
+    border-radius: 99px !important;
   }
-  .portfolio-swiper .swiper-pagination-bullet-active {
+  .portfolio-pagination .swiper-pagination-bullet-active {
     background: #ff6600 !important;
     width: 24px !important;
-    border-radius: 4px !important;
   }
 }

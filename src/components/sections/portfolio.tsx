@@ -147,7 +147,7 @@ export function Portfolio() {
         </div>
 
         {/* Mobile: Swiper Carousel */}
-        <div className="md:hidden -mx-4 px-4 overflow-visible">
+        <div className="md:hidden -mx-6 px-6 overflow-visible">
           <Swiper
             modules={[Pagination, Autoplay]}
             spaceBetween={20}

@@ -83,7 +83,7 @@ export default function CaseStudyDetailPage() {
 
   if (!project) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center pt-8">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <h2
             className="text-3xl font-bold text-gray-900 mb-4"
@@ -98,15 +98,15 @@ export default function CaseStudyDetailPage() {
             <ArrowLeft className="w-4 h-4" /> Back to Case Studies
           </Link>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-white flex flex-col pt-8">
+    <>
       {/* Hero Section */}
       <section className="bg-white border-b border-gray-100 py-16 md:py-24 relative overflow-hidden">
-        <div className="container px-4 lg:px-12 mx-auto max-w-[1400px] relative z-10">
+        <div className="container relative z-10">
           <Link
             href="/case-studies"
             className="inline-flex items-center gap-2 text-gray-500 hover:text-[#FF6600] transition-colors mb-8 md:mb-12 font-medium"
@@ -199,7 +199,7 @@ export default function CaseStudyDetailPage() {
 
       {/* Main Content Sections */}
       <section className="py-20">
-        <div className="container px-4 lg:px-12 mx-auto max-w-[1000px] space-y-24">
+        <div className="container max-w-[1000px] space-y-24 mx-auto px-4">
           {/* Project Overview Content */}
           {project.content && (
             <motion.div
@@ -408,6 +408,6 @@ export default function CaseStudyDetailPage() {
           )}
         </div>
       </section>
-    </main>
+    </>
   );
 }

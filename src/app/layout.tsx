@@ -86,8 +86,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${outfit.variable} ${inter.variable}`}>
-      <body style={{ fontFamily: "var(--font-inter, 'Inter', sans-serif)" }}>
-        <div className="flex min-h-screen flex-col">
+      <body
+        style={{ fontFamily: "var(--font-inter, 'Inter', sans-serif)" }}
+        className="overflow-x-hidden"
+      >
+        <div className="flex min-h-screen flex-col overflow-x-hidden">
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />

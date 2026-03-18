@@ -42,7 +42,7 @@ export function ClientMarquee() {
 
   return (
     <section className="py-16 bg-white overflow-hidden border-b border-gray-100">
-      <div className="container px-4 md:px-6 mb-12 text-center">
+      <div className="container mb-12 text-center">
         <p
           className="text-sm font-semibold text-gray-400 uppercase tracking-widest"
           style={{ fontFamily: "var(--font-outfit)" }}

@@ -14,21 +14,19 @@ export function FAQ() {
     <section className="section-padding bg-white">
       <div className="container max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div
-            className="h-14 w-14 rounded-xl flex items-center justify-center mx-auto mb-4"
-            style={{ background: "#fff5f0" }}
-          >
-            <HelpCircle className="h-7 w-7" style={{ color: "#FF6600" }} />
-          </div>
+        <div className="text-center mb-16 max-w-3xl mx-auto">
+          <span className="section-label inline-block mb-4">
+            Support Centre
+          </span>
           <h2
-            className="text-3xl md:text-5xl font-black mb-4"
-            style={{ fontFamily: "var(--font-poppins)" }}
+            className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 text-gray-900 leading-tight"
+            style={{ fontFamily: "var(--font-outfit)" }}
           >
-            Frequently Asked <span style={{ color: "#FF6600" }}>Questions</span>
+            Frequently Asked <span className="text-[#FF6600]">Questions</span>
           </h2>
-          <p className="text-gray-500 text-lg">
-            Everything you need to know about Creative Monk.
+          <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
+            Everything you need to know about Creative Monk and how we help your
+            business GROW.
           </p>
         </div>
 
@@ -45,9 +43,9 @@ export function FAQ() {
               }}
             >
               <AccordionTrigger
-                className="text-left text-base md:text-lg font-bold py-5 hover:no-underline"
+                className="text-left text-base md:text-lg font-black py-5 hover:no-underline"
                 style={{
-                  fontFamily: "var(--font-poppins)",
+                  fontFamily: "var(--font-outfit)",
                   color: "#1a1a1a",
                 }}
               >

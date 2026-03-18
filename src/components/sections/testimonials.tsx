@@ -33,13 +33,13 @@ export function Testimonials() {
   return (
     <section className="section-padding bg-white">
       <div className="container">
-        <div className="text-center mb-16">
-          <span className="section-label block mb-3">Testimonials</span>
+        <div className="text-center mb-16 max-w-3xl mx-auto">
+          <span className="section-label inline-block mb-4">Testimonials</span>
           <h2
-            className="text-3xl md:text-5xl font-black"
-            style={{ fontFamily: "var(--font-poppins)" }}
+            className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 text-gray-900 leading-tight"
+            style={{ fontFamily: "var(--font-outfit)" }}
           >
-            What Our <span style={{ color: "#FF6600" }}>Clients Say</span>
+            What Our <span className="text-[#FF6600]">Clients Say</span>
           </h2>
         </div>
 
@@ -61,8 +61,8 @@ export function Testimonials() {
             </div>
 
             <blockquote
-              className="text-xl md:text-2xl font-medium leading-relaxed mb-8 text-gray-700"
-              style={{ fontFamily: "var(--font-poppins)" }}
+              className="text-xl md:text-2xl font-bold leading-relaxed mb-8 text-gray-900 tracking-tight"
+              style={{ fontFamily: "var(--font-outfit)" }}
             >
               "{t.text}"
             </blockquote>
@@ -76,8 +76,8 @@ export function Testimonials() {
               </div>
               <div>
                 <p
-                  className="font-bold text-lg"
-                  style={{ fontFamily: "var(--font-poppins)" }}
+                  className="font-black text-lg text-gray-900"
+                  style={{ fontFamily: "var(--font-outfit)" }}
                 >
                   {t.name}
                 </p>
