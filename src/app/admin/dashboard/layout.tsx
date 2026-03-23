@@ -1,8 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { adminApi } from "@/lib/api";
+import {
+  clearAdminSession,
+  getAdminToken,
+  getRoleHomePath,
+  getAdminUser,
+  saveAdminSession,
+} from "@/lib/admin-session";
+import type { AdminUser } from "@/lib/types";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Overview" },
@@ -17,24 +26,35 @@ const navItems = [
 export default function AdminDashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const [ready, setReady] = useState(false);
+  const [user, setUser] = useState<AdminUser | null>(getAdminUser());
 
   useEffect(() => {
-    const token = localStorage.getItem("creative-monk-admin-token");
+    const token = getAdminToken();
     if (!token) {
       router.replace("/admin");
       return;
     }
 
-    setReady(true);
+    adminApi
+      .me(token)
+      .then((response) => {
+        saveAdminSession(token, response.user);
+        setUser(response.user);
+        setReady(true);
+      })
+      .catch(() => {
+        clearAdminSession();
+        router.replace("/admin");
+      });
   }, [router]);
 
   function logout() {
-    localStorage.removeItem("creative-monk-admin-token");
+    clearAdminSession();
     router.push("/admin");
   }
 
@@ -53,12 +73,12 @@ export default function AdminDashboardLayout({
           >
             Creative Monk
           </p>
-          <h1
-            className="mt-2 text-2xl font-black text-white"
-            style={{ fontFamily: "var(--font-outfit)" }}
-          >
-            CMS Panel
+          <h1 className="mt-2 text-2xl font-black text-white" style={{ fontFamily: "var(--font-outfit)" }}>
+            SEO Workspace
           </h1>
+          <p className="mt-2 text-xs text-gray-400">
+            Content, SEO, social proof, and enquiry operations
+          </p>
         </div>
 
         <div className="flex-1 px-4 py-6">
@@ -86,7 +106,16 @@ export default function AdminDashboardLayout({
           </nav>
         </div>
 
-        <div className="p-4 border-t border-gray-800">
+        <div className="p-4 border-t border-gray-800 space-y-3">
+          {user?.role === "super_admin" ? (
+            <button
+              type="button"
+              onClick={() => router.push(getRoleHomePath("super_admin"))}
+              className="w-full rounded-xl border border-orange-500/20 bg-orange-500/10 px-4 py-3 text-sm font-semibold text-orange-300 transition hover:bg-orange-500/15"
+            >
+              Open Super Admin HQ
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={logout}
@@ -100,9 +129,14 @@ export default function AdminDashboardLayout({
       {/* Main Content */}
       <div className="flex-1 pl-[280px] flex flex-col min-h-screen">
         <header className="h-20 bg-white border-b border-gray-100 flex items-center px-8 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">
-            Manage dynamic content, SEO metadata, and customer enquiries.
-          </p>
+          <div>
+            <p className="text-sm font-medium text-gray-500">
+              Manage dynamic content, SEO metadata, social proof, and customer enquiries.
+            </p>
+            <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[#FF6600]">
+              {user?.name || "Creative Monk SEO Expert"}
+            </p>
+          </div>
         </header>
 
         <main className="flex-1 p-8 overflow-y-auto">

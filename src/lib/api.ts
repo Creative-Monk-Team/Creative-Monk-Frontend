@@ -1,15 +1,20 @@
 import type {
+  AdminUser,
+  AgencyClient,
   BlogPost,
   CareerOpening,
   CaseStudy,
   Client,
   DashboardStats,
+  Employee,
   Enquiry,
   FAQ,
+  FinanceRecord,
   MediaUploadResult,
   Service,
   ServiceCategory,
   SiteSettings,
+  SuperAdminOverview,
   TeamMember,
   Testimonial,
 } from "./types";
@@ -190,7 +195,7 @@ export async function submitEnquiry(payload: {
 
 export const adminApi = {
   login(email: string, password: string) {
-    return request<{ token: string; user: { email: string; role: string; name: string } }>(
+    return request<{ token: string; user: AdminUser }>(
       "auth/login",
       {
         method: "POST",
@@ -199,12 +204,21 @@ export const adminApi = {
     );
   },
   me(token: string) {
-    return request<{ user: { email: string; role: string; name: string } }>("auth/me", {
+    return request<{ user: AdminUser }>("auth/me", {
       token,
     });
   },
   getStats(token: string) {
     return request<DashboardStats>("stats", { token });
+  },
+  getSuperAdminOverview(token: string) {
+    return request<SuperAdminOverview>("super-admin/overview", { token });
+  },
+  seed(token: string) {
+    return request<{ message: string }>("seed", {
+      token,
+      method: "POST",
+    });
   },
   list<T>(path: string, token: string) {
     return request<T>(path, { token });
@@ -268,4 +282,7 @@ export type AdminCollectionMap = {
   team: TeamMember[];
   careers: CareerOpening[];
   enquiries: Enquiry[];
+  financeRecords: FinanceRecord[];
+  employees: Employee[];
+  agencyClients: AgencyClient[];
 };

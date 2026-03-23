@@ -171,16 +171,27 @@ export function CmsCollectionManager<T extends Record<string, any>>({
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[320px_1fr]">
-      <aside className="rounded-3xl border bg-white p-5 shadow-sm">
+    <div className="grid gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
+      <aside className="rounded-[1.75rem] border border-slate-200 bg-white/90 p-5 shadow-[0_24px_70px_-54px_rgba(15,23,42,0.22)]">
         <div className="mb-4">
-          <h2 className="text-xl font-bold text-slate-950">{title}</h2>
-          <p className="mt-2 text-sm text-slate-500">{description}</p>
+          <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-slate-400">
+            Collection
+          </p>
+          <h2 className="mt-2 text-[1.4rem] font-medium tracking-[-0.03em] text-slate-950">
+            {title}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>
+          <p className="mt-3 text-xs text-slate-400">
+            {loading ? "Loading records..." : `${items.length} record${items.length === 1 ? "" : "s"}`}
+          </p>
         </div>
-        <button onClick={startNew} className="btn-primary w-full justify-center">
+        <button
+          onClick={startNew}
+          className="inline-flex h-11 w-full items-center justify-center rounded-full bg-slate-950 px-4 text-sm font-medium text-white transition hover:bg-slate-800"
+        >
           New Item
         </button>
-        <div className="mt-5 space-y-2">
+        <div className="custom-scrollbar mt-5 max-h-[calc(100vh-18rem)] space-y-2 overflow-y-auto pr-1">
           {loading ? (
             <p className="text-sm text-slate-500">Loading...</p>
           ) : (
@@ -188,26 +199,34 @@ export function CmsCollectionManager<T extends Record<string, any>>({
               <button
                 key={item._id}
                 onClick={() => setSelectedId(item._id)}
-                className={`w-full rounded-2xl border px-4 py-3 text-left text-sm transition ${
+                className={`w-full rounded-[1.2rem] border px-4 py-3 text-left text-sm transition ${
                   selectedId === item._id
-                    ? "border-orange-200 bg-orange-50 text-slate-900"
-                    : "border-slate-200 bg-white text-slate-600"
+                    ? "border-orange-200 bg-[linear-gradient(135deg,#fff7ed_0%,#fff1e8_100%)] text-slate-900 shadow-[0_14px_38px_-30px_rgba(249,115,22,0.5)]"
+                    : "border-slate-200 bg-slate-50/80 text-slate-600 hover:border-slate-300 hover:bg-white"
                 }`}
               >
-                {String(item[primaryField] || "Untitled")}
+                <p className="font-medium text-inherit">
+                  {String(item[primaryField] || "Untitled")}
+                </p>
+                <p className="mt-1 text-xs text-slate-400">
+                  {selectedId === item._id ? "Currently open" : "Open record"}
+                </p>
               </button>
             ))
           )}
         </div>
       </aside>
 
-      <section className="rounded-3xl border bg-white p-6 shadow-sm">
+      <section className="rounded-[1.75rem] border border-slate-200 bg-white/95 p-6 shadow-[0_24px_70px_-54px_rgba(15,23,42,0.22)]">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-2xl font-bold text-slate-950">
+            <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-slate-400">
+              Workspace
+            </p>
+            <h3 className="mt-2 text-[1.6rem] font-medium tracking-[-0.03em] text-slate-950">
               {selectedItem ? "Edit Item" : "Create Item"}
             </h3>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-2 text-sm leading-6 text-slate-500">
               JSON fields expect valid JSON arrays or objects.
             </p>
           </div>
@@ -216,29 +235,41 @@ export function CmsCollectionManager<T extends Record<string, any>>({
               <button
                 onClick={deleteItem}
                 disabled={saving}
-                className="rounded-full border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-600"
+                className="rounded-full border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
               >
                 Delete
               </button>
             ) : null}
-            <button onClick={saveItem} disabled={saving} className="btn-primary">
+            <button
+              onClick={saveItem}
+              disabled={saving}
+              className="inline-flex h-11 items-center justify-center rounded-full bg-slate-950 px-5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+            >
               {saving ? "Saving..." : "Save"}
             </button>
           </div>
         </div>
 
-        {error ? <p className="mb-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p> : null}
-        {notice ? <p className="mb-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</p> : null}
+        {error ? (
+          <p className="mb-4 rounded-[1rem] border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {error}
+          </p>
+        ) : null}
+        {notice ? (
+          <p className="mb-4 rounded-[1rem] border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {notice}
+          </p>
+        ) : null}
 
         <div className="grid gap-4 md:grid-cols-2">
           {fields.map((field) => (
             <label
               key={field.name}
-              className={`space-y-2 text-sm font-medium text-slate-700 ${
+              className={`space-y-2 text-sm font-medium text-slate-600 ${
                 field.type === "textarea" || field.type === "json" ? "md:col-span-2" : ""
               }`}
             >
-              <span>{field.label}</span>
+              <span className="block text-sm font-medium text-slate-600">{field.label}</span>
               <FieldInput
                 field={field}
                 value={formValues[field.name]}
@@ -292,7 +323,7 @@ function FieldInput({
         rows={6}
         placeholder={field.placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-300"
+        className="custom-scrollbar w-full rounded-[1.15rem] border border-slate-200 bg-slate-50/45 px-4 py-3 text-[15px] text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white"
       />
     );
   }
@@ -307,7 +338,7 @@ function FieldInput({
         type="checkbox"
         checked={Boolean(value)}
         onChange={(event) => onChange(event.target.checked)}
-        className="h-5 w-5 rounded border-slate-300"
+        className="h-5 w-5 rounded border-slate-300 accent-orange-500"
       />
     );
   }
@@ -322,10 +353,10 @@ function FieldInput({
           value={currentValue}
           placeholder={field.placeholder || "https://..."}
           onChange={(event) => onChange(event.target.value)}
-          className="h-12 w-full rounded-2xl border border-slate-200 px-4 outline-none focus:border-orange-300"
+          className="h-12 w-full rounded-[1.15rem] border border-slate-200 bg-slate-50/45 px-4 text-[15px] text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white"
         />
         <div className="flex flex-wrap items-center gap-3">
-          <label className="inline-flex cursor-pointer items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:text-orange-700">
+          <label className="inline-flex cursor-pointer items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-orange-200 hover:text-orange-700">
             {uploading ? "Uploading..." : "Upload to Cloudinary"}
             <input
               type="file"
@@ -340,7 +371,7 @@ function FieldInput({
               href={currentValue}
               target="_blank"
               rel="noreferrer"
-              className="text-sm font-medium text-[var(--brand-700)] underline-offset-4 hover:underline"
+              className="text-sm font-medium text-orange-600 underline-offset-4 hover:underline"
             >
               Open media
             </a>
@@ -368,7 +399,7 @@ function FieldInput({
       value={field.type === "number" ? Number(value ?? 0) : String(value ?? "")}
       placeholder={field.placeholder}
       onChange={(event) => onChange(event.target.value)}
-      className="h-12 w-full rounded-2xl border border-slate-200 px-4 outline-none focus:border-orange-300"
+      className="h-12 w-full rounded-[1.15rem] border border-slate-200 bg-slate-50/45 px-4 text-[15px] text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white"
     />
   );
 }
@@ -416,12 +447,21 @@ function SchemaNode({ template, value, onChange, label, name }: { template: any;
     const actualArray: any[] = Array.isArray(value) ? value : [];
 
     return (
-      <div className="space-y-4 rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
-        {label && <h4 className="text-sm font-bold text-slate-800 capitalize">{label.replace(/([A-Z])/g, " $1").trim()}</h4>}
+      <div className="space-y-4 rounded-[1.25rem] border border-slate-200 bg-slate-50/70 p-4">
+        {label && (
+          <h4 className="text-sm font-medium capitalize text-slate-800">
+            {label.replace(/([A-Z])/g, " $1").trim()}
+          </h4>
+        )}
         {actualArray.map((item: any, idx: number) => (
-          <div key={idx} className="relative rounded-2xl border border-slate-200 bg-white p-4 pr-12 shadow-sm">
+          <div
+            key={idx}
+            className="relative rounded-[1.15rem] border border-slate-200 bg-white p-4 pr-12 shadow-[0_18px_45px_-38px_rgba(15,23,42,0.18)]"
+          >
             <div className="space-y-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Item {idx + 1}</span>
+              <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
+                Item {idx + 1}
+              </span>
               {isStringArray ? (
                 <textarea
                   rows={2}
@@ -431,7 +471,7 @@ function SchemaNode({ template, value, onChange, label, name }: { template: any;
                     next[idx] = e.target.value;
                     onChange(next);
                   }}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:border-orange-300"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/45 px-3 py-2 text-[15px] outline-none transition focus:border-orange-300 focus:bg-white"
                 />
               ) : (
                 <div className="grid gap-3">
@@ -472,9 +512,9 @@ function SchemaNode({ template, value, onChange, label, name }: { template: any;
         <button
           type="button"
           onClick={() => onChange([...actualArray, isStringArray ? "" : JSON.parse(JSON.stringify(template[0]))])}
-          className="btn-primary"
+          className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:border-orange-200 hover:text-orange-700"
         >
-          + Add Item
+          Add Item
         </button>
       </div>
     );
@@ -483,8 +523,12 @@ function SchemaNode({ template, value, onChange, label, name }: { template: any;
   if (typeof template === "object" && template !== null) {
     const actualObject: Record<string, any> = typeof value === "object" && value !== null && !Array.isArray(value) ? value : {};
     return (
-      <div className="grid gap-4 rounded-2xl border border-slate-100 bg-slate-50/50 p-5 md:grid-cols-2 shadow-sm">
-        {label && <div className="col-span-full mb-1 text-sm font-bold text-slate-800 capitalize">{label.replace(/([A-Z])/g, " $1").trim()}</div>}
+      <div className="grid gap-4 rounded-[1.25rem] border border-slate-200 bg-slate-50/70 p-5 md:grid-cols-2">
+        {label && (
+          <div className="col-span-full mb-1 text-sm font-medium capitalize text-slate-800">
+            {label.replace(/([A-Z])/g, " $1").trim()}
+          </div>
+        )}
         {Object.keys(template).map((key) => {
           const val = actualObject[key];
           return (
@@ -507,14 +551,14 @@ function SchemaNode({ template, value, onChange, label, name }: { template: any;
   const lines = typeof value === "string" && (value.length > 50 || name.toLowerCase().includes("description") || name.toLowerCase().includes("story")) ? 3 : 1;
 
   return (
-    <label className={`block space-y-1.5 text-sm font-medium text-slate-700 ${lines > 1 ? "md:col-span-2" : ""}`}>
+    <label className={`block space-y-1.5 text-sm font-medium text-slate-600 ${lines > 1 ? "md:col-span-2" : ""}`}>
       {label && <span className="capitalize">{label.replace(/([A-Z])/g, " $1").trim()}</span>}
       {lines > 1 ? (
         <textarea
           rows={lines}
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:border-orange-300"
+          className="custom-scrollbar w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-[15px] outline-none transition focus:border-orange-300"
         />
       ) : (
         <input
@@ -525,7 +569,11 @@ function SchemaNode({ template, value, onChange, label, name }: { template: any;
             const newValue = defaultType === "boolean" ? e.target.checked : e.target.value;
             onChange(newValue);
           }}
-          className={defaultType === "boolean" ? "h-5 w-5 rounded border-slate-300" : "h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-orange-300"}
+          className={
+            defaultType === "boolean"
+              ? "h-5 w-5 rounded border-slate-300 accent-orange-500"
+              : "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-[15px] outline-none transition focus:border-orange-300"
+          }
         />
       )}
     </label>
@@ -550,5 +598,4 @@ export function JsonVisualEditor({ value, onChange, name }: { value: any; onChan
 
   return <SchemaNode name={name} template={template} value={parsed} onChange={onChange} />;
 }
-
 

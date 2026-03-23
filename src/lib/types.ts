@@ -257,6 +257,201 @@ export type DashboardStats = {
   careers: number;
 };
 
+export type AdminRole = "seo_admin" | "super_admin";
+
+export type AdminUser = {
+  email: string;
+  role: AdminRole;
+  name: string;
+};
+
+export type FinanceRecord = {
+  _id: string;
+  label: string;
+  periodKey: string;
+  currency?: string;
+  revenue: number;
+  expenses: number;
+  adSpend?: number;
+  payroll?: number;
+  toolsCost?: number;
+  outstandingInvoices?: number;
+  cashInHand?: number;
+  profit?: number;
+  marginPct?: number;
+  status?: "forecast" | "actual" | "closed";
+  notes?: string;
+  isActive?: boolean;
+};
+
+export type Employee = {
+  _id: string;
+  name: string;
+  role: string;
+  department: string;
+  email?: string;
+  phone?: string;
+  avatar?: string;
+  status?: "active" | "on-leave" | "probation" | "freelance" | "inactive";
+  employmentType?: "full-time" | "part-time" | "contract" | "intern";
+  monthlySalary?: number;
+  utilizationPct?: number;
+  ownerLevel?: "lead" | "member" | "executive";
+  joinedAt?: string;
+  assignedClients?: string[];
+  primarySkills?: string[];
+  goals?: string[];
+  notes?: string;
+  order?: number;
+  isActive?: boolean;
+};
+
+export type AgencyClient = {
+  _id: string;
+  name: string;
+  website?: string;
+  primaryContact?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  owner?: string;
+  status?: "onboarding" | "active" | "retainer" | "paused" | "offboarded";
+  monthlyRetainer?: number;
+  projectHealth?: "green" | "amber" | "red";
+  seoScore?: number;
+  socialScore?: number;
+  websiteScore?: number;
+  nextReviewDate?: string;
+  services?: string[];
+  websitesManaged?: string[];
+  priorityGoals?: string[];
+  notes?: string;
+  hasCmsAccess?: boolean;
+  order?: number;
+  isActive?: boolean;
+};
+
+export type SuperAdminOverview = {
+  overview: DashboardStats & {
+    trackedRevenue: number;
+    trackedExpenses: number;
+    trackedProfit: number;
+    outstandingInvoices: number;
+    avgTeamUtilization: number;
+    totalPayroll: number;
+    totalRetainers: number;
+    liveWebsites: number;
+    managedWebsites: number;
+    activeServiceLines: number;
+  };
+  financeTrend: Array<{
+    label: string;
+    periodKey?: string;
+    revenue: number;
+    expenses: number;
+    adSpend?: number;
+    payroll?: number;
+    toolsCost?: number;
+    profit: number;
+    marginPct: number;
+    cashInHand?: number;
+    outstandingInvoices?: number;
+    status?: string;
+  }>;
+  dailyEnquiries: Array<{
+    key: string;
+    label: string;
+    total: number;
+  }>;
+  teamSnapshot: Array<{
+    _id: string;
+    name: string;
+    role: string;
+    department: string;
+    status: string;
+    ownerLevel?: string;
+    utilizationPct: number;
+    monthlySalary?: number;
+    assignedClients: string[];
+  }>;
+  clientSnapshot: Array<{
+    _id: string;
+    name: string;
+    website?: string;
+    owner?: string;
+    status?: string;
+    projectHealth?: string;
+    monthlyRetainer: number;
+    seoScore: number;
+    socialScore: number;
+    websiteScore: number;
+    nextReviewDate?: string;
+    services: string[];
+    websitesManaged?: string[];
+    priorityGoals?: string[];
+    hasCmsAccess?: boolean;
+  }>;
+  clientRetainers: Array<{
+    _id: string;
+    name: string;
+    monthlyRetainer: number;
+    owner?: string;
+    projectHealth?: string;
+  }>;
+  enquiryPipeline: Array<{
+    status: string;
+    total: number;
+  }>;
+  recentEnquiries: Array<{
+    _id: string;
+    name: string;
+    service?: string;
+    status: string;
+    sourcePage?: string;
+    createdAt: string;
+  }>;
+  reviewQueue: Array<{
+    _id: string;
+    name: string;
+    owner?: string;
+    projectHealth?: string;
+    reviewDueInDays: number | null;
+    nextReviewDate?: string;
+  }>;
+  actionItems: Array<{
+    title: string;
+    detail: string;
+    href: string;
+    priority: "high" | "medium" | "low";
+  }>;
+  activityFeed: Array<{
+    type: string;
+    title: string;
+    meta: string;
+    date: string;
+  }>;
+  sourceBreakdown: Array<{
+    source: string;
+    total: number;
+  }>;
+  alertsSnapshot: Array<{
+    id: string;
+    label: string;
+    total: number;
+    value: number;
+    tone: "high" | "medium" | "low";
+    href: string;
+  }>;
+  contentSnapshot: {
+    totalPublishedBlogs: number;
+    featuredBlogs: number;
+    latestTitles: Array<{
+      title: string;
+      slug: string;
+      category: string;
+    }>;
+  };
+};
+
 export type MediaUploadResult = {
   url: string;
   secureUrl: string;
