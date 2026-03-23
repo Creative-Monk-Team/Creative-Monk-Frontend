@@ -244,6 +244,11 @@ export type Enquiry = {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+  stage?: PipelineStage;
+  assignedTo?: string;
+  priority?: LeadPriority;
+  estimatedValue?: number;
+  convertedClientId?: string;
 };
 
 export type DashboardStats = {
@@ -450,6 +455,128 @@ export type SuperAdminOverview = {
       category: string;
     }>;
   };
+};
+
+export type PipelineStage = "new" | "qualified" | "proposal_sent" | "negotiation" | "won" | "lost";
+export type LeadPriority = "hot" | "warm" | "cold";
+
+export type Activity = {
+  _id: string;
+  leadId?: string;
+  clientId?: string;
+  type: "note" | "call" | "email" | "meeting" | "stage_change" | "system";
+  content: string;
+  metadata?: Record<string, unknown>;
+  createdBy: string;
+  createdAt: string;
+};
+
+export type FollowUp = {
+  _id: string;
+  leadId?: string;
+  clientId?: string;
+  title: string;
+  notes?: string;
+  dueDate: string;
+  status: "pending" | "done";
+  completedAt?: string;
+  isOverdue?: boolean;
+  createdBy: string;
+  createdAt: string;
+};
+
+export type ClientReview = {
+  _id: string;
+  clientId: string;
+  reviewDate: string;
+  seoScore: number;
+  socialScore: number;
+  websiteScore: number;
+  overallHealth: "green" | "amber" | "red";
+  notes?: string;
+  reviewedBy: string;
+  createdAt: string;
+};
+
+export type PipelineColumn = {
+  stage: PipelineStage;
+  leads: Enquiry[];
+  count: number;
+};
+
+export type FinanceSummary = {
+  revenue: number;
+  expenses: number;
+  profit: number;
+  adSpend: number;
+  payroll: number;
+  toolsCost: number;
+  outstandingInvoices: number;
+  cashInHand: number;
+  marginPct: number;
+  records: Array<{
+    _id: string;
+    label: string;
+    periodKey: string;
+    revenue: number;
+    expenses: number;
+    adSpend: number;
+    payroll: number;
+    toolsCost: number;
+    profit: number;
+    marginPct: number;
+    outstandingInvoices: number;
+    cashInHand: number;
+    status: string;
+    notes?: string;
+  }>;
+};
+
+export type ExpenseBreakdown = {
+  payroll: number;
+  adSpend: number;
+  toolsCost: number;
+  other: number;
+};
+
+export type PnlRow = {
+  label: string;
+  periodKey: string;
+  revenue: number;
+  expenses: number;
+  payroll: number;
+  adSpend: number;
+  toolsCost: number;
+  otherExpenses: number;
+  profit: number;
+  marginPct: number;
+  status: string;
+};
+
+export type EmployeeSummary = {
+  totalActive: number;
+  totalPayroll: number;
+  avgUtilization: number;
+  departments: Array<{ name: string; count: number }>;
+  overloaded: number;
+};
+
+export type EmployeeUtilization = {
+  _id: string;
+  name: string;
+  role: string;
+  department: string;
+  utilizationPct: number;
+  monthlySalary: number;
+  assignedClients: string[];
+  status: string;
+};
+
+export type DepartmentStat = {
+  name: string;
+  count: number;
+  totalSalary: number;
+  avgUtilization: number;
 };
 
 export type MediaUploadResult = {

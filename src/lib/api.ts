@@ -261,6 +261,103 @@ export const adminApi = {
       body: formData,
     });
   },
+
+  // Lead Pipeline
+  getPipeline(token: string) {
+    return request("super-admin/leads/pipeline", { token });
+  },
+  changeLeadStage(id: string, stage: string, token: string) {
+    return request(`enquiries/${id}/stage`, {
+      token,
+      method: "PATCH",
+      body: JSON.stringify({ stage }),
+    });
+  },
+  assignLead(id: string, assignedTo: string, token: string) {
+    return request(`enquiries/${id}/assign`, {
+      token,
+      method: "PATCH",
+      body: JSON.stringify({ assignedTo }),
+    });
+  },
+  convertLead(id: string, token: string) {
+    return request(`super-admin/leads/${id}/convert`, {
+      token,
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+  },
+
+  // Activities
+  getActivities(params: Record<string, string>, token: string) {
+    return request("activities", { token, searchParams: params });
+  },
+  createActivity(data: Record<string, unknown>, token: string) {
+    return request("activities", {
+      token,
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Follow-ups
+  getFollowUps(params: Record<string, string>, token: string) {
+    return request("follow-ups", { token, searchParams: params });
+  },
+  createFollowUp(data: Record<string, unknown>, token: string) {
+    return request("follow-ups", {
+      token,
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  updateFollowUp(id: string, data: Record<string, unknown>, token: string) {
+    return request(`follow-ups/${id}`, {
+      token,
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Client Profile
+  getClientDetail(id: string, token: string) {
+    return request(`agency-clients/${id}/detail`, { token });
+  },
+  getClientReviews(id: string, token: string) {
+    return request(`agency-clients/${id}/reviews`, { token });
+  },
+  createClientReview(id: string, data: Record<string, unknown>, token: string) {
+    return request(`agency-clients/${id}/reviews`, {
+      token,
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Finance Analytics
+  getFinanceSummary(token: string) {
+    return request("super-admin/finance/summary", { token });
+  },
+  getExpenseBreakdown(token: string) {
+    return request("super-admin/finance/expense-breakdown", { token });
+  },
+  getClientBreakdown(token: string) {
+    return request("super-admin/finance/client-breakdown", { token });
+  },
+  getPnl(token: string) {
+    return request("super-admin/finance/pnl", { token });
+  },
+
+  // Employee Analytics
+  getEmployeeSummary(token: string) {
+    return request("super-admin/employees/summary", { token });
+  },
+  getEmployeeUtilization(token: string) {
+    return request("super-admin/employees/utilization", { token });
+  },
+  getDepartmentStats(token: string) {
+    return request("super-admin/employees/department-stats", { token });
+  },
 };
 
 export const apiService = {
