@@ -285,24 +285,20 @@ function FieldInput({
     }
   }
 
-  if (field.type === "textarea" || field.type === "json") {
+  if (field.type === "textarea") {
     return (
-      <>
-        <textarea
-          value={
-            field.type === "json"
-              ? typeof value === "string"
-                ? value
-                : JSON.stringify(value ?? (field.name.endsWith("s") ? [] : {}), null, 2)
-              : String(value ?? "")
-          }
-          rows={field.type === "json" ? 10 : 6}
-          placeholder={field.placeholder}
-          onChange={(event) => onChange(event.target.value)}
-          className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-300"
-        />
-      </>
+      <textarea
+        value={String(value ?? "")}
+        rows={6}
+        placeholder={field.placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-300"
+      />
     );
+  }
+
+  if (field.type === "json") {
+    return <JsonVisualEditor value={value} onChange={onChange} name={field.name} />;
   }
 
   if (field.type === "checkbox") {
@@ -376,3 +372,183 @@ function FieldInput({
     />
   );
 }
+
+const PREDEFINED_SCHEMAS: Record<string, any> = {
+  seo: { title: "", description: "", canonical: "", ogImage: "" },
+  seoDefaults: { title: "", description: "", canonical: "", ogImage: "" },
+  social: { facebook: "", instagram: "", linkedin: "", twitter: "", youtube: "", whatsapp: "" },
+  address: { line1: "", line2: "", city: "", state: "", pincode: "", country: "", full: "", mapsUrl: "" },
+  hero: { eyebrow: "", title: "", highlight: "", description: "", primaryCtaLabel: "", primaryCtaHref: "", secondaryCtaLabel: "", secondaryCtaHref: "" },
+  stats: [{ label: "", value: "" }],
+  aboutStory: [""],
+  whyChooseUs: [""],
+  values: [{ title: "", description: "" }],
+  footerLinks: { company: [{ label: "", href: "" }], services: [{ label: "", href: "" }], legal: [{ label: "", href: "" }] },
+  sectionToggles: { showClients: true, showServices: true, showCaseStudies: true, showTestimonials: true, showBlogs: true, showFaqs: true },
+  
+  services: [""],
+  challenges: [""],
+  solutions: [""],
+  results: [""],
+  metrics: [{ label: "", value: "" }],
+  gallery: [""],
+  testimonial: { text: "", author: "", role: "" },
+  
+  tags: [""],
+  features: [""],
+  process: [{ step: "", desc: "" }],
+  outcomes: [""],
+  faqs: [{ question: "", answer: "" }],
+  detailContent: { heroEyebrow: "", overviewTitle: "", partnerTitle: "", partnerDescription: "", bestFitTitle: "", bestFitDescription: "", capabilitiesTitle: "", processTitle: "", faqTitle: "", deliveryLabel: "", deliveryDescription: "" },
+  skills: [""],
+};
+
+function getEmptySchema(name: string) {
+  const schema = PREDEFINED_SCHEMAS[name];
+  if (!schema) return name.endsWith("s") ? [] : {};
+  return JSON.parse(JSON.stringify(schema));
+}
+
+// Helper to determine the shape of a template node
+function SchemaNode({ template, value, onChange, label, name }: { template: any; value: any; onChange: (v: any) => void; label?: string; name: string }) {
+  if (Array.isArray(template)) {
+    const isStringArray = typeof template[0] === "string";
+    const actualArray: any[] = Array.isArray(value) ? value : [];
+
+    return (
+      <div className="space-y-4 rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
+        {label && <h4 className="text-sm font-bold text-slate-800 capitalize">{label.replace(/([A-Z])/g, " $1").trim()}</h4>}
+        {actualArray.map((item: any, idx: number) => (
+          <div key={idx} className="relative rounded-2xl border border-slate-200 bg-white p-4 pr-12 shadow-sm">
+            <div className="space-y-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Item {idx + 1}</span>
+              {isStringArray ? (
+                <textarea
+                  rows={2}
+                  value={String(item || "")}
+                  onChange={(e) => {
+                    const next = [...actualArray];
+                    next[idx] = e.target.value;
+                    onChange(next);
+                  }}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:border-orange-300"
+                />
+              ) : (
+                <div className="grid gap-3">
+                  {Object.keys(template[0]).map((key) => {
+                    const childVal = typeof item === "object" && item !== null ? item[key] : "";
+                    return (
+                      <SchemaNode
+                        key={key}
+                        name={key}
+                        label={key}
+                        template={template[0][key]}
+                        value={childVal}
+                        onChange={(newVal) => {
+                          const next = [...actualArray];
+                          next[idx] = { ...(next[idx] || {}), [key]: newVal };
+                          onChange(next);
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const next = [...actualArray];
+                next.splice(idx, 1);
+                onChange(next);
+              }}
+              className="absolute right-3 top-3 rounded-lg p-2 text-rose-400 transition hover:bg-rose-50 hover:text-rose-600"
+              title="Remove Item"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange([...actualArray, isStringArray ? "" : JSON.parse(JSON.stringify(template[0]))])}
+          className="btn-primary"
+        >
+          + Add Item
+        </button>
+      </div>
+    );
+  }
+
+  if (typeof template === "object" && template !== null) {
+    const actualObject: Record<string, any> = typeof value === "object" && value !== null && !Array.isArray(value) ? value : {};
+    return (
+      <div className="grid gap-4 rounded-2xl border border-slate-100 bg-slate-50/50 p-5 md:grid-cols-2 shadow-sm">
+        {label && <div className="col-span-full mb-1 text-sm font-bold text-slate-800 capitalize">{label.replace(/([A-Z])/g, " $1").trim()}</div>}
+        {Object.keys(template).map((key) => {
+          const val = actualObject[key];
+          return (
+            <SchemaNode
+              key={key}
+              name={key}
+              label={key}
+              template={template[key]}
+              value={val}
+              onChange={(newVal) => onChange({ ...actualObject, [key]: newVal })}
+            />
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Primitive Field
+  const defaultType = typeof template;
+  const lines = typeof value === "string" && (value.length > 50 || name.toLowerCase().includes("description") || name.toLowerCase().includes("story")) ? 3 : 1;
+
+  return (
+    <label className={`block space-y-1.5 text-sm font-medium text-slate-700 ${lines > 1 ? "md:col-span-2" : ""}`}>
+      {label && <span className="capitalize">{label.replace(/([A-Z])/g, " $1").trim()}</span>}
+      {lines > 1 ? (
+        <textarea
+          rows={lines}
+          value={String(value ?? "")}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:border-orange-300"
+        />
+      ) : (
+        <input
+          type={defaultType === "boolean" ? "checkbox" : "text"}
+          checked={defaultType === "boolean" ? Boolean(value) : undefined}
+          value={defaultType !== "boolean" ? String(value ?? "") : undefined}
+          onChange={(e) => {
+            const newValue = defaultType === "boolean" ? e.target.checked : e.target.value;
+            onChange(newValue);
+          }}
+          className={defaultType === "boolean" ? "h-5 w-5 rounded border-slate-300" : "h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-orange-300"}
+        />
+      )}
+    </label>
+  );
+}
+
+export function JsonVisualEditor({ value, onChange, name }: { value: any; onChange: (v: any) => void; name: string }) {
+  let parsed = value;
+  if (typeof value === "string") {
+    try {
+      parsed = value.trim() === "" ? getEmptySchema(name) : JSON.parse(value);
+    } catch {
+      parsed = getEmptySchema(name);
+    }
+  }
+
+  if (parsed === null || parsed === undefined) {
+    parsed = getEmptySchema(name);
+  }
+
+  const template = PREDEFINED_SCHEMAS[name] || (Array.isArray(parsed) ? [{}] : {});
+
+  return <SchemaNode name={name} template={template} value={parsed} onChange={onChange} />;
+}
+
+

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { adminApi } from "@/lib/api";
 import type { SiteSettings } from "@/lib/types";
 
+import { JsonVisualEditor } from "./cms-collection-manager";
+
 export function SiteSettingsEditor({ token }: { token: string }) {
   const [settings, setSettings] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
@@ -116,16 +118,16 @@ export function SiteSettingsEditor({ token }: { token: string }) {
           value={settings.aboutDescription}
           onChange={(value) => setSettings((current) => ({ ...current, aboutDescription: value }))}
         />
-        <JsonField label="Address JSON" value={settings.address} onChange={(value) => setSettings((current) => ({ ...current, address: value }))} />
-        <JsonField label="Social JSON" value={settings.social} onChange={(value) => setSettings((current) => ({ ...current, social: value }))} />
-        <JsonField label="Hero JSON" value={settings.hero} onChange={(value) => setSettings((current) => ({ ...current, hero: value }))} />
-        <JsonField label="Stats JSON" value={settings.stats} onChange={(value) => setSettings((current) => ({ ...current, stats: value }))} />
-        <JsonField label="About Story JSON" value={settings.aboutStory} onChange={(value) => setSettings((current) => ({ ...current, aboutStory: value }))} />
-        <JsonField label="Why Choose Us JSON" value={settings.whyChooseUs} onChange={(value) => setSettings((current) => ({ ...current, whyChooseUs: value }))} />
-        <JsonField label="Values JSON" value={settings.values} onChange={(value) => setSettings((current) => ({ ...current, values: value }))} />
-        <JsonField label="Footer Links JSON" value={settings.footerLinks} onChange={(value) => setSettings((current) => ({ ...current, footerLinks: value }))} />
-        <JsonField label="SEO Defaults JSON" value={settings.seoDefaults} onChange={(value) => setSettings((current) => ({ ...current, seoDefaults: value }))} />
-        <JsonField label="Section Toggles JSON" value={settings.sectionToggles} onChange={(value) => setSettings((current) => ({ ...current, sectionToggles: value }))} />
+        <JsonField label="Address JSON" name="address" value={settings.address} onChange={(value) => setSettings((current) => ({ ...current, address: value }))} />
+        <JsonField label="Social JSON" name="social" value={settings.social} onChange={(value) => setSettings((current) => ({ ...current, social: value }))} />
+        <JsonField label="Hero JSON" name="hero" value={settings.hero} onChange={(value) => setSettings((current) => ({ ...current, hero: value }))} />
+        <JsonField label="Stats JSON" name="stats" value={settings.stats} onChange={(value) => setSettings((current) => ({ ...current, stats: value }))} />
+        <JsonField label="About Story JSON" name="aboutStory" value={settings.aboutStory} onChange={(value) => setSettings((current) => ({ ...current, aboutStory: value }))} />
+        <JsonField label="Why Choose Us JSON" name="whyChooseUs" value={settings.whyChooseUs} onChange={(value) => setSettings((current) => ({ ...current, whyChooseUs: value }))} />
+        <JsonField label="Values JSON" name="values" value={settings.values} onChange={(value) => setSettings((current) => ({ ...current, values: value }))} />
+        <JsonField label="Footer Links JSON" name="footerLinks" value={settings.footerLinks} onChange={(value) => setSettings((current) => ({ ...current, footerLinks: value }))} />
+        <JsonField label="SEO Defaults JSON" name="seoDefaults" value={settings.seoDefaults} onChange={(value) => setSettings((current) => ({ ...current, seoDefaults: value }))} />
+        <JsonField label="Section Toggles JSON" name="sectionToggles" value={settings.sectionToggles} onChange={(value) => setSettings((current) => ({ ...current, sectionToggles: value }))} />
       </div>
     </section>
   );
@@ -166,23 +168,20 @@ function Field({
 
 function JsonField({
   label,
+  name,
   value,
   onChange,
 }: {
   label: string;
+  name: string;
   value: unknown;
-  onChange: (value: string) => void;
+  onChange: (value: any) => void;
 }) {
   return (
-    <label className="space-y-2 text-sm font-medium text-slate-700 md:col-span-2">
-      <span>{label}</span>
-      <textarea
-        rows={8}
-        value={typeof value === "string" ? value : JSON.stringify(value ?? {}, null, 2)}
-        onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-2xl border border-slate-200 px-4 py-3 font-mono text-sm outline-none focus:border-orange-300"
-      />
-    </label>
+    <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 md:col-span-2 shadow-sm">
+      <h3 className="text-base font-bold text-slate-800">{label}</h3>
+      <JsonVisualEditor value={value} onChange={onChange} name={name} />
+    </div>
   );
 }
 
