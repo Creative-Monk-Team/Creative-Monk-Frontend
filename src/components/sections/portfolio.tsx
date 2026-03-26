@@ -172,51 +172,28 @@ export function Portfolio() {
             ))}
           </div>
         ) : (
-          <>
-            {/* Mobile: Swiper */}
-            <div className="md:hidden">
-              <Swiper
-                modules={[Pagination, Autoplay]}
-                spaceBetween={16}
-                slidesPerView={1.05}
-                centeredSlides={false}
-                loop={filtered.length > 2}
-                autoplay={{ delay: 4000, disableOnInteraction: false }}
-                pagination={{ clickable: true }}
-                className="portfolio-swiper"
-              >
-                {filtered.map((project) => (
-                  <SwiperSlide key={project._id}>
-                    <ProjectCard
-                      project={project}
-                      onOpen={() => setActiveProjectIndex(filtered.findIndex((item) => item._id === project._id))}
-                    />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            </div>
-
-            {/* Desktop: Grid */}
-            <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-              <AnimatePresence mode="popLayout">
-                {filtered.map((project) => (
-                  <motion.div
-                    key={project._id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <ProjectCard
-                      project={project}
-                      onOpen={() => setActiveProjectIndex(filtered.findIndex((item) => item._id === project._id))}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </>
+          <Swiper
+            modules={[Pagination, Autoplay]}
+            spaceBetween={16}
+            slidesPerView={1.05}
+            loop={filtered.length > 3}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            pagination={{ clickable: true }}
+            breakpoints={{
+              640: { slidesPerView: 2, spaceBetween: 20 },
+              1024: { slidesPerView: 3, spaceBetween: 24 },
+            }}
+            className="portfolio-swiper"
+          >
+            {filtered.map((project) => (
+              <SwiperSlide key={project._id} className="!h-auto">
+                <ProjectCard
+                  project={project}
+                  onOpen={() => setActiveProjectIndex(filtered.findIndex((item) => item._id === project._id))}
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
         )}
 
         <div className="text-center mt-20">

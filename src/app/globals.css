@@ -539,7 +539,8 @@
   }
 
   .portfolio-pagination .swiper-pagination-bullet,
-  .portfolio-swiper .swiper-pagination-bullet {
+  .portfolio-swiper .swiper-pagination-bullet,
+  .testimonials-swiper .swiper-pagination-bullet {
     background: #e5e7eb !important;
     opacity: 1 !important;
     width: 10px !important;
@@ -549,11 +550,13 @@
     border-radius: 99px !important;
   }
   .portfolio-pagination .swiper-pagination-bullet-active,
-  .portfolio-swiper .swiper-pagination-bullet-active {
+  .portfolio-swiper .swiper-pagination-bullet-active,
+  .testimonials-swiper .swiper-pagination-bullet-active {
     background: #ff6600 !important;
     width: 28px !important;
   }
-  .portfolio-swiper .swiper-pagination {
+  .portfolio-swiper .swiper-pagination,
+  .testimonials-swiper .swiper-pagination {
     position: relative !important;
     bottom: auto !important;
     margin-top: 24px !important;

@@ -1,6 +1,5 @@
 "use client";
 
-import type { Metadata } from "next";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
@@ -12,33 +11,35 @@ import {
   MapPin,
   Clock,
   CheckCircle2,
+  MessageCircle,
+  Sparkles,
+  Send,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 
 const contactInfo = [
   {
     icon: Phone,
-    label: "Call Us",
+    label: "Phone",
     value: "+91 94634 45566",
     href: "tel:+919463445566",
   },
   {
     icon: Mail,
-    label: "Email Us",
+    label: "Email",
     value: "info@thecreativemonk.in",
     href: "mailto:info@thecreativemonk.in",
   },
   {
     icon: MapPin,
-    label: "Address",
-    value:
-      "Office No.11-12, 9th floor, Sushma Infinium, Zirakpur, Punjab, 140603",
+    label: "Visit Us",
+    value: "Office No.11-12, 9th Floor, Sushma Infinium, Zirakpur, Punjab",
     href: "https://g.page/creativemonk?we",
   },
   {
     icon: Clock,
-    label: "Working Hours",
-    value: "Mon – Sat: 9AM – 6PM",
+    label: "Hours",
+    value: "Mon - Sat: 9AM - 6PM",
     href: "#",
   },
 ];
@@ -79,87 +80,92 @@ export default function ContactPage() {
         description="Ready to grow your business? Let's talk about your project and how we can help."
       />
 
-      <section className="section-padding bg-white">
-        <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-            {/* Contact Info */}
+      {/* ── Contact Section ────────────────────────────── */}
+      <section className="relative overflow-hidden bg-white py-16 md:py-24">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.12]" />
+        <div className="pointer-events-none absolute -top-32 right-0 h-[400px] w-[400px] rounded-full bg-orange-500/[0.03] blur-[80px]" />
+
+        <div className="container relative z-10 mx-auto max-w-7xl px-4">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-5 lg:gap-12">
+            {/* ── Left: Contact Info ───────────────────── */}
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="lg:col-span-2 flex flex-col gap-5"
+              transition={{ duration: 0.6 }}
+              className="lg:col-span-2"
             >
-              <div>
-                <span className="section-label block mb-2">
-                  Contact Details
-                </span>
-                <h2
-                  className="text-2xl font-black mb-4"
-                  style={{ fontFamily: "var(--font-poppins)" }}
-                >
-                  Let's Start a Conversation
-                </h2>
-                <p className="text-gray-500 leading-relaxed">
-                  Have a project in mind? Fill out the form or reach out
-                  directly. We typically respond within 2 business hours.
-                </p>
-              </div>
-              {contactInfo.map(({ icon: Icon, label, value, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  className="flex gap-4 p-5 rounded-xl transition-all hover:shadow-md group"
-                  style={{ background: "#fafafa", border: "1px solid #f0f0f0" }}
-                >
-                  <div
-                    className="h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110"
-                    style={{ background: "#FF6600" }}
+              <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-orange-100 bg-orange-50 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#FF6600]">
+                <Sparkles className="h-3 w-3" />
+                Get in Touch
+              </span>
+              <h2
+                className="mt-3 text-2xl font-black text-gray-900 md:text-3xl"
+                style={{ fontFamily: "var(--font-outfit)" }}
+              >
+                Let&apos;s Start a{" "}
+                <span className="text-[#FF6600]">Conversation</span>
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-gray-500 md:text-base">
+                Have a project in mind? Reach out directly or fill the form.
+                We typically respond within 2 business hours.
+              </p>
+
+              {/* Contact Cards */}
+              <div className="mt-8 space-y-3">
+                {contactInfo.map(({ icon: Icon, label, value, href }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-orange-100 hover:shadow-md"
                   >
-                    <Icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">
-                      {label}
-                    </p>
-                    <p
-                      className="font-semibold text-gray-800"
-                      style={{ fontFamily: "var(--font-poppins)" }}
-                    >
-                      {value}
-                    </p>
-                  </div>
-                </a>
-              ))}
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#FF6600] transition-all duration-300 group-hover:bg-[#FF6600] group-hover:text-white group-hover:shadow-md group-hover:shadow-orange-500/25">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">
+                        {label}
+                      </p>
+                      <p className="mt-0.5 text-sm font-semibold text-gray-800 truncate">
+                        {value}
+                      </p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+
+              {/* WhatsApp CTA */}
+              <a
+                href="https://wa.me/919463445566"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-5 flex items-center justify-center gap-2.5 rounded-xl bg-[#25D366] px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
+              >
+                <MessageCircle className="h-5 w-5" />
+                Chat on WhatsApp
+              </a>
             </motion.div>
 
-            {/* Form */}
+            {/* ── Right: Form ─────────────────────────── */}
             <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
               className="lg:col-span-3"
             >
               {submitted ? (
-                <div
-                  className="h-full flex flex-col items-center justify-center p-12 rounded-3xl text-center"
-                  style={{ background: "#fafafa", border: "1px solid #f0f0f0" }}
-                >
-                  <div
-                    className="h-20 w-20 rounded-full flex items-center justify-center mb-6"
-                    style={{ background: "#e8fdf5" }}
-                  >
-                    <CheckCircle2
-                      className="h-10 w-10"
-                      style={{ color: "#FF6600" }}
-                    />
+                <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-gray-100 bg-[#fafafa] p-12 text-center">
+                  <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50">
+                    <CheckCircle2 className="h-8 w-8 text-[#FF6600]" />
                   </div>
                   <h3
-                    className="text-2xl font-black mb-2"
-                    style={{ fontFamily: "var(--font-poppins)" }}
+                    className="text-2xl font-black"
+                    style={{ fontFamily: "var(--font-outfit)" }}
                   >
                     Message Sent!
                   </h3>
-                  <p className="text-gray-500 max-w-sm">
+                  <p className="mt-2 max-w-sm text-sm text-gray-500">
                     Thank you for reaching out. Our team will get back to you
                     within 2 business hours.
                   </p>
@@ -167,123 +173,129 @@ export default function ContactPage() {
               ) : (
                 <form
                   onSubmit={handleSubmit}
-                  className="rounded-3xl p-8 md:p-10 shadow-lg"
-                  style={{ background: "#fafafa", border: "1px solid #f0f0f0" }}
+                  className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl shadow-gray-900/[0.04]"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label
-                        className="block text-sm font-semibold mb-2"
-                        style={{ fontFamily: "var(--font-poppins)" }}
-                      >
-                        Full Name *
-                      </label>
-                      <Input
-                        required
-                        placeholder="John Doe"
-                        className="rounded-xl border-gray-200 h-12 focus-visible:ring-[#FF6600]"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        className="block text-sm font-semibold mb-2"
-                        style={{ fontFamily: "var(--font-poppins)" }}
-                      >
-                        Email Address *
-                      </label>
-                      <Input
-                        required
-                        type="email"
-                        placeholder="john@company.com"
-                        className="rounded-xl border-gray-200 h-12 focus-visible:ring-[#FF6600]"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        className="block text-sm font-semibold mb-2"
-                        style={{ fontFamily: "var(--font-poppins)" }}
-                      >
-                        Phone Number
-                      </label>
-                      <Input
-                        type="tel"
-                        placeholder="+91 98765 43210"
-                        className="rounded-xl border-gray-200 h-12 focus-visible:ring-[#FF6600]"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        className="block text-sm font-semibold mb-2"
-                        style={{ fontFamily: "var(--font-poppins)" }}
-                      >
-                        Service Needed *
-                      </label>
-                      <select
-                        required
-                        className="w-full h-12 px-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#FF6600] font-medium"
-                        style={{
-                          border: "1px solid #e5e5e5",
-                          background: "white",
-                          color: "#1a1a1a",
-                        }}
-                      >
-                        <option value="">Select a service...</option>
-                        {services.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
+                  {/* Form Header */}
+                  <div className="border-b border-gray-100 bg-[#fafafa] px-6 py-5 md:px-8">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FF6600] text-white shadow-md shadow-orange-500/25">
+                        <Send className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h3
+                          className="text-lg font-black text-gray-900"
+                          style={{ fontFamily: "var(--font-outfit)" }}
+                        >
+                          Start Your Project
+                        </h3>
+                        <p className="text-xs text-gray-400">
+                          Fill the details below and we&apos;ll get back to you
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div className="mb-4">
-                    <label
-                      className="block text-sm font-semibold mb-2"
-                      style={{ fontFamily: "var(--font-poppins)" }}
+
+                  {/* Form Body */}
+                  <div className="p-6 md:p-8">
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500">
+                          Full Name *
+                        </label>
+                        <Input
+                          required
+                          placeholder="Your Name"
+                          className="h-11 rounded-xl border-gray-200 bg-gray-50 text-sm focus-visible:ring-[#FF6600]"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500">
+                          Email Address *
+                        </label>
+                        <Input
+                          required
+                          type="email"
+                          placeholder="you@company.com"
+                          className="h-11 rounded-xl border-gray-200 bg-gray-50 text-sm focus-visible:ring-[#FF6600]"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500">
+                          Phone Number
+                        </label>
+                        <Input
+                          type="tel"
+                          placeholder="+91 98765 43210"
+                          className="h-11 rounded-xl border-gray-200 bg-gray-50 text-sm focus-visible:ring-[#FF6600]"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500">
+                          Service Needed *
+                        </label>
+                        <select
+                          required
+                          className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-900 outline-none focus:ring-2 focus:ring-[#FF6600]"
+                        >
+                          <option value="">Select a service...</option>
+                          {services.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="mt-5">
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500">
+                        Company / Website URL
+                      </label>
+                      <Input
+                        placeholder="Your company or website"
+                        className="h-11 rounded-xl border-gray-200 bg-gray-50 text-sm focus-visible:ring-[#FF6600]"
+                      />
+                    </div>
+
+                    <div className="mt-5">
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500">
+                        Project Details *
+                      </label>
+                      <Textarea
+                        required
+                        placeholder="Tell us about your project goals, timeline, and budget..."
+                        className="min-h-[120px] resize-none rounded-xl border-gray-200 bg-gray-50 text-sm focus-visible:ring-[#FF6600]"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#FF6600] px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-500/25 transition-all duration-300 hover:bg-[#e55500] hover:shadow-xl hover:shadow-orange-500/30 disabled:opacity-70"
+                      style={{ fontFamily: "var(--font-outfit)" }}
                     >
-                      Company / Website URL
-                    </label>
-                    <Input
-                      placeholder="Your company name or website"
-                      className="rounded-xl border-gray-200 h-12 focus-visible:ring-[#FF6600]"
-                    />
+                      {loading ? (
+                        "Sending..."
+                      ) : (
+                        <>
+                          Get Started <ArrowRight className="h-4 w-4" />
+                        </>
+                      )}
+                    </button>
                   </div>
-                  <div className="mb-6">
-                    <label
-                      className="block text-sm font-semibold mb-2"
-                      style={{ fontFamily: "var(--font-poppins)" }}
-                    >
-                      Tell us about your project *
-                    </label>
-                    <Textarea
-                      required
-                      placeholder="Describe your project, goals, timeline, and budget..."
-                      className="rounded-xl border-gray-200 focus-visible:ring-[#FF6600] min-h-[150px] resize-none"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="btn-primary w-full justify-center text-base py-4"
-                    style={{ opacity: loading ? 0.8 : 1 }}
-                  >
-                    {loading ? (
-                      "Sending..."
-                    ) : (
-                      <>
-                        Send Message <ArrowRight className="h-5 w-5" />
-                      </>
-                    )}
-                  </button>
                 </form>
               )}
             </motion.div>
           </div>
 
-          {/* Map */}
-          <div
-            className="mt-16 rounded-3xl overflow-hidden"
-            style={{ height: "300px", background: "#f5f5f5" }}
+          {/* ── Map ────────────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="mt-14 overflow-hidden rounded-2xl border border-gray-100 shadow-sm"
+            style={{ height: "320px" }}
           >
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3430.0!2d76.8172!3d30.6432!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sSushma+Infinium+Zirakpur!5e0!3m2!1sen!2sin"
@@ -293,7 +305,7 @@ export default function ContactPage() {
               loading="lazy"
               title="Creative Monk - Sushma Infinium, Zirakpur"
             />
-          </div>
+          </motion.div>
         </div>
       </section>
     </>

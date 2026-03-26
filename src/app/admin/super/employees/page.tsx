@@ -766,7 +766,7 @@ export default function SuperAdminEmployeesPage() {
                   tick={{ fill: "#334155" }}
                 />
                 <Tooltip
-                  formatter={(v: number) => `${v}%`}
+                  formatter={(v) => `${v}%`}
                   contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }}
                 />
                 <Bar dataKey="utilization" radius={[0, 6, 6, 0]} barSize={20}>
@@ -796,7 +796,7 @@ export default function SuperAdminEmployeesPage() {
                   paddingAngle={3}
                   dataKey="value"
                   nameKey="name"
-                  label={({ name, value }: { name: string; value: number }) => `${name} (${value})`}
+                  label={({ name, value }: any) => `${name} (${value})`}
                   fontSize={11}
                 >
                   {deptChartData.map((_entry, idx) => (

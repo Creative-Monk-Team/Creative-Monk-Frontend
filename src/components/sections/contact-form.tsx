@@ -106,11 +106,8 @@ export function ContactForm({ className = "" }: { className?: string }) {
                 }
                 className="flex gap-5 p-5 rounded-2xl transition-all hover:shadow-xl group bg-gray-50/50 border border-gray-100 hover:bg-white hover:border-orange-100"
               >
-                <div
-                  className="h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all group-hover:scale-110 group-hover:bg-[#FF6600]"
-                  style={{ background: "#FF6600" }}
-                >
-                  <Icon className="h-5 w-5 text-white" />
+                <div className="h-11 w-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-orange-50 text-[#FF6600] transition-all duration-300 group-hover:scale-110 group-hover:bg-[#FF6600] group-hover:text-white group-hover:shadow-md group-hover:shadow-orange-500/25">
+                  <Icon className="h-5 w-5" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
@@ -132,11 +129,11 @@ export function ContactForm({ className = "" }: { className?: string }) {
                 href={settings.social.whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 p-5 rounded-2xl text-white font-bold transition-all hover:shadow-xl hover:-translate-y-1 shadow-md shadow-green-500/20"
+                className="flex items-center justify-center gap-2.5 p-5 rounded-2xl text-white text-sm font-bold transition-all hover:shadow-xl hover:-translate-y-0.5 shadow-md shadow-green-500/20"
                 style={{ background: "#25D366" }}
               >
                 <svg
-                  className="h-6 w-6"
+                  className="h-5 w-5"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >

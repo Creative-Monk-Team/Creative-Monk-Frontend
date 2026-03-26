@@ -90,12 +90,12 @@ function StatCard({
   href?: string;
   accent?: boolean;
 }) {
-  const Wrapper = href ? Link : "div";
+  const Wrapper = (href ? Link : "div") as any;
   const wrapperProps = href ? { href } : {};
 
   return (
     <Wrapper
-      {...(wrapperProps as Record<string, string>)}
+      {...wrapperProps}
       className={`group relative overflow-hidden rounded-2xl border p-5 transition-all hover:shadow-lg ${
         accent
           ? "border-[#FF6600]/20 bg-gradient-to-br from-[#FF6600] to-[#e55500] text-white"
@@ -422,7 +422,7 @@ export default function SuperAdminPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(value: number, name: string) => [value, name.replace("-", " ")]}
+                      formatter={(value: any, name: any) => [value, String(name).replace("-", " ")]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -470,7 +470,7 @@ export default function SuperAdminPage() {
                     allowDecimals={false}
                   />
                   <Tooltip
-                    formatter={(value: number) => [value, "Enquiries"]}
+                    formatter={(value: any) => [value, "Enquiries"]}
                     cursor={{ fill: "rgba(255,102,0,0.06)" }}
                   />
                   <Bar dataKey="total" radius={[6, 6, 0, 0]} fill="#FF6600" />
@@ -611,7 +611,7 @@ export default function SuperAdminPage() {
                   width={80}
                 />
                 <Tooltip
-                  formatter={(value: number) => [value, "Leads"]}
+                  formatter={(value: any) => [value, "Leads"]}
                   cursor={{ fill: "rgba(255,102,0,0.06)" }}
                 />
                 <Bar dataKey="total" radius={[0, 6, 6, 0]} fill="#FF6600" />

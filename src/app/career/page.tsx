@@ -73,7 +73,7 @@ const fadeUp = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
@@ -378,7 +378,7 @@ export default function CareerPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
             className="relative overflow-hidden rounded-[2.5rem] border border-gray-100 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-10 text-center shadow-2xl md:p-16"
           >
             {/* Decorative */}

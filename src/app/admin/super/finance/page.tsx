@@ -790,7 +790,7 @@ export default function SuperAdminFinancePage() {
                         <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number, name: string) => [INR.format(value), name]} />
+                    <Tooltip formatter={(value: any, name: any) => [INR.format(Number(value)), name]} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -833,7 +833,7 @@ export default function SuperAdminFinancePage() {
                     width={100}
                   />
                   <Tooltip
-                    formatter={(value: number) => [INR.format(value), "Retainer"]}
+                    formatter={(value: any) => [INR.format(Number(value)), "Retainer"]}
                     cursor={{ fill: "rgba(255,102,0,0.06)" }}
                   />
                   <Bar dataKey="monthlyRetainer" radius={[0, 6, 6, 0]}>

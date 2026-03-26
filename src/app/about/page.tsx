@@ -67,7 +67,7 @@ const fadeUp = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
@@ -229,7 +229,7 @@ export default function AboutPage() {
               initial={{ opacity: 0, x: 40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
             >
               <div className="pointer-events-none absolute inset-0 scale-105 transform rounded-[2.5rem] bg-gradient-to-br from-[#FF6600] to-pink-500 opacity-20 blur-2xl transition-all duration-700" />
               <div className="relative z-10 flex h-full flex-col justify-center overflow-hidden rounded-[2.5rem] border border-white/10 bg-gray-950 p-10 shadow-2xl md:p-14">
@@ -338,7 +338,7 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
           >
             <div className="relative mx-auto max-w-5xl">
               {/* Outer glow */}
@@ -610,7 +610,7 @@ export default function AboutPage() {
                     transition={{
                       duration: 0.6,
                       delay: idx * 0.08,
-                      ease: [0.22, 1, 0.36, 1],
+                      ease: [0.22, 1, 0.36, 1] as const,
                     }}
                     className={`group relative flex flex-col items-start md:flex-row md:items-center md:py-8 ${
                       isEven ? "md:justify-start" : "md:justify-end"

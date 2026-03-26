@@ -119,7 +119,7 @@ export default function ServicePage({
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
               className="max-w-4xl"
             >
               <div className="mb-5 flex flex-wrap items-center gap-2 md:mb-7 md:gap-3">
@@ -200,7 +200,7 @@ export default function ServicePage({
             <motion.aside
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.12, duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ delay: 0.12, duration: 0.75, ease: [0.22, 1, 0.36, 1] as const }}
               className="rounded-[1.45rem] border border-white/10 bg-white/8 p-3 shadow-2xl shadow-black/20 backdrop-blur-xl md:rounded-[2rem] md:p-5"
             >
               <div className="overflow-hidden rounded-[1.35rem] border border-white/10 bg-black/30 md:rounded-[1.6rem]">

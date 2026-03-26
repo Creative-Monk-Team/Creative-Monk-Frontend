@@ -547,7 +547,7 @@ function CreateClientModal({
                         name="projectHealth"
                         value={h}
                         checked={form.projectHealth === h}
-                        onChange={() => set("projectHealth", h)}
+                        onChange={() => set("projectHealth", h as FormData["projectHealth"])}
                         className="accent-[#FF6600]"
                       />
                       <span className={`inline-block h-2.5 w-2.5 rounded-full ${healthDotColor(h)}`} />
@@ -1069,7 +1069,7 @@ export default function SuperAdminClientsPage() {
                 tick={{ fill: "#334155" }}
               />
               <Tooltip
-                formatter={(v: number) => INR.format(v)}
+                formatter={(v) => INR.format(Number(v))}
                 contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }}
               />
               <Bar dataKey="retainer" radius={[0, 6, 6, 0]} barSize={22}>
