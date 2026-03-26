@@ -26,15 +26,6 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getCaseStudy } from "@/lib/api";
 import type { CaseStudy } from "@/lib/types";
 
-function splitResults(results: string[] = []) {
-  if (results.length <= 3) return [results];
-
-  const chunkSize = Math.ceil(results.length / 3);
-  return Array.from({ length: Math.ceil(results.length / chunkSize) }, (_, index) =>
-    results.slice(index * chunkSize, index * chunkSize + chunkSize),
-  );
-}
-
 export default function CaseStudyDetailPage() {
   const { id } = useParams();
   const [project, setProject] = useState<CaseStudy | null>(null);
@@ -128,7 +119,6 @@ export default function CaseStudyDetailPage() {
     );
   }
 
-  const resultColumns = splitResults(project.results || []);
   const activeLightboxImage =
     lightboxIndex !== null && galleryImages[lightboxIndex]
       ? galleryImages[lightboxIndex]
@@ -297,19 +287,14 @@ export default function CaseStudyDetailPage() {
               viewport={{ once: true }}
               className="space-y-6"
             >
-              <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <span className="section-label">Showcase</span>
-                  <h2
-                    className="mt-3 text-[2rem] font-black leading-tight text-gray-900 md:text-4xl"
-                    style={{ fontFamily: "var(--font-poppins)" }}
-                  >
-                    Project Gallery
-                  </h2>
-                </div>
-                <p className="max-w-xl text-sm leading-7 text-gray-500 md:text-base">
-                  Swipe through the key visuals and tap any image to open a larger preview.
-                </p>
+              <div>
+                <span className="section-label">Showcase</span>
+                <h2
+                  className="mt-3 text-[2rem] font-black leading-tight text-gray-900 md:text-4xl"
+                  style={{ fontFamily: "var(--font-poppins)" }}
+                >
+                  Project Gallery
+                </h2>
               </div>
 
               <div className="relative">
@@ -399,72 +384,65 @@ export default function CaseStudyDetailPage() {
             viewport={{ once: true }}
             className="overflow-hidden rounded-[2.3rem] border border-[#221913] bg-[radial-gradient(circle_at_top,_rgba(255,122,26,0.14),_transparent_34%),linear-gradient(180deg,_#1b1612_0%,_#14110f_100%)] px-6 py-8 text-white shadow-[0_30px_80px_rgba(17,12,10,0.24)] md:px-10 md:py-12"
           >
-            <div className="mx-auto mb-8 max-w-2xl text-center md:mb-12">
-              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/6 text-[#FF6600] shadow-sm backdrop-blur-sm">
-                <TrendingUp className="h-6 w-6" />
+            <div className="mb-8 flex items-center gap-4 md:mb-10">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/6 text-[#FF6600] backdrop-blur-sm">
+                <TrendingUp className="h-5 w-5" />
               </div>
-              <h2
-                className="text-[1.8rem] font-black text-white md:text-[2.6rem]"
-                style={{ fontFamily: "var(--font-poppins)" }}
-              >
-                The Impact
-              </h2>
-              <p className="mt-4 text-[15px] leading-7 text-white/65 md:text-lg">
-                Measurable results that transformed the client's business trajectory.
-              </p>
+              <div>
+                <h2
+                  className="text-2xl font-black text-white md:text-3xl"
+                  style={{ fontFamily: "var(--font-poppins)" }}
+                >
+                  The Impact
+                </h2>
+                <p className="mt-0.5 text-sm text-white/50">
+                  Measurable results from this project.
+                </p>
+              </div>
             </div>
 
             {project.metrics && project.metrics.length > 0 && (
-              <div className="mb-8 grid gap-4 md:mb-12 md:grid-cols-2 xl:grid-cols-3">
-                {project.metrics.map((metric, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-[1.8rem] border border-white/10 bg-white/6 px-5 py-6 text-left shadow-[0_20px_60px_rgba(0,0,0,0.16)] backdrop-blur-sm md:px-6 md:py-8"
-                  >
-                    <span className="mb-4 inline-flex rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-orange-200">
-                      Key Metric
-                    </span>
-                    <span
-                      className="block text-[2rem] font-black leading-[0.95] text-[#FF6600] md:text-[2.6rem]"
-                      style={{ fontFamily: "var(--font-poppins)" }}
+              <div className="mb-8 grid gap-3 md:mb-12 md:gap-4" style={{ gridTemplateColumns: `repeat(${Math.min(project.metrics.length, 4)}, 1fr)` }}>
+                {project.metrics.map((metric, idx) => {
+                  const isNumeric = /^[\d+%$.,\s]+$/.test(metric.value.trim());
+                  return (
+                    <div
+                      key={idx}
+                      className="rounded-2xl border border-white/10 bg-white/6 px-4 py-5 backdrop-blur-sm md:px-5 md:py-6"
                     >
-                      {metric.value}
-                    </span>
-                    <span className="mt-4 block text-[11px] font-bold uppercase tracking-[0.2em] text-white/55 md:text-sm">
-                      {metric.label}
-                    </span>
-                  </div>
-                ))}
+                      <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-white/45 md:text-[11px]">
+                        {metric.label}
+                      </span>
+                      <span
+                        className={`mt-2 block font-black leading-tight text-[#FF6600] ${isNumeric ? "text-2xl md:text-3xl" : "text-base md:text-lg"}`}
+                        style={{ fontFamily: "var(--font-poppins)" }}
+                      >
+                        {metric.value}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
             {project.results && project.results.length > 0 && (
               <div className="border-t border-white/10 pt-8 md:pt-10">
-                <div className="mb-6 flex flex-col gap-2 md:mb-8">
-                  <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-orange-200">
-                    Outcome Highlights
-                  </span>
-                  <p className="max-w-2xl text-sm leading-7 text-white/60 md:text-base">
-                    The project created a stronger foundation for positioning, conversion clarity, and future growth execution.
-                  </p>
-                </div>
+                <span className="mb-6 block text-[11px] font-bold uppercase tracking-[0.24em] text-orange-200 md:mb-8">
+                  Outcome Highlights
+                </span>
 
-                <div className={`grid gap-4 ${resultColumns.length > 1 ? "lg:grid-cols-3" : "md:grid-cols-2"}`}>
-                {resultColumns.map((column, columnIndex) => (
-                  <div
-                    key={columnIndex}
-                    className="space-y-4 rounded-[1.7rem] border border-white/10 bg-white/4 p-5 backdrop-blur-sm"
-                  >
-                    {column.map((item, idx) => (
-                      <div key={`${columnIndex}-${idx}`} className="flex gap-4">
-                        <div className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#FF6600]" />
-                        <p className="text-[15px] font-medium leading-8 text-white/84 md:text-base">
-                          {item}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ))}
+                <div className="space-y-3">
+                  {project.results.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-start gap-4 rounded-xl border border-white/8 bg-white/[0.04] px-5 py-4 backdrop-blur-sm"
+                    >
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#FF6600]" />
+                      <p className="text-sm font-medium leading-6 text-white/80 md:text-base md:leading-7">
+                        {item}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

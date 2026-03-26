@@ -174,16 +174,16 @@ export function Portfolio() {
         ) : (
           <>
             {/* Mobile: Swiper */}
-            <div className="md:hidden -mx-6 px-6 overflow-visible">
+            <div className="md:hidden">
               <Swiper
                 modules={[Pagination, Autoplay]}
-                spaceBetween={20}
-                slidesPerView={1.2}
-                centeredSlides={true}
+                spaceBetween={16}
+                slidesPerView={1.05}
+                centeredSlides={false}
                 loop={filtered.length > 2}
                 autoplay={{ delay: 4000, disableOnInteraction: false }}
                 pagination={{ clickable: true }}
-                className="pb-14 portfolio-swiper !overflow-visible"
+                className="portfolio-swiper"
               >
                 {filtered.map((project) => (
                   <SwiperSlide key={project._id}>
@@ -248,9 +248,9 @@ function ProjectCard({
     <button
       type="button"
       onClick={onOpen}
-      className="group relative w-full overflow-hidden rounded-[2.5rem] border border-gray-100 bg-white text-left shadow-sm transition-all duration-700 hover:shadow-2xl"
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-[2rem] border border-gray-100 bg-white text-left shadow-sm transition-all duration-700 hover:shadow-2xl"
     >
-      <div className="relative h-80 overflow-hidden shrink-0">
+      <div className="relative h-64 shrink-0 overflow-hidden md:h-72">
         <img
           src={project.image}
           alt={project.title}
@@ -284,7 +284,7 @@ function ProjectCard({
         </div>
       </div>
 
-      <div className="p-8 flex items-center justify-between flex-1">
+      <div className="flex flex-1 items-center justify-between p-5 md:p-6">
         <div>
           <span
             className="text-xs font-black uppercase tracking-[0.2em] mb-2 block"

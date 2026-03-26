@@ -95,6 +95,21 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    };
+  }, [isOpen]);
+
   const handleMouseEnter = (name: string) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setOpenDropdown(name);
@@ -115,8 +130,8 @@ export function Navbar() {
       }}
     >
       {/* Top Bar */}
-      <div style={{ background: "#FF6600" }} className="hidden lg:block">
-        <div className="lg:px-10 px-4 flex items-center justify-between py-2">
+      <div style={{ background: "#FF6600" }} className="hidden xl:block">
+        <div className="xl:px-10 px-4 flex items-center justify-between py-2">
           <div className="flex items-center gap-4 text-white text-sm">
             <a
               href="tel:+919463445566"
@@ -139,7 +154,7 @@ export function Navbar() {
       </div>
 
       {/* Main Nav */}
-      <nav className="lg:px-10 px-4 flex items-center justify-between h-16 lg:h-24">
+      <nav className="xl:px-10 px-4 flex items-center justify-between h-16 xl:h-24">
         {/* Logo */}
         <Link href="/" className="flex items-center group shrink-0">
           <img
@@ -147,12 +162,12 @@ export function Navbar() {
             alt="Creative Monk Logo"
             width={180}
             height={50}
-            className="h-10 lg:h-14 w-auto transition-transform group-hover:scale-105"
+            className="h-10 xl:h-14 w-auto transition-transform group-hover:scale-105"
           />
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center justify-between flex-1 ml-5">
+        <div className="hidden xl:flex items-center justify-between flex-1 ml-5">
           <div className="flex items-center gap-1 xl:gap-2">
             {navItems.map((item) => (
               <div
@@ -261,7 +276,7 @@ export function Navbar() {
 
         {/* Mobile Toggle */}
         <button
-          className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+          className="xl:hidden p-2 rounded-md hover:bg-gray-100"
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle menu"
         >
@@ -277,10 +292,11 @@ export function Navbar() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-[60] lg:hidden bg-white/95 backdrop-blur-xl flex flex-col h-screen"
+            className="fixed inset-0 z-[60] xl:hidden bg-white/95 backdrop-blur-xl flex flex-col"
+            style={{ height: "100dvh" }}
           >
             {/* Mobile Header (Close Button) */}
-            <div className="flex items-center justify-between px-6 h-20 border-b border-gray-100">
+            <div className="flex shrink-0 items-center justify-between px-6 h-16 border-b border-gray-100">
               <Link href="/" onClick={() => setIsOpen(false)}>
                 <img
                   src="/logo.webp"
@@ -297,7 +313,7 @@ export function Navbar() {
             </div>
 
             {/* Menu Items */}
-            <div className="flex-1 overflow-y-auto px-6 py-10 custom-scrollbar">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-6 custom-scrollbar">
               <div className="flex flex-col gap-2">
                 {navItems.map((item, index) => (
                   <motion.div
@@ -310,8 +326,8 @@ export function Navbar() {
                       <div className="flex items-center justify-between">
                         <Link
                           href={item.href}
-                          onClick={() => !item.children && setIsOpen(false)}
-                          className="flex-1 py-4 text-3xl font-black text-gray-900 group-hover:text-orange-600 transition-colors"
+                          onClick={() => setIsOpen(false)}
+                          className="flex-1 py-3 text-2xl font-black text-gray-900 group-hover:text-orange-600 transition-colors"
                           style={{ fontFamily: "var(--font-outfit)" }}
                         >
                           {item.name}
@@ -374,29 +390,29 @@ export function Navbar() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="p-8 bg-gray-50 border-t border-gray-100 mt-auto"
+              className="shrink-0 p-5 bg-gray-50 border-t border-gray-100 mt-auto"
             >
-              <div className="flex flex-col gap-6">
-                <div className="flex gap-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex gap-3">
                   <a
                     href="tel:+919463445566"
-                    className="flex-1 bg-white p-4 rounded-2xl shadow-sm flex flex-col gap-1 items-center justify-center border border-gray-100 group hover:border-orange-200 transition-colors"
+                    className="flex-1 bg-white p-3 rounded-xl shadow-sm flex items-center justify-center gap-2 border border-gray-100 group hover:border-orange-200 transition-colors"
                   >
-                    <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all">
-                      <Phone className="h-4 w-4" />
+                    <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all">
+                      <Phone className="h-3.5 w-3.5" />
                     </div>
-                    <span className="text-xs font-black text-gray-900 mt-1 uppercase tracking-tighter">
+                    <span className="text-xs font-black text-gray-900 uppercase tracking-tight">
                       Call Now
                     </span>
                   </a>
                   <a
                     href="mailto:info@thecreativemonk.in"
-                    className="flex-1 bg-white p-4 rounded-2xl shadow-sm flex flex-col gap-1 items-center justify-center border border-gray-100 group hover:border-orange-200 transition-colors"
+                    className="flex-1 bg-white p-3 rounded-xl shadow-sm flex items-center justify-center gap-2 border border-gray-100 group hover:border-orange-200 transition-colors"
                   >
-                    <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all">
-                      <Mail className="h-4 w-4" />
+                    <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all">
+                      <Mail className="h-3.5 w-3.5" />
                     </div>
-                    <span className="text-xs font-black text-gray-900 mt-1 uppercase tracking-tighter">
+                    <span className="text-xs font-black text-gray-900 uppercase tracking-tight">
                       Email Us
                     </span>
                   </a>
@@ -405,17 +421,11 @@ export function Navbar() {
                 <Link
                   href="/contact"
                   onClick={() => setIsOpen(false)}
-                  className="w-full bg-orange-500 py-4 px-6 text-white font-black rounded-2xl text-center shadow-xl shadow-orange-500/20 active:scale-95 transition-all uppercase tracking-widest text-sm"
+                  className="w-full bg-orange-500 py-3.5 px-6 text-white font-black rounded-xl text-center shadow-lg shadow-orange-500/20 active:scale-95 transition-all uppercase tracking-widest text-sm"
                   style={{ fontFamily: "var(--font-outfit)" }}
                 >
                   Request A Free Quote
                 </Link>
-
-                <div className="text-center">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                    &copy; {new Date().getFullYear()} The Creative Monk
-                  </p>
-                </div>
               </div>
             </motion.div>
           </motion.div>

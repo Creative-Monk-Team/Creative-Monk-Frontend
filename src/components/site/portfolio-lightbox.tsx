@@ -68,81 +68,82 @@ export function PortfolioLightbox({
       >
         <DialogTitle className="sr-only">{project.title} preview</DialogTitle>
 
-        <div className="grid max-h-[88vh] min-h-[70vh] grid-cols-1 xl:grid-cols-[minmax(0,1.15fr)_380px]">
-          <div className="relative flex min-h-[340px] items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(255,122,26,0.14),_transparent_34%),linear-gradient(180deg,_#151210_0%,_#0f0d0c_100%)] p-4 md:p-8">
-            <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
-              <Button
-                variant="secondary"
-                size="icon-sm"
-                className="rounded-full border border-white/10 bg-black/45 text-white hover:bg-black/65"
-                onClick={() => setZoom((value) => Math.max(value - 0.25, 1))}
-              >
-                <Minus />
-              </Button>
-              <Button
-                variant="secondary"
-                size="icon-sm"
-                className="rounded-full border border-white/10 bg-black/45 text-white hover:bg-black/65"
-                onClick={() => setZoom((value) => Math.min(value + 0.25, 2.5))}
-              >
-                <Plus />
-              </Button>
-              <Button
-                variant="secondary"
-                size="icon-sm"
-                className="rounded-full border border-white/10 bg-black/45 text-white hover:bg-black/65"
-                onClick={() => setZoom(1)}
-              >
-                <RotateCcw />
-              </Button>
+        <div className="grid max-h-[92vh] min-h-[75vh] grid-cols-1 xl:grid-cols-[minmax(0,1.25fr)_400px]">
+          <div className="flex min-h-[340px] flex-col overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(255,122,26,0.14),_transparent_34%),linear-gradient(180deg,_#151210_0%,_#0f0d0c_100%)]">
+            <div className="flex shrink-0 items-center justify-between border-b border-white/8 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="icon-sm"
+                  className="rounded-full border border-white/10 bg-black/45 text-white hover:bg-black/65"
+                  onClick={() => setZoom((value) => Math.max(value - 0.25, 1))}
+                >
+                  <Minus />
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="icon-sm"
+                  className="rounded-full border border-white/10 bg-black/45 text-white hover:bg-black/65"
+                  onClick={() => setZoom((value) => Math.min(value + 0.25, 2.5))}
+                >
+                  <Plus />
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="icon-sm"
+                  className="rounded-full border border-white/10 bg-black/45 text-white hover:bg-black/65"
+                  onClick={() => setZoom(1)}
+                >
+                  <RotateCcw />
+                </Button>
+                <span className="ml-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white/50">
+                  Zoom {Math.round(zoom * 100)}%
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {canNavigate ? (
+                  <>
+                    <Button
+                      variant="secondary"
+                      size="icon-sm"
+                      className="rounded-full border border-white/10 bg-black/45 text-white hover:bg-black/65"
+                      onClick={() => onChange((index! - 1 + projects.length) % projects.length)}
+                    >
+                      <ChevronLeft />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="icon-sm"
+                      className="rounded-full border border-white/10 bg-black/45 text-white hover:bg-black/65"
+                      onClick={() => onChange((index! + 1) % projects.length)}
+                    >
+                      <ChevronRight />
+                    </Button>
+                  </>
+                ) : null}
+                <Button
+                  variant="secondary"
+                  size="icon-sm"
+                  className="rounded-full border border-white/10 bg-black/45 text-white hover:bg-black/65"
+                  onClick={onClose}
+                >
+                  <X />
+                </Button>
+              </div>
             </div>
 
-            <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
-              {canNavigate ? (
-                <>
-                  <Button
-                    variant="secondary"
-                    size="icon-sm"
-                    className="rounded-full border border-white/10 bg-black/45 text-white hover:bg-black/65"
-                    onClick={() => onChange((index! - 1 + projects.length) % projects.length)}
-                  >
-                    <ChevronLeft />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="icon-sm"
-                    className="rounded-full border border-white/10 bg-black/45 text-white hover:bg-black/65"
-                    onClick={() => onChange((index! + 1) % projects.length)}
-                  >
-                    <ChevronRight />
-                  </Button>
-                </>
-              ) : null}
-              <Button
-                variant="secondary"
-                size="icon-sm"
-                className="rounded-full border border-white/10 bg-black/45 text-white hover:bg-black/65"
-                onClick={onClose}
-              >
-                <X />
-              </Button>
-            </div>
-
-            <div className="flex h-full min-h-[320px] w-full items-center justify-center overflow-auto rounded-[1.4rem] border border-white/8 bg-white/4 p-3 md:min-h-[520px] md:p-6">
+            <div className="flex flex-1 items-center justify-center overflow-auto p-4 md:p-6">
               <img
                 src={project.image || "/placeholder.jpg"}
                 alt={project.title}
-                className="max-h-[72vh] w-auto max-w-full object-contain transition-transform duration-200"
+                className="max-h-[75vh] w-auto max-w-full rounded-[1.2rem] object-contain transition-transform duration-200"
                 style={{ transform: `scale(${zoom})` }}
               />
             </div>
-
-            <div className="absolute bottom-4 left-4 rounded-full border border-white/10 bg-black/45 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 backdrop-blur-sm">
-              Zoom {Math.round(zoom * 100)}%
-            </div>
           </div>
 
-          <aside className="flex max-h-[40vh] flex-col border-t border-white/8 bg-[#181311] xl:max-h-[88vh] xl:border-t-0 xl:border-l">
+          <aside className="flex max-h-[40vh] flex-col border-t border-white/8 bg-[#181311] xl:max-h-[92vh] xl:border-t-0 xl:border-l">
             <div className="overflow-y-auto px-5 py-6 md:px-7 md:py-8">
               <span className="inline-flex rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-orange-200">
                 {project.category}
