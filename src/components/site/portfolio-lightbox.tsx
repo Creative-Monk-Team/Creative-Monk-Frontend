@@ -59,6 +59,8 @@ export function PortfolioLightbox({
   if (!project) return null;
 
   const canNavigate = projects.length > 1;
+  const portfolioImage =
+    project.portfolioImage || project.gallery?.[0] || project.image || "/placeholder.jpg";
 
   return (
     <Dialog open={index !== null} onOpenChange={(open) => !open && onClose()}>
@@ -133,18 +135,21 @@ export function PortfolioLightbox({
               </div>
             </div>
 
-            <div className="flex flex-1 items-center justify-center overflow-auto p-4 md:p-6">
-              <img
-                src={project.image || "/placeholder.jpg"}
-                alt={project.title}
-                className="max-h-[75vh] w-auto max-w-full rounded-[1.2rem] object-contain transition-transform duration-200"
-                style={{ transform: `scale(${zoom})` }}
-              />
+<<<<<<< HEAD
+            <div className="custom-scrollbar h-full min-h-[320px] w-full overflow-auto rounded-[1.4rem] border border-white/8 bg-white/4 p-3 md:min-h-[520px] md:p-6">
+              <div className="flex min-h-full w-full items-start justify-center">
+                <img
+                  src={portfolioImage}
+                  alt={project.title}
+                  className="block h-auto max-w-none rounded-[1rem] object-top transition-[width] duration-200"
+                  style={{ width: `${zoom * 100}%`, minWidth: "100%" }}
+                />
+              </div>
             </div>
           </div>
 
-          <aside className="flex max-h-[40vh] flex-col border-t border-white/8 bg-[#181311] xl:max-h-[92vh] xl:border-t-0 xl:border-l">
-            <div className="overflow-y-auto px-5 py-6 md:px-7 md:py-8">
+          <aside className="flex max-h-[40vh] flex-col border-t border-white/8 bg-[#181311] xl:max-h-[88vh] xl:border-t-0 xl:border-l">
+            <div className="custom-scrollbar overflow-y-auto px-5 py-6 md:px-7 md:py-8">
               <span className="inline-flex rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-orange-200">
                 {project.category}
               </span>

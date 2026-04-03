@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
+  Building2,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -53,6 +54,9 @@ export default function CaseStudyDetailPage() {
     if (!project) return [];
 
     const items = [...(project.gallery || [])];
+    if (project.portfolioImage && !items.includes(project.portfolioImage)) {
+      items.unshift(project.portfolioImage);
+    }
     if (project.image && !items.includes(project.image)) {
       items.unshift(project.image);
     }
@@ -145,7 +149,7 @@ export default function CaseStudyDetailPage() {
             <ArrowLeft className="h-4 w-4" /> Back to Case Studies
           </Link>
 
-          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:gap-14">
+          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] lg:gap-14">
             <motion.div
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -184,7 +188,7 @@ export default function CaseStudyDetailPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.08 }}
-                className="mb-5 text-[3rem] font-black leading-[0.95] tracking-[-0.055em] text-white md:mb-6 md:text-5xl lg:text-[5.5rem]"
+                className="mb-6 max-w-full text-[2.35rem] font-black leading-[0.95]  text-white md:mb-6 md:text-[3.6rem]"
                 style={{ fontFamily: "var(--font-poppins)" }}
               >
                 {project.title}
@@ -193,7 +197,7 @@ export default function CaseStudyDetailPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.16 }}
-                className="mb-7 max-w-2xl text-[1.05rem] leading-8 text-white/76 md:mb-8 md:text-xl"
+                className="mb-8 max-w-[34rem] text-[1rem] leading-[1.85] font-medium text-white/74 md:mb-9 md:text-[1.15rem]"
               >
                 {project.description}
               </motion.p>
@@ -202,28 +206,13 @@ export default function CaseStudyDetailPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.24 }}
-                className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+                className="max-w-4xl"
               >
-                {project.client && (
-                  <InfoCard label="Client" value={project.client} dark />
-                )}
-                {project.duration && (
-                  <InfoCard
-                    label="Duration"
-                    value={project.duration}
-                    icon={<Clock className="h-3.5 w-3.5" />}
-                    dark
-                  />
-                )}
-                {project.services && project.services.length > 0 && (
-                  <InfoCard
-                    label="Services"
-                    value={project.services.join(", ")}
-                    icon={<Zap className="h-3.5 w-3.5" />}
-                    wide
-                    dark
-                  />
-                )}
+                <HeroSummaryCard
+                  client={project.client}
+                  duration={project.duration}
+                  services={project.services}
+                />
               </motion.div>
             </div>
           </div>
@@ -532,41 +521,58 @@ export default function CaseStudyDetailPage() {
   );
 }
 
-function InfoCard({
-  label,
-  value,
-  icon,
-  wide = false,
-  dark = false,
+function HeroSummaryCard({
+  client,
+  duration,
+  services,
 }: {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
-  wide?: boolean;
-  dark?: boolean;
+  client?: string;
+  duration?: string;
+  services?: string[];
 }) {
+  const items = [
+    client
+      ? {
+          label: "Client",
+          value: client,
+          icon: <Building2 className="h-4 w-4" />,
+        }
+      : null,
+    duration
+      ? {
+          label: "Duration",
+          value: duration,
+          icon: <Clock className="h-4 w-4" />,
+        }
+      : null,
+    services && services.length > 0
+      ? {
+          label: "Services",
+          value: services.join(", "),
+          icon: <Zap className="h-4 w-4" />,
+        }
+      : null,
+  ].filter(Boolean) as Array<{ label: string; value: string; icon: React.ReactNode }>;
+
+  if (!items.length) return null;
+
   return (
-    <div
-      className={`rounded-[1.4rem] px-4 py-4 md:px-5 md:py-5 ${
-        dark
-          ? "border border-white/10 bg-white/6 shadow-[0_20px_50px_rgba(0,0,0,0.18)] backdrop-blur-sm"
-          : "border border-gray-100 bg-white shadow-sm"
-      } ${wide ? "sm:col-span-2 xl:col-span-1" : ""}`}
-    >
-      <div
-        className={`mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.16em] ${
-          dark ? "text-white/45" : "text-gray-400"
-        }`}
-      >
-        {icon}
-        {label}
-      </div>
-      <div
-        className={`text-sm font-bold leading-6 md:text-[15px] ${
-          dark ? "text-white" : "text-gray-900"
-        }`}
-      >
-        {value}
+    <div className="rounded-[1.7rem] border border-white/10 bg-white/[0.07] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.16)] backdrop-blur-sm md:p-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-[0.9fr_0.6fr_1.5fr] xl:gap-5">
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className="min-w-0 rounded-[1.2rem] border border-white/8 bg-black/10 px-4 py-4"
+          >
+            <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-white/42">
+              {item.icon}
+              {item.label}
+            </div>
+            <div className="break-words text-[1.02rem] font-semibold leading-[1.55] text-white md:text-[1.12rem]">
+              {item.value}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

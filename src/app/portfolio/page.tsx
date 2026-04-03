@@ -209,6 +209,9 @@ function ProjectCard({
   project: CaseStudy;
   onOpen: () => void;
 }) {
+  const portfolioImage =
+    project.portfolioImage || project.gallery?.[0] || project.image || "/placeholder.jpg";
+
   return (
     <button
       type="button"
@@ -217,9 +220,9 @@ function ProjectCard({
     >
       <div className="relative h-64 shrink-0 overflow-hidden md:h-72">
         <img
-          src={project.image || "/placeholder.jpg"}
+          src={portfolioImage}
           alt={project.title}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+          className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-1000 group-hover:scale-110"
           loading="lazy"
         />
         <div className="absolute inset-0 flex flex-col justify-end p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-t from-black/90 via-black/40 to-transparent translate-y-4 group-hover:translate-y-0">

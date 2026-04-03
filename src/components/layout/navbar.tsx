@@ -119,8 +119,9 @@ export function Navbar() {
   };
 
   return (
-    <header
-      className="sticky top-0 z-50 w-full transition-all duration-300"
+    <>
+      <header
+      className="fixed top-0 left-0 z-50 w-full transition-all duration-300"
       style={{
         background: scrolled ? "rgba(255,255,255,0.98)" : "white",
         boxShadow: scrolled
@@ -431,6 +432,8 @@ export function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+      </header>
+      <div className="h-16 lg:h-32" aria-hidden="true" />
+    </>
   );
 }

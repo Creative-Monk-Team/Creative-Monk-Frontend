@@ -161,6 +161,7 @@ export type CaseStudy = {
   link?: string;
   duration?: string;
   image?: string;
+  portfolioImage?: string;
   seo?: Seo;
   order: number;
   isFeatured: boolean;
