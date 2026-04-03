@@ -135,7 +135,6 @@ export function PortfolioLightbox({
               </div>
             </div>
 
-<<<<<<< HEAD
             <div className="custom-scrollbar h-full min-h-[320px] w-full overflow-auto rounded-[1.4rem] border border-white/8 bg-white/4 p-3 md:min-h-[520px] md:p-6">
               <div className="flex min-h-full w-full items-start justify-center">
                 <img
