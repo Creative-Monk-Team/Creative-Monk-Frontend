@@ -391,7 +391,7 @@ export default function CaseStudyDetailPage() {
             </div>
 
             {project.metrics && project.metrics.length > 0 && (
-              <div className="mb-8 grid gap-3 md:mb-12 md:gap-4" style={{ gridTemplateColumns: `repeat(${Math.min(project.metrics.length, 4)}, 1fr)` }}>
+              <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 md:mb-12 md:gap-4 lg:grid-cols-3">
                 {project.metrics.map((metric, idx) => {
                   const isNumeric = /^[\d+%$.,\s]+$/.test(metric.value.trim());
                   return (
