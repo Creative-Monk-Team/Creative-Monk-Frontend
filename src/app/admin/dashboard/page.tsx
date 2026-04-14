@@ -151,6 +151,11 @@ export default function AdminDashboardPage() {
               icon: Briefcase,
             },
             {
+              href: "/admin/dashboard/portfolio",
+              label: "Manage Portfolio",
+              icon: Briefcase,
+            },
+            {
               href: "/admin/dashboard/blogs",
               label: "Manage Blogs",
               icon: FileText,

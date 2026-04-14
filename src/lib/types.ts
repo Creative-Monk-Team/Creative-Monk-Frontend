@@ -591,3 +591,19 @@ export type MediaUploadResult = {
   bytes?: number;
   originalFilename?: string;
 };
+
+export type PortfolioItem = {
+  _id: string;
+  id: string;
+  title: string;
+  description?: string;
+  category: string;
+  client?: string;
+  duration?: string;
+  link?: string;
+  points?: string[];
+  image?: string;
+  gallery?: string[];
+  order: number;
+  isActive: boolean;
+};

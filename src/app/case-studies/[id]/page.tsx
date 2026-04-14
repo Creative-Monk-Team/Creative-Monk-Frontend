@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
+  ArrowUpRight,
+  BarChart3,
   Building2,
   CheckCircle2,
   ChevronLeft,
@@ -11,6 +13,8 @@ import {
   Clock,
   Expand,
   ExternalLink,
+  LineChart,
+  PieChart,
   Quote,
   Target,
   TrendingUp,
@@ -127,6 +131,10 @@ export default function CaseStudyDetailPage() {
     lightboxIndex !== null && galleryImages[lightboxIndex]
       ? galleryImages[lightboxIndex]
       : null;
+
+  const isGraphicDesign = ["Graphic Design", "Branding"].includes(project.category);
+  const isWebDev = ["Web Development"].includes(project.category);
+  const isMarketing = ["SEO", "Social Media", "Digital Marketing"].includes(project.category);
 
   return (
     <>
@@ -286,60 +294,13 @@ export default function CaseStudyDetailPage() {
                 </h2>
               </div>
 
-              <div className="relative">
-                <Swiper
-                  modules={[Navigation]}
-                  navigation={{
-                    prevEl: ".case-study-gallery-prev",
-                    nextEl: ".case-study-gallery-next",
-                  }}
-                  spaceBetween={18}
-                  slidesPerView={1.15}
-                  breakpoints={{
-                    640: { slidesPerView: 1.5 },
-                    1024: { slidesPerView: 3 },
-                  }}
-                  className="!overflow-visible"
-                >
-                  {galleryImages.map((img, idx) => (
-                    <SwiperSlide key={`${img}-${idx}`}>
-                      <button
-                        type="button"
-                        onClick={() => setLightboxIndex(idx)}
-                        className="group relative block w-full overflow-hidden rounded-[1.8rem] border border-gray-100 bg-white shadow-sm"
-                      >
-                        <div className="absolute top-4 right-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-transform group-hover:scale-105">
-                          <Expand className="h-4 w-4" />
-                        </div>
-                        <div className="aspect-[4/3] overflow-hidden">
-                          <img
-                            src={img}
-                            alt={`${project.title} gallery ${idx + 1}`}
-                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          />
-                        </div>
-                      </button>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-
-                {galleryImages.length > 1 ? (
-                  <div className="mt-6 flex items-center justify-end gap-3">
-                    <button
-                      type="button"
-                      className="case-study-gallery-prev inline-flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:text-[#FF6600]"
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </button>
-                    <button
-                      type="button"
-                      className="case-study-gallery-next inline-flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:text-[#FF6600]"
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </button>
-                  </div>
-                ) : null}
-              </div>
+              {isGraphicDesign ? (
+                <GraphicDesignShowcase images={galleryImages} title={project.title} onOpenLightbox={setLightboxIndex} />
+              ) : isWebDev ? (
+                <WebDevShowcase images={galleryImages} title={project.title} onOpenLightbox={setLightboxIndex} />
+              ) : (
+                <DefaultGallery images={galleryImages} title={project.title} setLightboxIndex={setLightboxIndex} />
+              )}
             </motion.div>
           )}
 
@@ -391,27 +352,31 @@ export default function CaseStudyDetailPage() {
             </div>
 
             {project.metrics && project.metrics.length > 0 && (
-              <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 md:mb-12 md:gap-4 lg:grid-cols-3">
-                {project.metrics.map((metric, idx) => {
-                  const isNumeric = /^[\d+%$.,\s]+$/.test(metric.value.trim());
-                  return (
-                    <div
-                      key={idx}
-                      className="rounded-2xl border border-white/10 bg-white/6 px-4 py-5 backdrop-blur-sm md:px-5 md:py-6"
-                    >
-                      <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-white/45 md:text-[11px]">
-                        {metric.label}
-                      </span>
-                      <span
-                        className={`mt-2 block font-black leading-tight text-[#FF6600] ${isNumeric ? "text-2xl md:text-3xl" : "text-base md:text-lg"}`}
-                        style={{ fontFamily: "var(--font-poppins)" }}
+              isMarketing ? (
+                <MarketingMetricsDashboard metrics={project.metrics} />
+              ) : (
+                <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 md:mb-12 md:gap-4 lg:grid-cols-3">
+                  {project.metrics.map((metric, idx) => {
+                    const isNumeric = /^[\d+%$.,\s]+$/.test(metric.value.trim());
+                    return (
+                      <div
+                        key={idx}
+                        className="rounded-2xl border border-white/10 bg-white/6 px-4 py-5 backdrop-blur-sm md:px-5 md:py-6"
                       >
-                        {metric.value}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+                        <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-white/45 md:text-[11px]">
+                          {metric.label}
+                        </span>
+                        <span
+                          className={`mt-2 block font-black leading-tight text-[#FF6600] ${isNumeric ? "text-2xl md:text-3xl" : "text-base md:text-lg"}`}
+                          style={{ fontFamily: "var(--font-poppins)" }}
+                        >
+                          {metric.value}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )
             )}
 
             {project.results && project.results.length > 0 && (
@@ -619,5 +584,184 @@ function ContentPanel({
         ))}
       </div>
     </motion.div>
+  );
+}
+
+function DefaultGallery({ images, title, setLightboxIndex }: { images: string[], title: string, setLightboxIndex: (idx: number) => void }) {
+  return (
+    <div className="relative">
+      <Swiper
+        modules={[Navigation]}
+        navigation={{
+          prevEl: ".case-study-gallery-prev",
+          nextEl: ".case-study-gallery-next",
+        }}
+        spaceBetween={18}
+        slidesPerView={1.15}
+        breakpoints={{
+          640: { slidesPerView: 1.5 },
+          1024: { slidesPerView: 3 },
+        }}
+        className="!overflow-visible"
+      >
+        {images.map((img, idx) => (
+          <SwiperSlide key={`${img}-${idx}`}>
+            <button
+              type="button"
+              onClick={() => setLightboxIndex(idx)}
+              className="group relative block w-full overflow-hidden rounded-[1.8rem] border border-gray-100 bg-white shadow-sm"
+            >
+              <div className="absolute top-4 right-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-transform group-hover:scale-105">
+                <Expand className="h-4 w-4" />
+              </div>
+              <div className="aspect-[4/3] overflow-hidden">
+                <img
+                  src={img}
+                  alt={`${title} gallery ${idx + 1}`}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </div>
+            </button>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+
+      {images.length > 1 ? (
+        <div className="mt-6 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            className="case-study-gallery-prev inline-flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:text-[#FF6600]"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            className="case-study-gallery-next inline-flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:text-[#FF6600]"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function GraphicDesignShowcase({ images, onOpenLightbox, title }: { images: string[], onOpenLightbox: (idx: number) => void, title: string }) {
+  return (
+    <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+      {images.map((img, idx) => (
+        <button
+          key={idx}
+          onClick={() => onOpenLightbox(idx)}
+          className="group relative block w-full overflow-hidden rounded-[1.8rem] border border-gray-100 bg-gray-50 shadow-sm break-inside-avoid"
+        >
+          <div className="absolute inset-0 z-10 bg-black/0 transition-colors duration-500 group-hover:bg-black/20" />
+          <div className="absolute top-1/2 left-1/2 z-20 -translate-x-1/2 -translate-y-1/2 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-110">
+             <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#FF6600] shadow-xl">
+               <Expand className="h-5 w-5" />
+             </div>
+          </div>
+          <img src={img} alt={`${title} ${idx + 1}`} className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.02]" />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function WebDevShowcase({ images, title, onOpenLightbox }: { images: string[], title: string, onOpenLightbox: (idx: number) => void }) {
+  const firstImage = images[0];
+  const remainingImages = images.slice(1);
+  return (
+    <div className="space-y-12">
+      <div className="relative mx-auto w-full max-w-[1000px] rounded-[1.8rem] border border-gray-200 bg-[#f1f5f9] shadow-2xl overflow-hidden">
+        <div className="flex h-[3.25rem] w-full items-center gap-2 border-b border-gray-200 bg-[#f8fafc] px-5">
+          <div className="flex gap-2">
+            <div className="h-3.5 w-3.5 rounded-full bg-[#ef4444]" />
+            <div className="h-3.5 w-3.5 rounded-full bg-[#f59e0b]" />
+            <div className="h-3.5 w-3.5 rounded-full bg-[#22c55e]" />
+          </div>
+          <div className="mx-auto flex h-8 w-1/2 items-center justify-center rounded-lg bg-white box-shadow-sm text-xs font-medium text-gray-500 shadow-sm">
+            {title.replace(/\s+/g, "").toLowerCase()}.com
+          </div>
+        </div>
+        
+        <div 
+          className="relative max-h-[75vh] w-full overflow-y-auto bg-white scroll-smooth"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          <style dangerouslySetInnerHTML={{ __html: `
+            .browser-scroll::-webkit-scrollbar { display: none; }
+          `}} />
+          <img
+            src={firstImage}
+            alt={`${title} homepage`}
+            className="w-full h-auto object-cover object-top hover:object-bottom transition-all"
+            style={{ transitionDuration: "12s", transitionTimingFunction: "linear" }}
+          />
+        </div>
+      </div>
+      
+      {remainingImages.length > 0 && (
+         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {remainingImages.map((img, idx) => (
+                <button
+                  key={idx + 1}
+                  onClick={() => onOpenLightbox(idx + 1)}
+                  className="group relative block w-full overflow-hidden rounded-[1.8rem] border border-gray-100 shadow-sm aspect-video bg-gray-50"
+                >
+                  <img src={img} alt={`${title} screenshot ${idx + 2}`} className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 transition-all duration-300 group-hover:opacity-100 bg-white p-3 rounded-full text-[#FF6600] shadow-xl group-hover:scale-110">
+                     <Expand className="h-5 w-5" />
+                  </div>
+                </button>
+            ))}
+         </div>
+      )}
+    </div>
+  );
+}
+
+function MarketingMetricsDashboard({ metrics }: { metrics: { label: string, value: string }[] }) {
+  const icons = [TrendingUp, BarChart3, PieChart, LineChart];
+  
+  return (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8 md:mb-12">
+      {metrics.map((metric, idx) => {
+        const Icon = icons[idx % icons.length];
+        const isNumeric = /^[\d+%$.,\s]+$/.test(metric.value.trim());
+        
+        return (
+          <div
+            key={idx}
+            className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.04] p-8 backdrop-blur-md transition-all hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(255,102,0,0.4)]"
+          >
+            <div className="absolute right-0 top-0 -mr-8 -mt-8 h-32 w-32 rounded-full bg-orange-500/20 blur-3xl transition-all group-hover:bg-orange-500/40" />
+            
+            <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-[1.1rem] bg-white/5 text-[#FF6600] shadow-[inset_0_1px_3px_rgba(255,255,255,0.1)] ring-1 ring-white/10">
+               <Icon className="h-6 w-6" />
+            </div>
+            
+            <dt className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/50 mb-2">
+              {metric.label}
+            </dt>
+            
+            <dd className="flex items-baseline gap-2">
+              <span
+                className={`font-black tracking-tight text-white ${isNumeric ? "text-4xl lg:text-[2.75rem]" : "text-2xl lg:text-3xl"}`}
+                style={{ fontFamily: "var(--font-poppins)" }}
+              >
+                {metric.value}
+              </span>
+              {isNumeric && metric.value.includes("+") && (
+                <span className="flex items-center text-sm font-bold text-green-400">
+                  <ArrowUpRight className="h-5 w-5" />
+                </span>
+              )}
+            </dd>
+          </div>
+        );
+      })}
+    </div>
   );
 }

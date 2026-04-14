@@ -17,10 +17,10 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import type { CaseStudy } from "@/lib/types";
+import type { PortfolioItem } from "@/lib/types";
 
 type PortfolioLightboxProps = {
-  projects: CaseStudy[];
+  projects: PortfolioItem[];
   index: number | null;
   onClose: () => void;
   onChange: (index: number) => void;
@@ -59,8 +59,8 @@ export function PortfolioLightbox({
   if (!project) return null;
 
   const canNavigate = projects.length > 1;
-  const portfolioImage =
-    project.portfolioImage || project.gallery?.[0] || project.image || "/placeholder.jpg";
+  const portfolioImage = project.image || project.gallery?.[0] || "/placeholder.jpg";
+  const isGalleryLayout = project.gallery && project.gallery.length > 0;
 
   return (
     <Dialog open={index !== null} onOpenChange={(open) => !open && onClose()}>
@@ -136,13 +136,51 @@ export function PortfolioLightbox({
             </div>
 
             <div className="custom-scrollbar h-full min-h-[320px] w-full overflow-auto rounded-[1.4rem] border border-white/8 bg-white/4 p-3 md:min-h-[520px] md:p-6">
-              <div className="flex min-h-full w-full items-start justify-center">
-                <img
-                  src={portfolioImage}
-                  alt={project.title}
-                  className="block h-auto max-w-none rounded-[1rem] object-top transition-[width] duration-200"
-                  style={{ width: `${zoom * 100}%`, minWidth: "100%" }}
-                />
+              <div className={`flex min-h-full w-full items-start ${isGalleryLayout ? "flex-col gap-6 align-center" : "justify-center"}`}>
+                {isGalleryLayout ? (
+                  project.category === "Graphic Designing" ? (
+                    <div 
+                      className="columns-1 sm:columns-2 lg:columns-3 gap-4 w-full space-y-4 transition-[width] duration-200"
+                      style={{ width: `${zoom * 100}%`, minWidth: "100%" }}
+                    >
+                      {(project.gallery && project.gallery.length > 0 ? project.gallery : [portfolioImage]).map((img, i) => (
+                        <div key={i} className="break-inside-avoid">
+                          <img
+                            src={img}
+                            alt={`${project.title} - ${i + 1}`}
+                            className="block h-auto w-full rounded-[1rem] bg-[#1a1715] shadow-sm"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    (project.gallery && project.gallery.length > 0 ? project.gallery : [portfolioImage]).map((img, i) => (
+                      <img
+                        key={i}
+                        src={img}
+                        alt={`${project.title} - ${i + 1}`}
+                        className="block h-auto max-w-none rounded-[1rem] transition-[width] duration-200"
+                        style={{ width: `${zoom * 100}%`, minWidth: "100%" }}
+                      />
+                    ))
+                  )
+                ) : project.category === "Brand Identity" ? (
+                  <div className="flex w-full h-full items-center justify-center p-8 md:p-20 rounded-[1rem] bg-white/5">
+                    <img
+                      src={portfolioImage}
+                      alt={project.title}
+                      className="block h-auto w-auto max-w-full max-h-full object-contain transition-transform duration-200 drop-shadow-2xl"
+                      style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}
+                    />
+                  </div>
+                ) : (
+                  <img
+                    src={portfolioImage}
+                    alt={project.title}
+                    className="block h-auto max-w-none rounded-[1rem] object-top transition-[width] duration-200"
+                    style={{ width: `${zoom * 100}%`, minWidth: "100%" }}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -176,22 +214,22 @@ export function PortfolioLightbox({
                     value={project.duration}
                   />
                 ) : null}
-                {project.services?.length ? (
+                {project.points && project.points.length > 0 ? (
                   <LightboxMeta
                     icon={<Layers3 className="h-4 w-4" />}
-                    label="Services"
-                    value={project.services.join(", ")}
+                    label="Points"
+                    value={project.points.join(", ")}
                   />
                 ) : null}
               </div>
 
-              {project.results?.length ? (
+              {project.points?.length ? (
                 <div className="mt-7">
                   <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-orange-200">
-                    Outcome Highlights
+                    Highlights
                   </p>
                   <div className="mt-4 space-y-3">
-                    {project.results.slice(0, 3).map((item) => (
+                    {project.points.slice(0, 3).map((item) => (
                       <div key={item} className="flex gap-3">
                         <div className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#FF6600]" />
                         <p className="text-sm leading-7 text-white/72">{item}</p>
@@ -204,11 +242,13 @@ export function PortfolioLightbox({
 
             <div className="border-t border-white/8 bg-white/[0.03] px-5 py-4 md:px-7">
               <div className="flex flex-col gap-3">
-                <Link href={`/case-studies/${project.id}`} className="btn-primary justify-center">
-                  Open Case Study
-                  <ExternalLink className="h-4 w-4" />
-                </Link>
-                {project.link ? (
+                {project.link && project.link.includes("case-studies") ? (
+                  <Link href={project.link} className="btn-primary justify-center">
+                    Open Case Study
+                    <ExternalLink className="h-4 w-4" />
+                  </Link>
+                ) : null}
+                {project.link && !project.link.includes("case-studies") ? (
                   <a
                     href={project.link}
                     target="_blank"

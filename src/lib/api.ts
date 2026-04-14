@@ -11,6 +11,7 @@ import type {
   FAQ,
   FinanceRecord,
   MediaUploadResult,
+  PortfolioItem,
   Service,
   ServiceCategory,
   SiteSettings,
@@ -116,6 +117,22 @@ export async function getCaseStudies(searchParams?: FetchOptions["searchParams"]
 export async function getCaseStudy(id: string) {
   try {
     return await request<CaseStudy>(`case-studies/${id}`);
+  } catch {
+    return null;
+  }
+}
+
+export async function getPortfolioItems(searchParams?: FetchOptions["searchParams"]) {
+  try {
+    return await request<PortfolioItem[]>("portfolio", { searchParams });
+  } catch {
+    return [];
+  }
+}
+
+export async function getPortfolioItem(id: string) {
+  try {
+    return await request<PortfolioItem>(`portfolio/${id}`);
   } catch {
     return null;
   }
@@ -364,7 +381,7 @@ export const apiService = {
   getServices: (): Promise<any> => getServices() as Promise<any>,
   getServiceBySlug: (slug: string): Promise<any> => getService(slug) as Promise<any>,
   getClients: (): Promise<any> => getClients() as Promise<any>,
-  getPortfolio: (): Promise<any> => getCaseStudies() as Promise<any>,
+  getPortfolio: (): Promise<any> => getPortfolioItems() as Promise<any>,
   getCaseStudyById: (id: string): Promise<any> => getCaseStudy(id) as Promise<any>,
   getBlogs: (): Promise<any> => getBlogs() as Promise<any>,
 };
@@ -372,6 +389,7 @@ export const apiService = {
 export type AdminCollectionMap = {
   services: Service[];
   caseStudies: CaseStudy[];
+  portfolio: PortfolioItem[];
   blogs: BlogPost[];
   clients: Client[];
   testimonials: Testimonial[];

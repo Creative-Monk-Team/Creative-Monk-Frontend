@@ -17,6 +17,7 @@ const navItems = [
   { href: "/admin/dashboard", label: "Overview" },
   { href: "/admin/dashboard/services", label: "Services" },
   { href: "/admin/dashboard/case-studies", label: "Case Studies" },
+  { href: "/admin/dashboard/portfolio", label: "Portfolio" },
   { href: "/admin/dashboard/blogs", label: "Blogs" },
   { href: "/admin/dashboard/social-proof", label: "Clients & Testimonials" },
   { href: "/admin/dashboard/content", label: "Content & Settings" },

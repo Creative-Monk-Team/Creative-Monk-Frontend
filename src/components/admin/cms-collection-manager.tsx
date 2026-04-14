@@ -6,9 +6,12 @@ import { adminApi } from "@/lib/api";
 export type CmsField = {
   name: string;
   label: string;
-  type: "text" | "textarea" | "number" | "checkbox" | "json" | "date" | "media";
+  type: "text" | "textarea" | "number" | "checkbox" | "json" | "date" | "media" | "select" | "media-array";
   placeholder?: string;
   uploadFolder?: string;
+  options?: { label: string; value: string }[];
+  condition?: (values: Record<string, any>) => boolean;
+  maxItems?: number;
 };
 
 type CmsCollectionManagerProps<T extends Record<string, any>> = {
@@ -262,22 +265,26 @@ export function CmsCollectionManager<T extends Record<string, any>>({
         ) : null}
 
         <div className="grid gap-4 md:grid-cols-2">
-          {fields.map((field) => (
-            <label
-              key={field.name}
-              className={`space-y-2 text-sm font-medium text-slate-600 ${
-                field.type === "textarea" || field.type === "json" ? "md:col-span-2" : ""
-              }`}
-            >
-              <span className="block text-sm font-medium text-slate-600">{field.label}</span>
-              <FieldInput
-                field={field}
-                value={formValues[field.name]}
-                token={token}
-                onChange={(value) => updateField(field.name, value)}
-              />
-            </label>
-          ))}
+          {fields.map((field) => {
+            if (field.condition && !field.condition(formValues)) return null;
+
+            return (
+              <label
+                key={field.name + field.label}
+                className={`space-y-2 text-sm font-medium text-slate-600 ${
+                  field.type === "textarea" || field.type === "json" || field.type === "media-array" ? "md:col-span-2" : ""
+                }`}
+              >
+                <span className="block text-sm font-medium text-slate-600">{field.label}</span>
+                <FieldInput
+                  field={field}
+                  value={formValues[field.name]}
+                  token={token}
+                  onChange={(value) => updateField(field.name, value)}
+                />
+              </label>
+            );
+          })}
         </div>
       </section>
     </div>
@@ -393,6 +400,85 @@ function FieldInput({
     );
   }
 
+  if (field.type === "media-array") {
+    const list = Array.isArray(value) ? value.filter(Boolean) : [];
+    const maxItems = field.maxItems || Infinity;
+    
+    return (
+      <div className="space-y-4 rounded-[1.25rem] border border-slate-200 bg-slate-50/70 p-4">
+        {list.map((url, idx) => (
+          <div key={idx} className="flex flex-col gap-3 rounded-[1.15rem] border border-slate-200 bg-white p-4 shadow-[0_18px_45px_-38px_rgba(15,23,42,0.18)]">
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
+                Image {idx + 1}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = [...list];
+                  next.splice(idx, 1);
+                  onChange(next);
+                }}
+                className="ml-auto text-xs font-semibold text-rose-400 hover:text-rose-600"
+              >
+                Remove
+              </button>
+            </div>
+            {typeof url === 'string' && url.length > 0 ? (
+              <img src={url} alt={`Media ${idx}`} className="h-32 w-full rounded-xl object-contain bg-slate-50" />
+            ) : null}
+            <input
+              type="text"
+              value={String(url)}
+              placeholder="https://..."
+              onChange={(e) => {
+                const next = [...list];
+                next[idx] = e.target.value;
+                onChange(next);
+              }}
+              className="h-10 w-full rounded-xl border border-slate-200 px-3 text-[15px] outline-none transition focus:border-orange-300 focus:bg-white"
+            />
+          </div>
+        ))}
+        {list.length < maxItems && (
+          <div className="flex gap-3 pt-2">
+            <label className="inline-flex cursor-pointer items-center rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-orange-200 hover:text-orange-700">
+              {uploading ? "Uploading..." : `Upload Image ${list.length + 1}`}
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*,video/*"
+                onChange={(event) => {
+                   const file = event.target.files?.[0] || null;
+                   if (file) {
+                     setUploading(true);
+                     setUploadError("");
+                     adminApi.uploadMedia(token, file, { folder: field.uploadFolder })
+                       .then(res => onChange([...list, res.secureUrl]))
+                       .catch(err => setUploadError(err.message))
+                       .finally(() => setUploading(false));
+                   }
+                }}
+                disabled={uploading}
+              />
+            </label>
+          </div>
+        )}
+        {uploadError ? <p className="text-sm font-medium text-rose-600">{uploadError}</p> : null}
+      </div>
+    );
+  }
+
+  if (field.type === "select") {
+    return (
+      <CustomSelect
+        field={field}
+        value={String(value ?? "")}
+        onChange={(v) => onChange(v)}
+      />
+    );
+  }
+
   return (
     <input
       type={field.type}
@@ -401,6 +487,81 @@ function FieldInput({
       onChange={(event) => onChange(event.target.value)}
       className="h-12 w-full rounded-[1.15rem] border border-slate-200 bg-slate-50/45 px-4 text-[15px] text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white"
     />
+  );
+}
+
+function CustomSelect({
+  field,
+  value,
+  onChange,
+}: {
+  field: CmsField;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selectedOption = field.options?.find((o) => o.value === value);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen(!open);
+        }}
+        className={`flex h-12 w-full items-center justify-between rounded-[1.15rem] border border-slate-200 bg-white px-4 text-[15px] outline-none transition shadow-sm hover:border-slate-300 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 cursor-pointer ${
+          value ? "text-slate-900" : "text-slate-400"
+        }`}
+      >
+        <span>{selectedOption ? selectedOption.label : field.placeholder || "Select an option"}</span>
+        <svg
+          className={`h-4 w-4 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setOpen(false);
+            }} 
+          />
+          <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-[1.15rem] border border-slate-100 bg-white shadow-[0_12px_40px_-12px_rgba(0,0,0,0.15)] animate-in fade-in slide-in-from-top-2">
+            <div className="max-h-60 overflow-y-auto p-1.5 custom-scrollbar">
+              {field.options?.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onChange(opt.value);
+                    setOpen(false);
+                  }}
+                  className={`flex w-full items-center rounded-xl px-3 py-2.5 text-left text-[14.5px] transition ${
+                    value === opt.value
+                      ? "bg-orange-50 text-orange-700 font-medium"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -421,6 +582,7 @@ const PREDEFINED_SCHEMAS: Record<string, any> = {
   challenges: [""],
   solutions: [""],
   results: [""],
+  points: [""],
   metrics: [{ label: "", value: "" }],
   gallery: [""],
   testimonial: { text: "", author: "", role: "" },

@@ -11,12 +11,12 @@ import "swiper/css/pagination";
 import { CTA } from "@/components/sections/cta";
 import { PageHeader } from "@/components/layout/page-header";
 import { PortfolioLightbox } from "@/components/site/portfolio-lightbox";
-import { getCaseStudies } from "@/lib/api";
-import type { CaseStudy } from "@/lib/types";
+import { getPortfolioItems } from "@/lib/api";
+import type { PortfolioItem } from "@/lib/types";
 
 export default function PortfolioPage() {
   const [active, setActive] = useState("All");
-  const [projects, setProjects] = useState<CaseStudy[]>([]);
+  const [projects, setProjects] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
   const tabContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -26,10 +26,10 @@ export default function PortfolioPage() {
   useEffect(() => {
     async function fetchProjects() {
       try {
-        const data = await getCaseStudies();
+        const data = await getPortfolioItems();
         setProjects(data);
       } catch (error) {
-        console.error("Failed to fetch case studies:", error);
+        console.error("Failed to fetch portfolio items:", error);
       } finally {
         setLoading(false);
       }
@@ -206,11 +206,11 @@ function ProjectCard({
   project,
   onOpen,
 }: {
-  project: CaseStudy;
+  project: PortfolioItem;
   onOpen: () => void;
 }) {
   const portfolioImage =
-    project.portfolioImage || project.gallery?.[0] || project.image || "/placeholder.jpg";
+    project.image || project.gallery?.[0] || "/placeholder.jpg";
 
   return (
     <button
@@ -218,11 +218,13 @@ function ProjectCard({
       onClick={onOpen}
       className="group relative flex h-full w-full flex-col overflow-hidden rounded-[2rem] border border-gray-100 bg-white text-left shadow-sm transition-all duration-700 hover:shadow-2xl"
     >
-      <div className="relative h-64 shrink-0 overflow-hidden md:h-72">
+      <div className={`relative h-64 shrink-0 overflow-hidden md:h-72 ${project.category === "Brand Identity" ? "bg-[#f8f9fa]" : ""}`}>
         <img
           src={portfolioImage}
           alt={project.title}
-          className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-1000 group-hover:scale-110"
+          className={`absolute inset-0 h-full w-full transition-transform duration-1000 group-hover:scale-110 ${
+            project.category === "Brand Identity" ? "object-contain p-8 mix-blend-multiply" : "object-cover object-top"
+          }`}
           loading="lazy"
         />
         <div className="absolute inset-0 flex flex-col justify-end p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-t from-black/90 via-black/40 to-transparent translate-y-4 group-hover:translate-y-0">
@@ -230,7 +232,7 @@ function ProjectCard({
             <Expand className="h-4 w-4" />
           </div>
           <div className="flex gap-2 flex-wrap mb-4">
-            {(project.services || []).map((tag) => (
+            {(project.points || []).slice(0, 3).map((tag) => (
               <span
                 key={tag}
                 className="px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-widest bg-white/10 text-white backdrop-blur-md border border-white/20"

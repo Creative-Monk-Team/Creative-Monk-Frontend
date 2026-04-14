@@ -230,11 +230,13 @@ function ProjectCard({
       onClick={onOpen}
       className="group relative flex h-full w-full flex-col overflow-hidden rounded-[2rem] border border-gray-100 bg-white text-left shadow-sm transition-all duration-700 hover:shadow-2xl"
     >
-      <div className="relative h-64 shrink-0 overflow-hidden md:h-72">
+      <div className={`relative h-64 shrink-0 overflow-hidden md:h-72 ${project.category === "Brand Identity" ? "bg-[#f8f9fa]" : ""}`}>
         <img
           src={portfolioImage}
           alt={project.title}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+          className={`absolute inset-0 w-full h-full transition-transform duration-1000 group-hover:scale-110 ${
+            project.category === "Brand Identity" ? "object-contain p-8 mix-blend-multiply" : "object-cover"
+          }`}
           loading="lazy"
         />
 
