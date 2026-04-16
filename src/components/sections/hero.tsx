@@ -215,7 +215,7 @@ export function Hero() {
                 {[40, 60, 45, 75, 65, 90, 100].map((h, i) => (
                   <div
                     key={i}
-                    className="flex-1 bg-orange-50 rounded-t-sm relative overflow-hidden"
+                    className="flex-1 bg-orange-50 rounded-t-sm relative overflow-hidden h-full"
                   >
                     <motion.div
                       initial={{ height: 0 }}
