@@ -4,10 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, ChevronLeft, ChevronRight, Expand } from "lucide-react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Autoplay } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/pagination";
 import { CTA } from "@/components/sections/cta";
 import { PageHeader } from "@/components/layout/page-header";
 import { PortfolioLightbox } from "@/components/site/portfolio-lightbox";
@@ -144,29 +140,7 @@ export default function PortfolioPage() {
                 </AnimatePresence>
               </div>
 
-              <div className="md:hidden">
-                <Swiper
-                  modules={[Pagination, Autoplay]}
-                  spaceBetween={16}
-                  slidesPerView={1.05}
-                  centeredSlides={false}
-                  loop={filtered.length > 2}
-                  autoplay={{ delay: 4000, disableOnInteraction: false }}
-                  pagination={{ clickable: true }}
-                  className="portfolio-swiper"
-                >
-                  {filtered.map((project) => (
-                    <SwiperSlide key={project._id}>
-                      <ProjectCard
-                        project={project}
-                        onOpen={() => setActiveProjectIndex(filtered.findIndex((item) => item._id === project._id))}
-                      />
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
-
-              <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 px-4 sm:px-0">
                 <AnimatePresence mode="popLayout">
                   {filtered.map((project) => (
                     <motion.div
@@ -216,22 +190,22 @@ function ProjectCard({
     <button
       type="button"
       onClick={onOpen}
-      className="group relative flex h-full w-full flex-col overflow-hidden rounded-[2rem] border border-gray-100 bg-white text-left shadow-sm transition-all duration-700 hover:shadow-2xl"
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl md:rounded-[2rem] border border-gray-100 bg-white text-left shadow-sm transition-all duration-700 hover:shadow-2xl"
     >
-      <div className={`relative h-64 shrink-0 overflow-hidden md:h-72 ${project.category === "Brand Identity" ? "bg-[#f8f9fa]" : ""}`}>
+      <div className={`relative h-48 shrink-0 overflow-hidden md:h-72 ${project.category === "Brand Identity" ? "bg-[#f8f9fa]" : ""}`}>
         <img
           src={portfolioImage}
           alt={project.title}
           className={`absolute inset-0 h-full w-full transition-transform duration-1000 group-hover:scale-110 ${
-            project.category === "Brand Identity" ? "object-contain p-8 mix-blend-multiply" : "object-cover object-top"
+            project.category === "Brand Identity" ? "object-contain p-6 md:p-8 mix-blend-multiply" : "object-cover object-top"
           }`}
           loading="lazy"
         />
-        <div className="absolute inset-0 flex flex-col justify-end p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-t from-black/90 via-black/40 to-transparent translate-y-4 group-hover:translate-y-0">
-          <div className="absolute top-5 right-5 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-white backdrop-blur-md">
-            <Expand className="h-4 w-4" />
+        <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-t from-black/90 via-black/40 to-transparent translate-y-4 group-hover:translate-y-0">
+          <div className="absolute top-3 right-3 md:top-5 md:right-5 inline-flex h-8 w-8 md:h-11 md:w-11 items-center justify-center rounded-full bg-white/12 text-white backdrop-blur-md">
+            <Expand className="h-3 w-3 md:h-4 md:w-4" />
           </div>
-          <div className="flex gap-2 flex-wrap mb-4">
+          <div className="hidden md:flex gap-2 flex-wrap mb-4">
             {(project.points || []).slice(0, 3).map((tag) => (
               <span
                 key={tag}
@@ -242,30 +216,30 @@ function ProjectCard({
             ))}
           </div>
           <h4
-            className="text-white font-black text-2xl mb-1 tracking-tight"
+            className="text-white font-black text-lg md:text-2xl mb-1 tracking-tight line-clamp-2"
             style={{ fontFamily: "var(--font-outfit)" }}
           >
             {project.title}
           </h4>
         </div>
       </div>
-      <div className="flex flex-1 items-center justify-between p-5 md:p-6">
-        <div>
+      <div className="flex flex-1 items-start sm:items-center justify-between p-3 md:p-6 gap-2">
+        <div className="flex-1 min-w-0">
           <span
-            className="text-xs font-black uppercase tracking-[0.2em] mb-2 block"
+            className="text-[9px] md:text-xs font-black uppercase tracking-[0.2em] mb-1 md:mb-2 block truncate"
             style={{ color: "#FF6600" }}
           >
             {project.category}
           </span>
           <h3
-            className="font-black text-gray-900 text-xl group-hover:text-[#FF6600] transition-colors leading-tight"
+            className="font-black text-gray-900 text-[13px] md:text-xl group-hover:text-[#FF6600] transition-colors leading-tight line-clamp-2"
             style={{ fontFamily: "var(--font-outfit)" }}
           >
             {project.title}
           </h3>
         </div>
-        <div className="h-12 w-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#FF6600] group-hover:text-white transition-all duration-500 transform group-hover:-rotate-45 shadow-sm">
-          <ExternalLink className="h-5 w-5" />
+        <div className="hidden sm:flex shrink-0 h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-gray-50 items-center justify-center text-gray-400 group-hover:bg-[#FF6600] group-hover:text-white transition-all duration-500 transform group-hover:-rotate-45 shadow-sm">
+          <ExternalLink className="h-4 w-4 md:h-5 md:w-5" />
         </div>
       </div>
     </button>

@@ -4,7 +4,6 @@ import { ClientMarquee } from "@/components/sections/client-marquee";
 import { Services } from "@/components/sections/services";
 import { Process } from "@/components/sections/process";
 import { Stats } from "@/components/sections/stats";
-import { CaseStudies } from "@/components/sections/case-studies";
 import { Portfolio } from "@/components/sections/portfolio";
 import { Testimonials } from "@/components/sections/testimonials";
 import { FAQ } from "@/components/sections/faq";
@@ -125,9 +124,8 @@ export default function Home() {
       <ClientMarquee />
       <Services />
       <Stats />
-      <CaseStudies />
-      <Process />
       <Portfolio />
+      <Process />
       <Testimonials />
       <RecentBlogs />
       <FAQ />

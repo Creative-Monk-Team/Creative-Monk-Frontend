@@ -4,8 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ExternalLink, ChevronLeft, ChevronRight, Expand } from "lucide-react";
-import { getCaseStudies } from "@/lib/api";
-import type { CaseStudy } from "@/lib/types";
+import { getPortfolioItems } from "@/lib/api";
+import type { PortfolioItem } from "@/lib/types";
 import { PortfolioLightbox } from "@/components/site/portfolio-lightbox";
 
 // Swiper imports
@@ -16,7 +16,7 @@ import "swiper/css/pagination";
 
 export function Portfolio() {
   const [active, setActive] = useState("All");
-  const [projects, setProjects] = useState<CaseStudy[]>([]);
+  const [projects, setProjects] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
   const tabContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -26,7 +26,7 @@ export function Portfolio() {
   useEffect(() => {
     async function fetchProjects() {
       try {
-        const data = await getCaseStudies();
+        const data = await getPortfolioItems();
         setProjects(data);
       } catch (error) {
         console.error("Failed to fetch projects:", error);
@@ -172,33 +172,44 @@ export function Portfolio() {
             ))}
           </div>
         ) : (
-          <Swiper
-            modules={[Pagination, Autoplay]}
-            spaceBetween={16}
-            slidesPerView={1.05}
-            loop={filtered.length > 3}
-            autoplay={{ delay: 4000, disableOnInteraction: false }}
-            pagination={{ clickable: true }}
-            breakpoints={{
-              640: { slidesPerView: 2, spaceBetween: 20 },
-              1024: { slidesPerView: 3, spaceBetween: 24 },
-            }}
-            className="portfolio-swiper"
-          >
-            {filtered.map((project) => (
-              <SwiperSlide key={project._id} className="!h-auto">
-                <ProjectCard
-                  project={project}
-                  onOpen={() => setActiveProjectIndex(filtered.findIndex((item) => item._id === project._id))}
-                />
-              </SwiperSlide>
-            ))}
-          </Swiper>
+          <>
+            <style dangerouslySetInnerHTML={{
+              __html: `
+                @media (max-width: 768px) {
+                  .portfolio-swiper .swiper-pagination {
+                    display: none !important;
+                  }
+                }
+              `
+            }} />
+            <Swiper
+              modules={[Pagination, Autoplay]}
+              spaceBetween={16}
+              slidesPerView={1.05}
+              loop={filtered.slice(0, 10).length > 3}
+              autoplay={{ delay: 4000, disableOnInteraction: false }}
+              pagination={{ clickable: true }}
+              breakpoints={{
+                640: { slidesPerView: 2, spaceBetween: 20 },
+                1024: { slidesPerView: 3, spaceBetween: 24 },
+              }}
+              className="portfolio-swiper"
+            >
+              {filtered.slice(0, 10).map((project) => (
+                <SwiperSlide key={project._id} className="!h-auto">
+                  <ProjectCard
+                    project={project}
+                    onOpen={() => setActiveProjectIndex(filtered.findIndex((item) => item._id === project._id))}
+                  />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </>
         )}
 
         <div className="text-center mt-20">
           <Link href="/portfolio" className="btn-outline-orange group">
-            <span>View All Case Studies</span>
+            <span>View All Portfolio</span>
             <ExternalLink className="w-4 h-4 ml-2 group-hover:rotate-45 transition-transform" />
           </Link>
         </div>
@@ -218,11 +229,11 @@ function ProjectCard({
   project,
   onOpen,
 }: {
-  project: CaseStudy;
+  project: PortfolioItem;
   onOpen: () => void;
 }) {
   const portfolioImage =
-    project.portfolioImage || project.gallery?.[0] || project.image || "/placeholder.jpg";
+    project.image || project.gallery?.[0] || "/placeholder.jpg";
 
   return (
     <button
@@ -235,7 +246,7 @@ function ProjectCard({
           src={portfolioImage}
           alt={project.title}
           className={`absolute inset-0 w-full h-full transition-transform duration-1000 group-hover:scale-110 ${
-            project.category === "Brand Identity" ? "object-contain p-8 mix-blend-multiply" : "object-cover"
+            project.category === "Brand Identity" ? "object-contain p-8 mix-blend-multiply" : "object-cover object-top"
           }`}
           loading="lazy"
         />
@@ -245,7 +256,7 @@ function ProjectCard({
             <Expand className="h-4 w-4" />
           </div>
           <div className="flex gap-2 flex-wrap mb-4">
-            {project.services?.map((tag: string) => (
+            {(project.points || []).slice(0, 3).map((tag) => (
               <span
                 key={tag}
                 className="px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-widest bg-white/10 text-white backdrop-blur-md border border-white/20"
