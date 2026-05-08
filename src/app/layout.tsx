@@ -1,9 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+
 import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
+
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -38,12 +41,27 @@ export const metadata: Metadata = {
     "Lead Generation Chandigarh",
     "Creative Monk",
   ],
-  authors: [{ name: "Creative Monk" }],
+  authors: [{ name: "Creative Monk", url: "https://thecreativemonk.in" }],
   creator: "Creative Monk",
+  publisher: "The Creative Monk",
+  applicationName: "The Creative Monk",
   icons: {
-    icon: "/images/icon-logo.png",
+    icon: [
+      { url: "/images/icon-logo.png" },
+      { url: "/images/icon-logo.png", sizes: "32x32", type: "image/png" },
+      { url: "/images/icon-logo.png", sizes: "16x16", type: "image/png" },
+    ],
     shortcut: "/images/icon-logo.png",
-    apple: "/images/icon-logo.png",
+    apple: [
+      { url: "/images/icon-logo.png" },
+      { url: "/images/icon-logo.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      {
+        rel: "apple-touch-icon-precomposed",
+        url: "/images/icon-logo.png",
+      },
+    ],
   },
   openGraph: {
     type: "website",
@@ -78,7 +96,59 @@ export const metadata: Metadata = {
       "max-image-preview": "large",
     },
   },
+  alternates: {
+    canonical: "https://thecreativemonk.in",
+  },
+  category: "technology",
 };
+
+export const viewport: Viewport = {
+  themeColor: "#FF6600",
+  width: "device-width",
+  initialScale: 1,
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "The Creative Monk",
+  "image": "https://thecreativemonk.in/logo.webp",
+  "@id": "https://thecreativemonk.in",
+  "url": "https://thecreativemonk.in",
+  "telephone": "+91 94634 45566",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Office No.11-12, 9th floor, Sushma Infinium",
+    "addressLocality": "Zirakpur",
+    "addressRegion": "Punjab",
+    "postalCode": "140603",
+    "addressCountry": "IN"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 30.6425,
+    "longitude": 76.8173
+  },
+  "openingHoursSpecification": {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ],
+    "opens": "09:30",
+    "closes": "18:30"
+  },
+  "sameAs": [
+    "https://www.facebook.com/creativemonkindia/",
+    "https://www.instagram.com/creativemonkindia/",
+    "https://www.youtube.com/@creativemonkindia"
+  ]
+};
+
 
 export default function RootLayout({
   children,
@@ -97,7 +167,13 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
         </div>
+        <Analytics />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </body>
+
     </html>
   );
 }
