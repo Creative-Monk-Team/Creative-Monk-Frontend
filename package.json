@@ -13,6 +13,7 @@
     "@fontsource/inter": "^5.2.8",
     "@fontsource/outfit": "^5.2.8",
     "@hello-pangea/dnd": "^18.0.1",
+    "@next/third-parties": "^16.2.6",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-progress": "^1.1.8",
     "@tabler/icons-react": "^3.40.0",

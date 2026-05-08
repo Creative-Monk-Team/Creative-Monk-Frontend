@@ -6,6 +6,8 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
+import { GoogleAnalytics } from "@next/third-parties/google";
+
 
 
 const outfit = Outfit({
@@ -100,7 +102,11 @@ export const metadata: Metadata = {
     canonical: "https://thecreativemonk.in",
   },
   category: "technology",
+  verification: {
+    google: "RdKP5MjEnBUowkUkqkXwil83dGTfUklVZ1elPfQlm1w",
+  },
 };
+
 
 export const viewport: Viewport = {
   themeColor: "#FF6600",
@@ -172,7 +178,9 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <GoogleAnalytics gaId="G-1XX3SG68HR" />
       </body>
+
 
     </html>
   );
