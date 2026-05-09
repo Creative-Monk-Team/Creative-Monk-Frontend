@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Search, Lightbulb, Code2, Rocket, ArrowRight } from "lucide-react";
+import { Search, Lightbulb, Code2, Rocket } from "lucide-react";
 
 export function Process() {
   const steps = [
@@ -50,7 +50,7 @@ export function Process() {
             <span className="text-[#FF6600]">Digital Success</span>
           </h2>
           <p className="text-gray-600 text-lg leading-relaxed">
-            We don't just guess. We follow a data-driven, systematic approach to
+            We don&apos;t just guess. We follow a data-driven, systematic approach to
             ensure every project is delivered on time, on budget, and exceeds
             expectations.
           </p>

@@ -67,7 +67,7 @@ export default function TermsPage() {
               Limitation of Liability
             </h2>
             <p>
-              Creative Monk's liability is limited to the value of services
+              Creative Monk&apos;s liability is limited to the value of services
               paid. We are not liable for indirect, incidental, or consequential
               damages arising from use of our services.
             </p>

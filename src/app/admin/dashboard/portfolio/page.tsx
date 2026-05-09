@@ -26,14 +26,14 @@ const fields: CmsField[] = [
     label: "Cover Image", 
     type: "media", 
     uploadFolder: "creative-monk/portfolio",
-    condition: (values: any) => ["Web Development", "Brand Identity"].includes(values.category)
+    condition: (values: Record<string, unknown>) => ["Web Development", "Brand Identity"].includes(values.category as string)
   },
   { 
     name: "gallery", 
     label: "Gallery (Max 10 for GD, Max 5 for Packaging)", 
     type: "media-array", 
     uploadFolder: "creative-monk/portfolio",
-    condition: (values: any) => ["Graphic Designing", "Packaging"].includes(values.category)
+    condition: (values: Record<string, unknown>) => ["Graphic Designing", "Packaging"].includes(values.category as string)
   },
   { name: "order", label: "Order", type: "number" },
   { name: "isActive", label: "Active", type: "checkbox" },

@@ -25,8 +25,8 @@ export default function NotFound() {
         Page Not Found
       </h1>
       <p className="text-gray-500 text-lg max-w-md mb-10">
-        Sorry, we couldn't find the page you're looking for. It may have been
-        moved, deleted, or the URL might be incorrect.
+        Sorry, we couldn&apos;t find the page you&apos;re looking for. It may
+        have been moved, deleted, or the URL might be incorrect.
       </p>
       <div className="flex gap-4">
         <Link href="/" className="btn-primary">

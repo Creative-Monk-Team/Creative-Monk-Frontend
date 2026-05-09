@@ -13,12 +13,13 @@ import {
   Zap,
   Users2,
   BarChart3,
+  LucideIcon,
 } from "lucide-react";
 import { getSiteSettings } from "@/lib/api";
 import type { SiteSettings } from "@/lib/types";
 
 // Map labels to icons
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, LucideIcon> = {
   "startup projects": Briefcase,
   "happy clients": Users,
   "industries served": TrendingUp,
@@ -75,7 +76,6 @@ const defaultFeatures = [
 
 export function Stats() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchSettings() {
@@ -84,8 +84,6 @@ export function Stats() {
         setSettings(data);
       } catch (error) {
         console.error("Failed to fetch settings:", error);
-      } finally {
-        setLoading(false);
       }
     }
     fetchSettings();

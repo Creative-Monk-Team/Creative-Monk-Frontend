@@ -90,7 +90,7 @@ function StatCard({
   href?: string;
   accent?: boolean;
 }) {
-  const Wrapper = (href ? Link : "div") as any;
+  const Wrapper = (href ? Link : "div") as React.ElementType;
   const wrapperProps = href ? { href } : {};
 
   return (
@@ -422,7 +422,7 @@ export default function SuperAdminPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(value: any, name: any) => [value, String(name).replace("-", " ")]}
+                      formatter={(value: any, name: any) => [Array.isArray(value) ? value[0] : (value || 0), String(name || "").replace("-", " ")]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -470,7 +470,7 @@ export default function SuperAdminPage() {
                     allowDecimals={false}
                   />
                   <Tooltip
-                    formatter={(value: any) => [value, "Enquiries"]}
+                    formatter={(value: any) => [Array.isArray(value) ? value[0] : (value || 0), "Enquiries"]}
                     cursor={{ fill: "rgba(255,102,0,0.06)" }}
                   />
                   <Bar dataKey="total" radius={[6, 6, 0, 0]} fill="#FF6600" />
@@ -611,7 +611,7 @@ export default function SuperAdminPage() {
                   width={80}
                 />
                 <Tooltip
-                  formatter={(value: any) => [value, "Leads"]}
+                  formatter={(value: any) => [Array.isArray(value) ? value[0] : (value || 0), "Leads"]}
                   cursor={{ fill: "rgba(255,102,0,0.06)" }}
                 />
                 <Bar dataKey="total" radius={[0, 6, 6, 0]} fill="#FF6600" />

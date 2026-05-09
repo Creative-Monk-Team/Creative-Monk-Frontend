@@ -92,8 +92,6 @@ export function Navbar() {
     (typeof window !== "undefined" &&
       window.location.pathname.startsWith("/admin"));
 
-  if (isAdminPath) return null;
-
   React.useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
@@ -114,6 +112,8 @@ export function Navbar() {
       document.body.style.touchAction = "";
     };
   }, [isOpen]);
+
+  if (isAdminPath) return null;
 
   const handleMouseEnter = (name: string) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);

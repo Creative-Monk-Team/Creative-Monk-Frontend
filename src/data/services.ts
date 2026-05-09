@@ -14,9 +14,9 @@ import {
   Users,
   FileText,
   Package,
+  Sparkles,
   Image as ImageIcon,
   LayoutTemplate,
-  Video,
   type LucideIcon,
 } from "lucide-react";
 

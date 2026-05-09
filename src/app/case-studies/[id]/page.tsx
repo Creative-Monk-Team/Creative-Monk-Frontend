@@ -117,7 +117,7 @@ export default function CaseStudyDetailPage() {
             Case Study Not Found
           </h2>
           <p className="mb-8 text-gray-600">
-            We couldn't find the case study you were looking for.
+            We couldn&apos;t find the case study you were looking for.
           </p>
           <Link href="/case-studies" className="btn-primary inline-flex gap-2">
             <ArrowLeft className="w-4 h-4" /> Back to Case Studies
@@ -314,7 +314,7 @@ export default function CaseStudyDetailPage() {
               <Quote className="absolute -top-5 -left-5 h-36 w-36 rotate-[-12deg] text-white/5 md:h-48 md:w-48" />
               <div className="relative z-10 mx-auto max-w-3xl text-center">
                 <p className="text-[1.45rem] leading-[1.55] text-gray-100 md:text-[2rem]">
-                  "{project.testimonial.text}"
+                  &quot;{project.testimonial.text}&quot;
                 </p>
                 <div className="mt-8">
                   <div className="text-lg font-bold text-[#FF6600]">

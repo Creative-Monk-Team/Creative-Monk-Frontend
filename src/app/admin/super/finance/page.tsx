@@ -481,12 +481,12 @@ export default function SuperAdminFinancePage() {
 
   const token = getAdminToken();
 
-  const loadData = useCallback(() => {
+  const loadData = useCallback((showLoading = true) => {
     if (!token) {
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (showLoading) setLoading(true);
     Promise.all([
       adminApi.getFinanceSummary(token).catch(() => null),
       adminApi.getExpenseBreakdown(token).catch(() => null),
@@ -503,7 +503,7 @@ export default function SuperAdminFinancePage() {
   }, [token]);
 
   useEffect(() => {
-    loadData();
+    loadData(false);
   }, [loadData]);
 
   /* ── Modal handlers ─────────────────────────────────────── */
@@ -790,7 +790,7 @@ export default function SuperAdminFinancePage() {
                         <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: any, name: any) => [INR.format(Number(value)), name]} />
+                    <Tooltip formatter={(value: any, name: any) => [INR.format(Number(Array.isArray(value) ? value[0] : value || 0)), String(name || "")]} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -832,8 +832,8 @@ export default function SuperAdminFinancePage() {
                     tickLine={false}
                     width={100}
                   />
-                  <Tooltip
-                    formatter={(value: any) => [INR.format(Number(value)), "Retainer"]}
+                   <Tooltip
+                    formatter={(value: any) => [INR.format(Number(Array.isArray(value) ? value[0] : value || 0)), "Retainer"]}
                     cursor={{ fill: "rgba(255,102,0,0.06)" }}
                   />
                   <Bar dataKey="monthlyRetainer" radius={[0, 6, 6, 0]}>

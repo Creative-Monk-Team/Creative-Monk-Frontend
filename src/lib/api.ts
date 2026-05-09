@@ -378,12 +378,12 @@ export const adminApi = {
 };
 
 export const apiService = {
-  getServices: (): Promise<any> => getServices() as Promise<any>,
-  getServiceBySlug: (slug: string): Promise<any> => getService(slug) as Promise<any>,
-  getClients: (): Promise<any> => getClients() as Promise<any>,
-  getPortfolio: (): Promise<any> => getPortfolioItems() as Promise<any>,
-  getCaseStudyById: (id: string): Promise<any> => getCaseStudy(id) as Promise<any>,
-  getBlogs: (): Promise<any> => getBlogs() as Promise<any>,
+  getServices: (): Promise<Service[]> => getServices(),
+  getServiceBySlug: (slug: string): Promise<Service | null> => getService(slug),
+  getClients: (): Promise<Client[]> => getClients(),
+  getPortfolio: (): Promise<PortfolioItem[]> => getPortfolioItems(),
+  getCaseStudyById: (id: string): Promise<CaseStudy | null> => getCaseStudy(id),
+  getBlogs: (): Promise<BlogPost[]> => getBlogs(),
 };
 
 export type AdminCollectionMap = {

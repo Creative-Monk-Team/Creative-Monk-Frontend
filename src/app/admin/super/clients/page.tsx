@@ -691,8 +691,8 @@ export default function SuperAdminClientsPage() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   /* ---------- Fetch ---------- */
-  const fetchClients = useCallback(() => {
-    setLoading(true);
+  const fetchClients = useCallback((showLoading = true) => {
+    if (showLoading) setLoading(true);
     adminApi
       .list<AgencyClient[]>("admin/agency-clients", token)
       .then(setClients)
@@ -703,7 +703,7 @@ export default function SuperAdminClientsPage() {
   }, [token]);
 
   useEffect(() => {
-    fetchClients();
+    fetchClients(false);
   }, [fetchClients]);
 
   /* ---------- Quick Actions ---------- */

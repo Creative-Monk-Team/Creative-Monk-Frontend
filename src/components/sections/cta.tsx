@@ -43,7 +43,7 @@ export function CTA() {
             className="text-4xl md:text-6xl font-black text-white mb-6"
             style={{ fontFamily: "var(--font-outfit)" }}
           >
-            Let's Build Something{" "}
+            Let&apos;s Build Something{" "}
             <span className="text-[#FF6600]">Amazing</span> Together
           </h2>
           <p className="text-gray-400 text-xl mb-10 leading-relaxed">

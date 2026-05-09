@@ -9,15 +9,15 @@ export function EnquiriesManager({ token }: { token: string }) {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  async function loadEnquiries() {
-    setLoading(true);
+  async function loadEnquiries(showLoading = true) {
+    if (showLoading) setLoading(true);
     const data = await adminApi.list<Enquiry[]>("enquiries", token);
     setEnquiries(data);
     setLoading(false);
   }
 
   useEffect(() => {
-    void loadEnquiries();
+    void loadEnquiries(false);
   }, [token]);
 
   async function updateEnquiry(id: string, updates: Partial<Enquiry>) {

@@ -551,12 +551,12 @@ export default function SuperAdminEmployeesPage() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (showLoading = true) => {
     if (!token) {
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (showLoading) setLoading(true);
     try {
       const [empData, sumData, utilData, deptData] = await Promise.all([
         adminApi.list<Employee[]>("admin/employees", token),
@@ -576,7 +576,7 @@ export default function SuperAdminEmployeesPage() {
   }, [token]);
 
   useEffect(() => {
-    loadData();
+    loadData(false);
   }, [loadData]);
 
   /* ── Modal handlers ─────────────────────────────────────── */
@@ -796,7 +796,7 @@ export default function SuperAdminEmployeesPage() {
                   paddingAngle={3}
                   dataKey="value"
                   nameKey="name"
-                  label={({ name, value }: any) => `${name} (${value})`}
+                  label={({ name, value }: { name?: string; value?: number }) => `${name || "Unknown"} (${value || 0})`}
                   fontSize={11}
                 >
                   {deptChartData.map((_entry, idx) => (

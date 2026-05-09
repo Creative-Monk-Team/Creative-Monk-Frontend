@@ -1,0 +1,220 @@
+
+> creative-monk-frontend@0.1.0 lint
+> eslint
+
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/about/page.tsx
+  146:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  489:27  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/admin/dashboard/portfolio/page.tsx
+  29:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/admin/super/clients/[id]/page.tsx
+  1000:57  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  1000:68  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/admin/super/clients/page.tsx
+  706:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/admin/super/clients/page.tsx:706:5
+  704 |
+  705 |   useEffect(() => {
+> 706 |     fetchClients();
+      |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  707 |   }, [fetchClients]);
+  708 |
+  709 |   /* ---------- Quick Actions ---------- */  react-hooks/set-state-in-effect
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/admin/super/employees/page.tsx
+  129:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/admin/super/employees/page.tsx:129:7
+  127 |   useEffect(() => {
+  128 |     if (open) {
+> 129 |       setSkillsText(form.primarySkills.join(", "));
+      |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  130 |     }
+  131 |   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  132 |  react-hooks/set-state-in-effect
+  799:44  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/admin/super/finance/page.tsx
+   11:3   warning  'Legend' is defined but never used         @typescript-eslint/no-unused-vars
+   35:3   warning  'FinanceRecord' is defined but never used  @typescript-eslint/no-unused-vars
+  793:49  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  793:60  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  836:40  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/admin/super/page.tsx
+    9:3   warning  'BellRing' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   93:44  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  226:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/admin/super/page.tsx:226:7
+  224 |     const token = getAdminToken();
+  225 |     if (!token) {
+> 226 |       setLoading(false);
+      |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  227 |       return;
+  228 |     }
+  229 |     adminApi  react-hooks/set-state-in-effect
+  425:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  425:53  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  473:40  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  614:38  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/admin/super/settings/page.tsx
+  42:6  warning  React Hook useEffect has a missing dependency: 'loadOverview'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/blog/[slug]/page.tsx
+  162:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  287:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  495:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/blog/page.tsx
+  191:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  256:27  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/career/page.tsx
+  12:3  warning  'Zap' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/case-studies/[id]/page.tsx
+  120:22  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  143:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  168:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  317:19  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  317:46  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  468:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  618:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  664:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  695:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  712:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/case-studies/page.tsx
+  67:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/not-found.tsx
+   2:16  warning  'ArrowLeft' is defined but never used                            @typescript-eslint/no-unused-vars
+  28:25  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  28:45  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/portfolio/page.tsx
+    4:8  warning  'Link' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  196:9  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/services/[slug]/page.tsx
+   99:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  208:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/app/terms/page.tsx
+  70:28  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/admin/cms-collection-manager.tsx
+   13:39   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   17:57   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   28:63   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   69:6    warning  React Hook useEffect has a missing dependency: 'loadItems'. Either include it or remove the dependency array                                                                                                                                                                             react-hooks/exhaustive-deps
+  389:13   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  428:15   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  568:42   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  606:77   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  606:89   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  606:108  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  609:24   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  618:33   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  686:40   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  745:70   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  745:89   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/admin/enquiries-manager.tsx
+  20:10  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/admin/enquiries-manager.tsx:20:10
+  18 |
+  19 |   useEffect(() => {
+> 20 |     void loadEnquiries();
+     |          ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  21 |   }, [token]);
+  22 |
+  23 |   async function updateEnquiry(id: string, updates: Partial<Enquiry>) {  react-hooks/set-state-in-effect
+  21:6   warning  React Hook useEffect has a missing dependency: 'loadEnquiries'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/admin/site-settings-editor.tsx
+  178:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/layout/footer.tsx
+  77:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/layout/navbar.tsx
+   97:3   error    React Hook "React.useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                                                                                                       react-hooks/rules-of-hooks
+  104:3   error    React Hook "React.useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                                                                                                       react-hooks/rules-of-hooks
+  166:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  307:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/layout/page-header.tsx
+   4:10  warning  'Sparkles' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  25:9   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  39:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/sections/case-studies.tsx
+  91:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/sections/client-marquee.tsx
+  65:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/sections/contact-form.tsx
+  38:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/sections/faq.tsx
+  10:10  warning  'HelpCircle' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/sections/hero.tsx
+    6:3   warning  'ArrowRight' is defined but never used                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+    9:3   warning  'Zap' is defined but never used                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   19:10  warning  'loading' is assigned a value but never used                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+   77:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  315:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/sections/portfolio.tsx
+  245:9  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/sections/recent-blogs.tsx
+  84:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/sections/testimonials.tsx
+  86:27  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/siddharth/Projects/Creative Monk/Creative-Monk-Main/frontend/src/components/site/portfolio-lightbox.tsx
+  176:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  189:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  200:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  211:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+✖ 89 problems (38 errors, 51 warnings)
+

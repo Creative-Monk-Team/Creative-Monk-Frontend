@@ -10,11 +10,11 @@ export type CmsField = {
   placeholder?: string;
   uploadFolder?: string;
   options?: { label: string; value: string }[];
-  condition?: (values: Record<string, any>) => boolean;
+  condition?: (values: Record<string, unknown>) => boolean;
   maxItems?: number;
 };
 
-type CmsCollectionManagerProps<T extends Record<string, any>> = {
+type CmsCollectionManagerProps<T extends { _id: string } & Record<string, unknown>> = {
   title: string;
   description: string;
   adminPath: string;
@@ -25,7 +25,7 @@ type CmsCollectionManagerProps<T extends Record<string, any>> = {
   createDefaults: Record<string, unknown>;
 };
 
-export function CmsCollectionManager<T extends Record<string, any>>({
+export function CmsCollectionManager<T extends { _id: string } & Record<string, unknown>>({
   title,
   description,
   adminPath,
@@ -48,8 +48,8 @@ export function CmsCollectionManager<T extends Record<string, any>>({
     [items, selectedId],
   );
 
-  async function loadItems() {
-    setLoading(true);
+  async function loadItems(showLoading = true) {
+    if (showLoading) setLoading(true);
     setError("");
     try {
       const data = await adminApi.list<T[]>(adminPath, token);
@@ -65,7 +65,7 @@ export function CmsCollectionManager<T extends Record<string, any>>({
   }
 
   useEffect(() => {
-    void loadItems();
+    void loadItems(false);
   }, [adminPath, token]);
 
   useEffect(() => {
@@ -565,7 +565,7 @@ function CustomSelect({
   );
 }
 
-const PREDEFINED_SCHEMAS: Record<string, any> = {
+const PREDEFINED_SCHEMAS: Record<string, unknown> = {
   seo: { title: "", description: "", canonical: "", ogImage: "" },
   seoDefaults: { title: "", description: "", canonical: "", ogImage: "" },
   social: { facebook: "", instagram: "", linkedin: "", twitter: "", youtube: "", whatsapp: "" },
@@ -742,7 +742,7 @@ function SchemaNode({ template, value, onChange, label, name }: { template: any;
   );
 }
 
-export function JsonVisualEditor({ value, onChange, name }: { value: any; onChange: (v: any) => void; name: string }) {
+export function JsonVisualEditor({ value, onChange, name }: { value: unknown; onChange: (v: unknown) => void; name: string }) {
   let parsed = value;
   if (typeof value === "string") {
     try {

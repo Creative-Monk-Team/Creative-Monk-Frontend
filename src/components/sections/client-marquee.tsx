@@ -3,14 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { apiService } from "@/lib/api";
-
-interface Client {
-  id: string;
-  name: string;
-  site?: string;
-  logoUrl?: string;
-  status: string;
-}
+import type { Client } from "@/lib/types";
 
 export function ClientMarquee() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -22,7 +15,7 @@ export function ClientMarquee() {
       .then((data) => {
         // Filter out inactive clients
         const activeClients = Array.isArray(data)
-          ? data.filter((c: Client) => c.status !== "inactive")
+          ? data.filter((c: Client) => (c.status as string) !== "inactive")
           : [];
         setClients(activeClients);
         setLoading(false);
@@ -68,9 +61,9 @@ export function ClientMarquee() {
           }}
         >
           {marqueeItems.map((client, index) => {
-            const content = client.logoUrl ? (
+            const content = client.logo ? (
               <img
-                src={client.logoUrl}
+                src={client.logo}
                 alt={client.name}
                 className="h-8 md:h-12 w-auto object-contain grayscale hover:grayscale-0 opacity-50 hover:opacity-100 transition-all duration-300"
                 loading="lazy"
@@ -82,10 +75,10 @@ export function ClientMarquee() {
             );
 
             return (
-              <div key={`${client.id}-${index}`} className="flex-shrink-0">
-                {client.site ? (
+              <div key={`${client._id}-${index}`} className="flex-shrink-0">
+                {client.website ? (
                   <a
-                    href={client.site}
+                    href={client.website}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
