@@ -31,7 +31,11 @@ const navItems = [
             name: "Local Business Marketing",
             href: "/services/local-business-marketing",
           },
-          { name: "Lead Generation", href: "/services/lead-generation" },
+          {
+            name: "Lead Generation",
+            href: "/services/lead-generation",
+          },
+          { name: "Branding", href: "/services/branding" },
         ],
       },
       {
@@ -55,6 +59,7 @@ const navItems = [
         group: "Graphic Designing",
         items: [
           { name: "Logo Designing", href: "/services/logo-designing" },
+          { name: "Print Design", href: "/services/print-design" },
           { name: "Package Designing", href: "/services/package-designing" },
           {
             name: "Corporate Designing",

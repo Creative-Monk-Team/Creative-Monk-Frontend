@@ -78,6 +78,7 @@ export const serviceCategories: ServiceCategory[] = [
       "lead-generation",
       "cro",
       "social-media-management",
+      "branding",
     ],
   },
   {
@@ -88,6 +89,7 @@ export const serviceCategories: ServiceCategory[] = [
     icon: Palette,
     services: [
       "logo-designing",
+      "print-design",
       "package-designing",
       "corporate-designing",
       "social-media-posters",
@@ -850,6 +852,84 @@ export const services: ServiceDetail[] = [
     icon: LayoutTemplate,
     color: "#FF6600",
     image: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop",
+    category: "design",
+  },
+  {
+    slug: "branding",
+    title: "Branding",
+    shortTitle: "Branding",
+    tagline: "Building Digital Legacies through Strategic Identity.",
+    description:
+      "Holistic brand strategy that defines your market position, voice, and digital impact.",
+    longDescription:
+      "At Creative Monk, we believe branding is more than just a logo—it's the soul of your business. Our branding services encompass deep market research, strategic positioning, and a cohesive brand voice that resonates with your target audience. We build digital legacies by ensuring every touchpoint of your brand communicates authority, trust, and premium quality. From brand discovery to a full-scale digital presence launch, we provide the strategic framework needed to dominate your industry.",
+    features: [
+      "Brand Discovery & Strategy",
+      "Market Positioning Analysis",
+      "Messaging & Voice Framework",
+      "Digital Presence Launch Strategy",
+      "Comprehensive Brand Style Guides",
+      "Brand Archetype Definition",
+    ],
+    process: [
+      { step: "Discovery", desc: "Deep dive into your business values, goals, and audience." },
+      { step: "Strategy", desc: "Defining your unique market positioning and brand voice." },
+      { step: "Visual Identity", desc: "Crafting the visual language that supports the strategy." },
+      { step: "Guidelines", desc: "Creating detailed brand books for consistent implementation." },
+      { step: "Launch", desc: "Introducing your refreshed brand to the market." },
+    ],
+    outcomes: [
+      "Clear market positioning",
+      "Unified brand voice",
+      "Stronger customer loyalty",
+      "Premium brand perception",
+    ],
+    faqs: [
+      { question: "Why is branding important for my business?", answer: "Branding helps you stand out in a crowded market, builds trust with your audience, and allows you to command premium pricing by increasing your perceived value." },
+      { question: "How long does a full branding project take?", answer: "A comprehensive branding project typically takes 4-8 weeks, depending on the scope of the strategy and visual assets required." },
+    ],
+    icon: Sparkles,
+    color: "#FF6600",
+    image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=1974&auto=format&fit=crop",
+    category: "marketing",
+  },
+  {
+    slug: "print-design",
+    title: "Print Design",
+    shortTitle: "Print Design",
+    tagline: "Tangible Design for the Real World.",
+    description:
+      "High-quality print media from business cards to brochures that speak volumes about your professionalism.",
+    longDescription:
+      "In a digital world, high-quality print design makes your brand tangible and trustworthy. Creative Monk provides professional print design services in Chandigarh, India, ranging from luxury business cards and corporate brochures to high-impact billboards and magazine ads. Our designs are optimized for production, ensuring that colors are vibrant and typography is crisp. We bridge the gap between digital strategy and physical presence, giving your brand a professional edge in the real world.",
+    features: [
+      "Brochures & Flyers",
+      "Luxury Business Cards",
+      "Stationery & Letterheads",
+      "Billboard & Outdoor Signage",
+      "Magazine & Newspaper Ads",
+      "Company Profiles & Annual Reports",
+    ],
+    process: [
+      { step: "Brief", desc: "Gathering requirements, dimensions, and brand constraints." },
+      { step: "Design", desc: "Creating high-impact print-ready layouts." },
+      { step: "Review", desc: "Refining designs based on your feedback." },
+      { step: "Pre-press", desc: "Preparing files with bleed and crop marks." },
+      { step: "Delivery", desc: "Sending high-resolution files to your printer." },
+    ],
+    outcomes: [
+      "Professional physical presence",
+      "High-quality print assets",
+      "Brand consistency across media",
+      "Tangible marketing impact",
+    ],
+    faqs: [
+      { question: "Do you handle the actual printing?", answer: "We provide the print-ready files optimized for production. We can also coordinate with your printer or recommend our trusted partners." },
+      { question: "What file formats will I receive?", answer: "You will receive high-resolution PDFs with bleed marks, along with editable source files in AI or Indesign formats." },
+    ],
+    icon: Package,
+    color: "#FF6600",
+    image: "https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?q=80&w=1932&auto=format&fit=crop",
     category: "design",
   },
 ];
