@@ -7,9 +7,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Fetch all dynamic data
   const [services, blogs, caseStudies] = await Promise.all([
-    getServices(),
-    getBlogs(),
-    getCaseStudies(),
+    getServices() as Promise<any>,
+    getBlogs() as Promise<any>,
+    getCaseStudies() as Promise<any>,
   ]);
 
   // Core Pages
@@ -26,8 +26,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/terms`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
   ];
 
+  // Helper to extract data from potentially paginated response
+  const extractData = <T>(res: T[] | { data: T[] }): T[] => {
+    if (Array.isArray(res)) return res;
+    return res.data || [];
+  };
+
+  const blogList: any[] = extractData(blogs);
+  const caseStudyList: any[] = extractData(caseStudies);
+  const serviceList: any[] = extractData(services);
+
   // Dynamic Service Pages
-  const servicePages: MetadataRoute.Sitemap = services.map((service) => ({
+  const servicePages: MetadataRoute.Sitemap = serviceList.map((service) => ({
     url: `${baseUrl}/services/${service.slug}`,
     lastModified: now,
     changeFrequency: "monthly",
@@ -35,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Dynamic Blog Pages
-  const blogPages: MetadataRoute.Sitemap = blogs.map((post) => ({
+  const blogPages: MetadataRoute.Sitemap = blogList.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
     lastModified: now,
     changeFrequency: "monthly",
@@ -43,7 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Dynamic Case Study Pages
-  const caseStudyPages: MetadataRoute.Sitemap = caseStudies.map((cs) => ({
+  const caseStudyPages: MetadataRoute.Sitemap = caseStudyList.map((cs) => ({
     url: `${baseUrl}/case-studies/${cs.id}`,
     lastModified: now,
     changeFrequency: "monthly",

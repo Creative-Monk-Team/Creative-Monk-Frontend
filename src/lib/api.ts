@@ -108,7 +108,8 @@ export async function getService(slug: string) {
 
 export async function getCaseStudies(searchParams?: FetchOptions["searchParams"]) {
   try {
-    return await request<CaseStudy[]>("case-studies", { searchParams });
+    const response = await request<CaseStudy[] | PaginatedResponse<CaseStudy>>("case-studies", { searchParams });
+    return response;
   } catch {
     return [];
   }
@@ -124,7 +125,8 @@ export async function getCaseStudy(id: string) {
 
 export async function getPortfolioItems(searchParams?: FetchOptions["searchParams"]) {
   try {
-    return await request<PortfolioItem[]>("portfolio", { searchParams });
+    const response = await request<PortfolioItem[] | PaginatedResponse<PortfolioItem>>("portfolio", { searchParams });
+    return response;
   } catch {
     return [];
   }
@@ -156,7 +158,8 @@ export async function getTestimonials(searchParams?: FetchOptions["searchParams"
 
 export async function getBlogs(searchParams?: FetchOptions["searchParams"]) {
   try {
-    return await request<BlogPost[]>("blogs", { searchParams });
+    const response = await request<BlogPost[] | PaginatedResponse<BlogPost>>("blogs", { searchParams });
+    return response;
   } catch {
     return [];
   }

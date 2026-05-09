@@ -15,7 +15,9 @@ import { motion } from "framer-motion";
 import { CTA } from "@/components/sections/cta";
 import { PageHeader } from "@/components/layout/page-header";
 import { getBlogs } from "@/lib/api";
-import type { BlogPost } from "@/lib/types";
+import type { BlogPost, PaginatedResponse, PaginationMetadata } from "@/lib/types";
+import { Pagination } from "@/components/ui/pagination";
+import { getThumbnail } from "@/lib/image-utils";
 
 /* ── helpers ───────────────────────────────────────────── */
 
@@ -60,18 +62,41 @@ export default function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
 
   useEffect(() => {
-    getBlogs()
-      .then((d) => setPosts(sortPosts(d)))
+    setCurrentPage(1);
+  }, [activeCategory]);
+
+  useEffect(() => {
+    setLoading(true);
+    const params: any = { page: currentPage, limit: 10 };
+    if (activeCategory !== "All") params.category = activeCategory;
+
+    getBlogs(params)
+      .then((res) => {
+        if ("data" in res) {
+          setPosts(res.data);
+          setPagination(res.pagination);
+        } else {
+          setPosts(sortPosts(res));
+          setPagination(null);
+        }
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [currentPage, activeCategory]);
 
-  const categories = ["All", ...Array.from(new Set(posts.map((p) => p.category).filter(Boolean)))];
+  // Categories list
+  const categories = ["All", "SEO", "Branding", "Web Development", "Web Design", "Social Media", "PPC", "Content Marketing", "Digital Marketing", "Marketing"];
+  
   const featured = posts.find((p) => p.featured) || posts[0];
-  const filteredPosts = activeCategory === "All" ? posts : posts.filter((p) => p.category === activeCategory);
-  const gridPosts = activeCategory === "All" && featured ? filteredPosts.filter((p) => p.slug !== featured.slug) : filteredPosts;
+  // Since server handles filtering, we don't need to filter by category again.
+  // We just handle the "featured" exclusion on the grid if it's the "All" category.
+  const gridPosts = activeCategory === "All" && featured 
+    ? posts.filter((p) => p.slug !== featured.slug) 
+    : posts;
 
   return (
     <>
@@ -188,7 +213,7 @@ export default function BlogPage() {
             >
               <div className="relative h-60 overflow-hidden md:h-auto md:w-[55%]">
                 <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/50 via-black/5 to-transparent md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-black/5" />
-                <img src={featured.coverImage || "/placeholder.jpg"} alt={featured.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <img src={getThumbnail(featured.coverImage)} alt={featured.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div className="absolute left-4 top-4 z-20 flex gap-2">
                   <span className="rounded-full bg-white/90 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#FF6600] backdrop-blur-sm">Featured</span>
                   <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${getTheme(featured.category).badge}`}>{featured.category}</span>
@@ -253,7 +278,7 @@ export default function BlogPage() {
                       >
                         <div className="relative h-44 overflow-hidden">
                           <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/30 to-transparent" />
-                          <img src={post.coverImage || "/placeholder.jpg"} alt={post.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <img src={getThumbnail(post.coverImage)} alt={post.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                           <span className={`absolute left-3.5 top-3.5 z-20 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em] ${getTheme(post.category).badge}`}>{post.category}</span>
                         </div>
 
@@ -277,6 +302,17 @@ export default function BlogPage() {
                     </motion.article>
                   ))}
                 </div>
+              )}
+
+              {pagination && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={pagination.pages}
+                  onPageChange={(page) => {
+                    setCurrentPage(page);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                />
               )}
             </>
           )}

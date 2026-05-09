@@ -8,7 +8,9 @@ import { CTA } from "@/components/sections/cta";
 import { PageHeader } from "@/components/layout/page-header";
 import { PortfolioLightbox } from "@/components/site/portfolio-lightbox";
 import { getPortfolioItems } from "@/lib/api";
-import type { PortfolioItem } from "@/lib/types";
+import type { PortfolioItem, PaginationMetadata } from "@/lib/types";
+import { Pagination } from "@/components/ui/pagination";
+import { getThumbnail } from "@/lib/image-utils";
 
 export default function PortfolioPage() {
   const [active, setActive] = useState("All");
@@ -19,11 +21,28 @@ export default function PortfolioPage() {
   const [showRightArrow, setShowRightArrow] = useState(true);
   const [activeProjectIndex, setActiveProjectIndex] = useState<number | null>(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [active]);
+
   useEffect(() => {
     async function fetchProjects() {
       try {
-        const data = await getPortfolioItems();
-        setProjects(data);
+        setLoading(true);
+        const params: any = { page: currentPage, limit: 10 };
+        if (active !== "All") params.category = active;
+
+        const res = await getPortfolioItems(params);
+        if ("data" in res) {
+          setProjects(res.data);
+          setPagination(res.pagination);
+        } else {
+          setProjects(res);
+          setPagination(null);
+        }
       } catch (error) {
         console.error("Failed to fetch portfolio items:", error);
       } finally {
@@ -32,11 +51,10 @@ export default function PortfolioPage() {
     }
 
     fetchProjects();
-  }, []);
+  }, [currentPage, active]);
 
-  const categories = ["All", ...new Set(projects.map((project) => project.category))];
-  const filtered =
-    active === "All" ? projects : projects.filter((project) => project.category === active);
+  const categories = ["All", "Web Design", "Web Development", "Branding", "SEO", "Digital Marketing"];
+  const filtered = projects;
 
   const handleScroll = () => {
     if (tabContainerRef.current) {
@@ -159,6 +177,19 @@ export default function PortfolioPage() {
                   ))}
                 </AnimatePresence>
               </div>
+
+              {pagination && (
+                <div className="mb-12">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={pagination.pages}
+                    onPageChange={(page) => {
+                      setCurrentPage(page);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                  />
+                </div>
+              )}
             </>
           )}
 
@@ -194,7 +225,7 @@ function ProjectCard({
     >
       <div className={`relative h-48 shrink-0 overflow-hidden md:h-72 ${project.category === "Brand Identity" ? "bg-[#f8f9fa]" : ""}`}>
         <img
-          src={portfolioImage}
+          src={getThumbnail(portfolioImage)}
           alt={project.title}
           className={`absolute inset-0 h-full w-full transition-transform duration-1000 group-hover:scale-110 ${
             project.category === "Brand Identity" ? "object-contain p-6 md:p-8 mix-blend-multiply" : "object-cover object-top"

@@ -6,6 +6,18 @@ export type Seo = {
   ogImage?: string;
 };
 
+export type PaginationMetadata = {
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+};
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  pagination: PaginationMetadata;
+};
+
 export type SiteMetric = {
   label: string;
   value: string;

@@ -6,17 +6,29 @@ import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { getCaseStudies } from "@/lib/api";
-import type { CaseStudy } from "@/lib/types";
+import type { CaseStudy, PaginationMetadata } from "@/lib/types";
+import { Pagination } from "@/components/ui/pagination";
+import { getThumbnail } from "@/lib/image-utils";
 
 export default function CaseStudiesPage() {
   const [projects, setProjects] = useState<CaseStudy[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
+
   useEffect(() => {
     async function fetchCaseStudies() {
       try {
-        const data = await getCaseStudies();
-        setProjects(data);
+        setLoading(true);
+        const res = await getCaseStudies({ page: currentPage, limit: 10 });
+        if ("data" in res) {
+          setProjects(res.data);
+          setPagination(res.pagination);
+        } else {
+          setProjects(res);
+          setPagination(null);
+        }
       } catch (error) {
         console.error("Failed to fetch case studies:", error);
       } finally {
@@ -25,7 +37,7 @@ export default function CaseStudiesPage() {
     }
 
     fetchCaseStudies();
-  }, []);
+  }, [currentPage]);
 
   return (
     <main className="min-h-screen bg-white flex flex-col pt-0">
@@ -65,7 +77,7 @@ export default function CaseStudiesPage() {
                 >
                   <div className="relative h-60 overflow-hidden bg-gray-100">
                     <img
-                      src={project.image || "/placeholder.jpg"}
+                      src={getThumbnail(project.image)}
                       alt={project.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
@@ -98,6 +110,19 @@ export default function CaseStudiesPage() {
                   </div>
                 </motion.div>
               ))}
+            </div>
+          )}
+
+          {pagination && (
+            <div className="mt-12">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={pagination.pages}
+                onPageChange={(page) => {
+                  setCurrentPage(page);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              />
             </div>
           )}
 
