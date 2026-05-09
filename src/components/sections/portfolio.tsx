@@ -26,8 +26,9 @@ export function Portfolio() {
   useEffect(() => {
     async function fetchProjects() {
       try {
-        const data = await getPortfolioItems();
-        setProjects(data);
+        const res = await getPortfolioItems();
+        const portfolioData = "data" in res ? res.data : res;
+        setProjects(portfolioData);
       } catch (error) {
         console.error("Failed to fetch projects:", error);
       } finally {

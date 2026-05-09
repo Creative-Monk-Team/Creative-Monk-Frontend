@@ -14,8 +14,9 @@ export function RecentBlogs() {
   useEffect(() => {
     async function fetchBlogs() {
       try {
-        const data = await getBlogs({ limit: 3 });
-        setBlogs(data);
+        const res = await getBlogs({ limit: 3 });
+        const blogsData = "data" in res ? res.data : res;
+        setBlogs(blogsData);
       } catch (error) {
         console.error("Failed to fetch blogs:", error);
       } finally {

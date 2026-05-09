@@ -106,7 +106,8 @@ export default function BlogPostPage({
         setPost(postData);
 
         if (postData) {
-          const related = sortPosts(allPosts)
+          const postsArray = "data" in allPosts ? allPosts.data : allPosts;
+          const related = sortPosts(postsArray)
             .filter((item) => item.slug !== postData.slug)
             .sort((a, b) => {
               const categoryScore =

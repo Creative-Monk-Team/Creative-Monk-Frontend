@@ -13,8 +13,9 @@ export function CaseStudies() {
   useEffect(() => {
     async function fetchCaseStudies() {
       try {
-        const data = await getCaseStudies({ limit: 3 });
-        setProjects(data);
+        const res = await getCaseStudies({ limit: 3 });
+        const caseStudiesData = "data" in res ? res.data : res;
+        setProjects(caseStudiesData);
       } catch (error) {
         console.error("Failed to fetch case studies:", error);
       } finally {

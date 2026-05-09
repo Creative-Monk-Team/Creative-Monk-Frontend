@@ -11,6 +11,8 @@ import type {
   FAQ,
   FinanceRecord,
   MediaUploadResult,
+  PaginatedResponse,
+  PaginationMetadata,
   PortfolioItem,
   Service,
   ServiceCategory,
@@ -384,9 +386,15 @@ export const apiService = {
   getServices: (): Promise<Service[]> => getServices(),
   getServiceBySlug: (slug: string): Promise<Service | null> => getService(slug),
   getClients: (): Promise<Client[]> => getClients(),
-  getPortfolio: (): Promise<PortfolioItem[]> => getPortfolioItems(),
+  getPortfolio: async (): Promise<PortfolioItem[]> => {
+    const res = await getPortfolioItems();
+    return "data" in res ? res.data : res;
+  },
   getCaseStudyById: (id: string): Promise<CaseStudy | null> => getCaseStudy(id),
-  getBlogs: (): Promise<BlogPost[]> => getBlogs(),
+  getBlogs: async (): Promise<BlogPost[]> => {
+    const res = await getBlogs();
+    return "data" in res ? res.data : res;
+  },
 };
 
 export type AdminCollectionMap = {
