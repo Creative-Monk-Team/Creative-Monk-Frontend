@@ -136,7 +136,12 @@ export function Navbar() {
       }}
     >
       {/* Top Bar */}
-      <div style={{ background: "#FF6600" }} className="hidden xl:block">
+      <div 
+        style={{ background: "#FF6600" }} 
+        className={`hidden xl:block overflow-hidden transition-all duration-300 ${
+          scrolled ? "max-h-0 opacity-0" : "max-h-12 opacity-100"
+        }`}
+      >
         <div className="xl:px-10 px-4 flex items-center justify-between py-2">
           <div className="flex items-center gap-4 text-white text-sm">
             <a
