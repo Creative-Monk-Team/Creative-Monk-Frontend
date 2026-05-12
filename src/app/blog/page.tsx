@@ -211,7 +211,7 @@ export default function BlogPage() {
               href={`/blog/${featured.slug}`}
               className="group mt-8 flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-500 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-orange-500/[0.05] md:flex-row"
             >
-              <div className="relative h-64 shrink-0 overflow-hidden md:h-[380px] md:w-[55%]">
+              <div className="relative h-64 shrink-0 overflow-hidden md:h-[280px] md:w-[50%]">
                 <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/50 via-black/5 to-transparent md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-black/5" />
                 <img src={getThumbnail(featured.coverImage)} alt={featured.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div className="absolute left-4 top-4 z-20 flex gap-2">
