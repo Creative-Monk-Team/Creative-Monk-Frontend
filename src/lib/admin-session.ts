@@ -35,5 +35,6 @@ export function clearAdminSession() {
 }
 
 export function getRoleHomePath(role: AdminRole) {
-  return role === "super_admin" ? "/admin/super" : "/admin/dashboard";
+  return "/admin/dashboard"; // Force all roles to the SEO expert dashboard
+  // return role === "super_admin" ? "/admin/super" : "/admin/dashboard";
 }

@@ -108,7 +108,7 @@ export default function AdminDashboardLayout({
         </div>
 
         <div className="p-4 border-t border-gray-800 space-y-3">
-          {user?.role === "super_admin" ? (
+          {/* {user?.role === "super_admin" ? (
             <button
               type="button"
               onClick={() => router.push(getRoleHomePath("super_admin"))}
@@ -116,7 +116,7 @@ export default function AdminDashboardLayout({
             >
               Open Super Admin HQ
             </button>
-          ) : null}
+          ) : null} */}
           <button
             type="button"
             onClick={logout}
