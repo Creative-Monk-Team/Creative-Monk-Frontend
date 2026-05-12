@@ -15,7 +15,7 @@ export const portfolioCategories = [
   "All",
   "Web Development",
   "Branding",
-  "SEO",
+  "Printing",
   "Social Media",
   "Graphic Design",
 ];
