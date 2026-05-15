@@ -3,38 +3,10 @@
 import { use, useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  ChevronRight,
-  Clock3,
-  Layers3,
-  Phone,
-  Sparkles,
-  Target,
-  Zap,
-} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { CTA } from "@/components/sections/cta";
 import { getService, getSiteSettings } from "@/lib/api";
-import { getIcon } from "@/lib/icon-utils";
 import type { Service, SiteSettings } from "@/lib/types";
-
-function splitHeadline(title: string) {
-  const words = title.split(" ");
-
-  if (words.length <= 1) {
-    return { lead: title, accent: "" };
-  }
-
-  return {
-    lead: words.slice(0, -1).join(" "),
-    accent: words[words.length - 1],
-  };
-}
-
-const insightIcons = [Target, Zap, Layers3, CheckCircle2];
 
 export default function ServicePage({
   params,
@@ -47,420 +19,768 @@ export default function ServicePage({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const [serviceData, siteSettings] = await Promise.all([
-          getService(slug),
-          getSiteSettings(),
-        ]);
-
-        setService(serviceData);
-        setSettings(siteSettings);
-      } catch (error) {
-        console.error("Failed to fetch service details:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
+    Promise.all([getService(slug), getSiteSettings()])
+      .then(([s, set]) => {
+        setService(s);
+        setSettings(set);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch service:", err);
+      })
+      .finally(() => setLoading(false));
   }, [slug]);
 
-  if (!loading && !service) {
-    return notFound();
-  }
+  if (!loading && !service) return notFound();
 
   if (loading || !service) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-gray-500">
-          <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
-          <p>Loading service details...</p>
+      <main className="min-h-screen bg-[#FAF7F2] grid place-items-center">
+        <div className="flex flex-col items-center gap-4 text-stone-500">
+          <div className="w-10 h-10 border-2 border-[#FF6600] border-t-transparent rounded-full animate-spin" />
+          <p className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.22em]">
+            Loading service details…
+          </p>
         </div>
       </main>
     );
   }
 
-  const ServiceIcon = getIcon(service.icon);
-  const heading = splitHeadline(service.title);
+  return (
+    <main className="relative">
+      <ServiceHero service={service} settings={settings} />
+      <Overview service={service} />
+      <Capabilities service={service} />
+      <Process service={service} />
+      <FaqSection service={service} />
+      <CTA />
+    </main>
+  );
+}
+
+/* ─── Hero ─────────────────────────────────────────────────── */
+function ServiceHero({
+  service,
+  settings,
+}: {
+  service: Service;
+  settings: SiteSettings | null;
+}) {
   const phoneRaw = settings?.phoneRaw || settings?.phone || "";
-  const companyName = settings?.companyName || "Creative Monk";
-  const detailContent = service.detailContent || {};
-  const heroMetrics = [
-    { label: "Capabilities", value: String(service.features.length).padStart(2, "0") },
-    { label: "Process Steps", value: String(service.process.length).padStart(2, "0") },
-    { label: "FAQs Covered", value: String(service.faqs.length).padStart(2, "0") },
+  /* Split last word for italic accent. */
+  const words = (service.title || "").trim().split(/\s+/);
+  const lead = words.slice(0, -1).join(" ");
+  const accent = words[words.length - 1] || service.title;
+
+  const heroStats = [
+    { value: String(service.features.length).padStart(2, "0"), label: "Capabilities" },
+    { value: String(service.process.length).padStart(2, "0"), label: "Process steps" },
+    { value: String(service.faqs.length).padStart(2, "0"), label: "FAQs covered" },
+    { value: String(service.outcomes.length).padStart(2, "0"), label: "Outcomes" },
   ];
 
   return (
-    <main className="min-h-screen bg-white">
-      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(255,122,26,0.18),_transparent_36%),linear-gradient(180deg,_#1e1c1b_0%,_#161412_48%,_#ffffff_100%)]">
-        <div className="absolute inset-0">
-          <img
-            src={service.image}
-            alt={service.title}
-            className="h-full w-full object-cover opacity-20"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(15,12,10,0.96)_18%,rgba(15,12,10,0.78)_55%,rgba(15,12,10,0.45)_100%)]" />
-          <div className="absolute right-[-10%] top-20 h-72 w-72 rounded-full bg-orange-500/20 blur-3xl" />
-          <div className="absolute bottom-10 left-[-8%] h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-        </div>
+    <section className="relative bg-[#FAF7F2] overflow-hidden">
+      <div className="hero-grain-paper" aria-hidden />
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 55% 50% at 100% 0%, rgba(255,102,0,0.12), transparent 60%), radial-gradient(ellipse 50% 60% at 0% 100%, rgba(74,93,58,0.05), transparent 60%)",
+        }}
+      />
 
-        <div className="container relative z-10 pt-16 pb-12 md:pt-24 md:pb-24 lg:pt-28 lg:pb-28">
+      <div className="container relative z-10 pt-10 md:pt-16 pb-16 md:pb-20">
+        {/* Back link + breadcrumb */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex items-center justify-between gap-4 mb-10 md:mb-14 pb-5 border-b border-stone-900/10"
+        >
           <Link
             href="/services"
-            className="mb-8 hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.22em] text-white/75 backdrop-blur-sm transition-all hover:border-orange-400/40 hover:bg-white/10 hover:text-white md:inline-flex md:mb-10 md:px-5 md:py-3 md:text-xs md:tracking-[0.24em]"
+            className="group inline-flex items-center gap-2 font-jakarta text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-700 hover:text-stone-900 cursor-pointer"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Services
-          </Link>
-
-          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.15fr)_420px] lg:gap-10">
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
-              className="max-w-4xl"
+            <svg
+              width="14"
+              height="9"
+              viewBox="0 0 22 10"
+              fill="none"
+              className="group-hover:-translate-x-1 transition-transform"
             >
-              <div className="mb-5 flex flex-wrap items-center gap-2 md:mb-7 md:gap-3">
-                <span className="hidden items-center gap-2 rounded-full border border-orange-400/30 bg-orange-500/12 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.22em] text-orange-200 sm:inline-flex md:px-4 md:text-[11px] md:tracking-[0.28em]">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  {detailContent.heroEyebrow || "Premium Solution"}
-                </span>
-                {service.category && (
-                  <span className="rounded-full border border-white/10 bg-white/6 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/65 md:px-4 md:text-[11px] md:tracking-[0.24em]">
-                    {service.category}
-                  </span>
-                )}
-              </div>
+              <path
+                d="M21 5 H 2 M 6 1 L 2 5 L 6 9"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            All services
+          </Link>
+          {service.category && (
+            <span className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500 flex items-center gap-2">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#FF6600]" />
+              {service.category}
+            </span>
+          )}
+        </motion.div>
 
-              <h1
-                className="max-w-5xl text-[3rem] font-black leading-[0.92] tracking-[-0.05em] text-white sm:text-6xl md:text-7xl xl:text-[6.25rem]"
-                style={{ fontFamily: "var(--font-outfit)" }}
-              >
-                {heading.lead}
-                {heading.accent ? (
-                  <>
-                    {" "}
-                    <span className="bg-gradient-to-r from-orange-300 via-orange-400 to-orange-500 bg-clip-text text-transparent">
-                      {heading.accent}
-                    </span>
-                  </>
-                ) : null}
-              </h1>
-
-              <div className="mt-5 max-w-3xl space-y-3.5 md:mt-8 md:space-y-5">
-                <p
-                  className="max-w-xl text-[1.1rem] font-semibold leading-[1.55] text-white/92 sm:text-[1.35rem] md:text-[2rem]"
-                  style={{ fontFamily: "var(--font-outfit)" }}
-                >
-                  {service.tagline || service.shortDescription}
-                </p>
-                <p className="max-w-2xl text-[15px] leading-7 text-white/68 md:text-lg md:leading-8">
-                  {service.shortDescription || service.longDescription}
-                </p>
-              </div>
-
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row md:mt-10 md:gap-4">
-                <Link href="/contact" className="btn-primary justify-center px-6 py-3.5 text-sm md:px-8 md:py-4">
-                  Start Your Project
-                  <ArrowRight className="h-5 w-5" />
-                </Link>
-                {phoneRaw ? (
-                  <a
-                    href={`tel:${phoneRaw}`}
-                    className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/12 bg-white/7 px-6 py-3.5 text-base font-semibold text-white transition-all hover:border-orange-400/40 hover:bg-white/12 md:px-8 md:py-4"
-                  >
-                    <Phone className="h-5 w-5 text-orange-300" />
-                    Call Us Directly
-                  </a>
-                ) : null}
-              </div>
-
-              <div className="mt-7 grid grid-cols-3 gap-2.5 md:mt-12 md:gap-4">
-                {heroMetrics.map((metric) => (
-                  <div
-                    key={metric.label}
-                    className="rounded-[1.15rem] border border-white/10 bg-white/6 px-2.5 py-3.5 backdrop-blur-sm md:rounded-[1.75rem] md:px-5 md:py-5"
-                  >
-                    <div
-                      className="text-[1.8rem] font-black leading-none text-white md:text-3xl"
-                      style={{ fontFamily: "var(--font-outfit)" }}
-                    >
-                      {metric.value}
-                    </div>
-                    <div className="mt-1.5 text-[8px] font-bold uppercase tracking-[0.14em] text-white/55 md:mt-1 md:text-[11px] md:tracking-[0.24em]">
-                      {metric.label}
-                    </div>
-                  </div>
-                ))}
-              </div>
+        <div className="grid grid-cols-12 gap-x-8 gap-y-12 items-start">
+          {/* LEFT — type */}
+          <div className="col-span-12 lg:col-span-7">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
+              className="flex items-center gap-3 mb-6"
+            >
+              <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+              <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+                Service · {service.category || "Capability"}
+              </span>
             </motion.div>
 
-            <motion.aside
-              initial={{ opacity: 0, y: 28 }}
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.12, duration: 0.75, ease: [0.22, 1, 0.36, 1] as const }}
-              className="rounded-[1.45rem] border border-white/10 bg-white/8 p-3 shadow-2xl shadow-black/20 backdrop-blur-xl md:rounded-[2rem] md:p-5"
+              transition={{ duration: 0.85, ease: [0.2, 0.7, 0.2, 1] }}
+              className="font-funnel text-stone-900 font-bold leading-[0.92] tracking-[-0.04em] text-[clamp(2.5rem,6.6vw,5.75rem)] max-w-[14ch]"
             >
-              <div className="overflow-hidden rounded-[1.35rem] border border-white/10 bg-black/30 md:rounded-[1.6rem]">
-                <div className="relative aspect-[4/3]">
+              {lead && <>{lead} </>}
+              <span
+                style={{
+                  fontFamily: "var(--font-newsreader), Georgia, serif",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  color: "#FF6600",
+                }}
+              >
+                {accent}
+              </span>
+              .
+            </motion.h1>
+
+            {service.tagline && (
+              <motion.p
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.15 }}
+                className="mt-7 font-funnel text-stone-900 font-medium leading-[1.25] tracking-[-0.02em] text-[clamp(1.15rem,1.7vw,1.5rem)] max-w-[36ch]"
+              >
+                {service.tagline}
+              </motion.p>
+            )}
+
+            <motion.p
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.25 }}
+              className="mt-6 max-w-[58ch] font-jakarta text-[15.5px] md:text-[16.5px] leading-[1.6] text-stone-700"
+            >
+              {service.shortDescription || service.longDescription}
+            </motion.p>
+
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.35 }}
+              className="mt-9 flex flex-wrap items-center gap-4 md:gap-5"
+            >
+              <Link
+                href="/contact"
+                className="group relative inline-flex items-center gap-3 rounded-full bg-stone-900 text-stone-50 pl-6 pr-2 py-2 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-[0_18px_40px_-18px_rgba(15,12,8,0.5)]"
+              >
+                <span
+                  aria-hidden
+                  className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, transparent, rgba(255,102,0,0.85), transparent)",
+                  }}
+                />
+                <span className="relative font-funnel text-[15px] font-semibold tracking-tight">
+                  Start a project
+                </span>
+                <span className="relative inline-grid place-items-center w-10 h-10 rounded-full bg-[#FF6600] text-stone-900 group-hover:bg-stone-50 group-hover:rotate-[-30deg] transition-all duration-300">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                    <path
+                      d="M2 12 L12 2 M5 2 L12 2 L12 9"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </Link>
+
+              {phoneRaw && (
+                <a
+                  href={`tel:${phoneRaw}`}
+                  className="group inline-flex items-center gap-3 font-jakarta text-[12px] font-semibold uppercase tracking-[0.22em] text-stone-900 cursor-pointer"
+                >
+                  <span className="relative">
+                    Or call the studio
+                    <span className="absolute left-0 -bottom-1 h-px w-full bg-stone-900 origin-left scale-x-100 group-hover:scale-x-0 transition-transform duration-400" />
+                    <span className="absolute left-0 -bottom-1 h-px w-full bg-[#FF6600] origin-right scale-x-0 group-hover:scale-x-100 transition-transform duration-400 delay-100" />
+                  </span>
+                  <svg
+                    width="18"
+                    height="9"
+                    viewBox="0 0 22 10"
+                    fill="none"
+                    className="group-hover:translate-x-1 transition-transform"
+                  >
+                    <path
+                      d="M1 5 H 20 M 16 1 L 20 5 L 16 9"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </a>
+              )}
+            </motion.div>
+          </div>
+
+          {/* RIGHT — preview card */}
+          <motion.aside
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.85, delay: 0.2, ease: [0.2, 0.7, 0.2, 1] }}
+            className="col-span-12 lg:col-span-5 relative"
+          >
+            <div className="relative max-w-[480px] mx-auto">
+              {/* Floating "Includes" tag */}
+              <span
+                className="absolute -top-3 -right-2 z-30 bg-[#FF6600] text-stone-900 rounded-2xl px-3.5 py-2 shadow-[0_14px_28px_-12px_rgba(255,102,0,0.55)] rotate-[5deg] font-jakarta text-[10px] font-bold uppercase tracking-[0.22em]"
+              >
+                {service.features.length}+ capabilities
+              </span>
+
+              <div className="relative aspect-[5/6] rounded-[28px] overflow-hidden border border-stone-900/15 bg-stone-50 shadow-[0_30px_60px_-30px_rgba(15,12,8,0.3)]">
+                {service.image ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={service.image}
                     alt={service.title}
-                    className="h-full w-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                  <div className="absolute left-4 top-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/12 text-orange-200 backdrop-blur-md md:left-5 md:top-5 md:h-14 md:w-14">
-                    <ServiceIcon className="h-6 w-6 md:h-7 md:w-7" />
+                ) : (
+                  <div
+                    className="absolute inset-0 grid place-items-center"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #FF6600 0%, #d94f00 50%, #0F0C08 100%)",
+                    }}
+                  >
+                    <span className="font-funnel text-stone-50 font-bold tracking-[-0.05em] text-[clamp(4rem,9vw,7rem)] leading-none">
+                      {String(service.features.length).padStart(2, "0")}
+                    </span>
                   </div>
-                </div>
-              </div>
+                )}
 
-              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 md:mt-5 md:gap-4">
-                <div className="rounded-[1.35rem] bg-white px-4 py-4 shadow-lg shadow-black/5 md:rounded-[1.6rem] md:px-5 md:py-5 sm:col-span-2 lg:col-span-1">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-orange-500">
-                    What You Get
+                {/* Gradient overlay */}
+                <div
+                  aria-hidden
+                  className="absolute inset-0 bg-gradient-to-t from-stone-900/85 via-stone-900/15 to-transparent"
+                />
+
+                {/* Corner stamps */}
+                <span className="absolute top-5 left-5 font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-50/85">
+                  Service plate · MMXXVI
+                </span>
+                <span className="absolute top-5 right-5 font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-50/85">
+                  {service.category || "Capability"}
+                </span>
+
+                {/* What you get card overlay */}
+                <div className="absolute left-5 right-5 bottom-5 rounded-2xl bg-[#FAF7F2]/95 backdrop-blur-md border border-stone-900/10 p-5">
+                  <p className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500 mb-3">
+                    What you get
                   </p>
-                  <ul className="mt-3 grid gap-2 md:mt-4 md:space-y-3">
-                    {service.features.slice(0, 4).map((feature) => (
-                      <li key={feature} className="flex items-start gap-3 text-sm font-medium leading-6 text-gray-700">
-                        <CheckCircle2 className="mt-0.5 h-4.5 w-4.5 flex-shrink-0 text-orange-500" />
-                        {feature}
+                  <ul className="space-y-2.5">
+                    {service.features.slice(0, 4).map((f, i) => (
+                      <li
+                        key={f}
+                        className="flex items-baseline gap-2 font-jakarta text-[13.5px] text-stone-700"
+                      >
+                        <span className="font-mono-ui text-[10px] tabular-nums text-[#FF6600] shrink-0">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        {f}
                       </li>
                     ))}
                   </ul>
-                </div>
-
-                <div className="rounded-[1.35rem] border border-orange-200/70 bg-gradient-to-br from-orange-50 to-white px-4 py-4 md:rounded-[1.6rem] md:px-5 md:py-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-orange-500">
-                        {detailContent.deliveryLabel || "Delivery Rhythm"}
-                      </p>
-                      <p
-                        className="mt-2 text-xl font-black text-gray-900 md:text-2xl"
-                        style={{ fontFamily: "var(--font-outfit)" }}
-                      >
-                        {service.process.length} clear stages
-                      </p>
-                    </div>
-                    <Clock3 className="h-9 w-9 rounded-2xl bg-white p-2 text-orange-500 shadow-sm md:h-10 md:w-10 md:p-2.5" />
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-gray-600 md:leading-7">
-                    {detailContent.deliveryDescription ||
-                      "Designed for faster approvals, cleaner handoffs, and a more confident launch."}
-                  </p>
-                </div>
-              </div>
-            </motion.aside>
-          </div>
-        </div>
-      </section>
-
-      <section className="relative -mt-3 pb-14 md:-mt-8 md:pb-24">
-        <div className="container">
-          <div className="rounded-[1.5rem] border border-orange-100 bg-white p-5 shadow-[0_30px_80px_rgba(17,12,10,0.08)] md:rounded-[2rem] md:p-12">
-            <div className="grid gap-6 md:gap-10 lg:grid-cols-[minmax(0,1.1fr)_360px] lg:gap-12">
-              <div>
-                <span className="section-label">Strategic Overview</span>
-                <h2
-                  className="mt-2.5 max-w-3xl text-[1.95rem] font-black leading-[1.06] tracking-[-0.04em] text-gray-900 md:mt-4 md:text-5xl"
-                  style={{ fontFamily: "var(--font-outfit)" }}
-                >
-                  {detailContent.overviewTitle ||
-                    "Built to look premium, perform hard, and stay easy to scale."}
-                </h2>
-                <p className="mt-4 max-w-3xl text-[15px] leading-7 text-gray-600 md:mt-6 md:text-lg md:leading-8">
-                  {service.longDescription}
-                </p>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 md:gap-4">
-                <div className="rounded-[1.25rem] border border-gray-100 bg-gray-50 p-4 md:rounded-[1.6rem] md:p-6">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-orange-500">
-                    {detailContent.partnerTitle || "Partner"}
-                  </p>
-                  <p
-                    className="mt-3 text-xl font-black text-gray-900 md:text-2xl"
-                    style={{ fontFamily: "var(--font-outfit)" }}
-                  >
-                    {companyName}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-gray-600 md:leading-7">
-                    {detailContent.partnerDescription ||
-                      "Strategy, design, development, and optimization aligned into one execution flow."}
-                  </p>
-                </div>
-
-                <div className="rounded-[1.25rem] border border-gray-100 bg-gray-50 p-4 md:rounded-[1.6rem] md:p-6">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-orange-500">
-                    {detailContent.bestFitTitle || "Best Fit"}
-                  </p>
-                  <p className="mt-3 text-[15px] font-semibold leading-6 text-gray-700 md:text-base md:leading-7">
-                    {detailContent.bestFitDescription ||
-                      "Brands that want sharper positioning, stronger digital credibility, and cleaner growth systems."}
-                  </p>
+                  {service.features.length > 4 && (
+                    <p className="mt-3 pt-3 border-t border-stone-900/10 font-jakarta text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                      + {service.features.length - 4} more capabilities
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
+          </motion.aside>
+        </div>
 
-            <div className="mt-8 grid grid-cols-2 gap-2.5 md:mt-14 md:gap-5 xl:grid-cols-4">
-              {service.outcomes.map((outcome, index) => {
-                const OutcomeIcon = insightIcons[index % insightIcons.length];
+        {/* Hero stat strip */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.5 }}
+          className="mt-14 md:mt-16 pt-8 border-t border-stone-900/10 grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-5"
+        >
+          {heroStats.map((s) => (
+            <div key={s.label}>
+              <p className="font-funnel font-bold tracking-[-0.025em] text-stone-900 leading-none text-[clamp(1.7rem,2.6vw,2.1rem)]">
+                {s.value}
+              </p>
+              <p className="mt-2.5 font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500">
+                {s.label}
+              </p>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
 
+/* ─── Overview ─────────────────────────────────────────────── */
+function Overview({ service }: { service: Service }) {
+  const detailContent = service.detailContent || {};
+  if (!service.longDescription && !service.outcomes.length) return null;
+
+  return (
+    <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
+      <div className="hero-grain-paper" aria-hidden />
+
+      <div className="container relative z-10 py-20 md:py-24">
+        <div className="grid grid-cols-12 gap-x-8 gap-y-12 items-start mb-12 md:mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="col-span-12 md:col-span-8"
+          >
+            <div className="flex items-center gap-3 mb-5">
+              <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+              <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+                The overview
+              </span>
+            </div>
+            <h2 className="font-funnel text-stone-900 font-bold leading-[1.0] tracking-[-0.03em] text-[clamp(1.85rem,3.4vw,2.8rem)] max-w-[22ch]">
+              {detailContent.overviewTitle ||
+                "Built to look premium, perform hard,"}{" "}
+              <span
+                style={{
+                  fontFamily: "var(--font-newsreader), Georgia, serif",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  color: "#1c1c1c",
+                }}
+              >
+                and stay easy to scale.
+              </span>
+            </h2>
+            {service.longDescription && (
+              <p className="mt-7 max-w-[64ch] font-jakarta text-[15.5px] md:text-[16.5px] leading-[1.65] text-stone-700">
+                {service.longDescription}
+              </p>
+            )}
+          </motion.div>
+
+          {/* Side fact cards */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="col-span-12 md:col-span-4 flex flex-col gap-4"
+          >
+            <div className="rounded-2xl border border-stone-900/10 bg-stone-50 p-5 md:p-6">
+              <p className="font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-[#FF6600] mb-3">
+                {detailContent.partnerTitle || "Partner"}
+              </p>
+              <h3 className="font-funnel text-[clamp(1.15rem,1.4vw,1.35rem)] font-bold tracking-[-0.02em] text-stone-900">
+                Creative Monk
+              </h3>
+              <p className="mt-3 font-jakarta text-[13.5px] leading-[1.55] text-stone-600">
+                {detailContent.partnerDescription ||
+                  "Strategy, design, build and growth — all under one studio."}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-stone-900/10 bg-stone-50 p-5 md:p-6">
+              <p className="font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-[#FF6600] mb-3">
+                {detailContent.bestFitTitle || "Best fit"}
+              </p>
+              <p className="font-jakarta text-[14.5px] leading-[1.55] text-stone-700">
+                {detailContent.bestFitDescription ||
+                  "Brands that want sharper positioning, stronger credibility and cleaner growth systems."}
+              </p>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Outcomes grid */}
+        {service.outcomes.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5">
+            {service.outcomes.map((outcome, i) => (
+              <motion.article
+                key={outcome}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.55, delay: (i % 4) * 0.07 }}
+                className="group relative rounded-2xl border border-stone-900/10 bg-stone-50 p-6 hover:-translate-y-1 hover:border-stone-900/25 hover:bg-white hover:shadow-[0_18px_36px_-22px_rgba(15,12,8,0.18)] transition-all duration-500"
+              >
+                <span
+                  className="font-funnel leading-none tracking-[-0.04em] block mb-5"
+                  style={{
+                    fontFamily: "var(--font-newsreader), Georgia, serif",
+                    fontStyle: "italic",
+                    fontWeight: 500,
+                    fontSize: "clamp(2.4rem, 3vw, 3rem)",
+                    color: "#FF6600",
+                  }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 className="font-funnel text-[clamp(1rem,1.3vw,1.2rem)] leading-[1.2] tracking-[-0.02em] font-bold text-stone-900">
+                  {outcome}
+                </h3>
+                <div className="mt-5 h-px bg-stone-900/10 overflow-hidden">
+                  <span
+                    aria-hidden
+                    className="block h-full bg-[#FF6600] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out"
+                  />
+                </div>
+              </motion.article>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/* ─── Capabilities ──────────────────────────────────────────── */
+function Capabilities({ service }: { service: Service }) {
+  const detailContent = service.detailContent || {};
+  if (!service.features.length) return null;
+
+  return (
+    <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
+      <div className="hero-grain-paper" aria-hidden />
+
+      <div className="container relative z-10 py-20 md:py-24">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 md:mb-14">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3 mb-5">
+              <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+              <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+                Capabilities · {service.features.length} included
+              </span>
+            </div>
+            <h2 className="font-funnel text-stone-900 font-bold leading-[1.0] tracking-[-0.03em] text-[clamp(1.85rem,3.4vw,2.8rem)] max-w-[22ch]">
+              {detailContent.capabilitiesTitle || "Everything included to make"}{" "}
+              <span
+                style={{
+                  fontFamily: "var(--font-newsreader), Georgia, serif",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  color: "#1c1c1c",
+                }}
+              >
+                the service feel complete.
+              </span>
+            </h2>
+          </div>
+          <Link
+            href="/contact"
+            className="group inline-flex items-center gap-2 font-jakarta text-[12px] font-semibold uppercase tracking-[0.22em] text-stone-900 cursor-pointer shrink-0"
+          >
+            <span className="relative">
+              Request a proposal
+              <span className="absolute left-0 -bottom-1 h-px w-full bg-stone-900 origin-left scale-x-100 group-hover:scale-x-0 transition-transform duration-400" />
+              <span className="absolute left-0 -bottom-1 h-px w-full bg-[#FF6600] origin-right scale-x-0 group-hover:scale-x-100 transition-transform duration-400 delay-100" />
+            </span>
+            <svg
+              width="18"
+              height="9"
+              viewBox="0 0 22 10"
+              fill="none"
+              className="group-hover:translate-x-1 transition-transform"
+            >
+              <path
+                d="M1 5 H 20 M 16 1 L 20 5 L 16 9"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
+          {service.features.map((feature, i) => (
+            <motion.div
+              key={feature}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.45, delay: (i % 6) * 0.05 }}
+              className="group flex items-center gap-4 rounded-2xl border border-stone-900/10 bg-stone-50 px-5 py-5 hover:border-[#FF6600]/40 hover:bg-white hover:-translate-y-0.5 hover:shadow-[0_14px_28px_-18px_rgba(15,12,8,0.18)] transition-all duration-400"
+            >
+              <span className="shrink-0 grid place-items-center w-11 h-11 rounded-xl bg-stone-100 group-hover:bg-[#FF6600] transition-colors duration-300">
+                <span className="font-funnel text-[13px] font-bold tabular-nums tracking-tight text-stone-700 group-hover:text-stone-900 transition-colors">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+              </span>
+              <h3 className="font-funnel text-[14.5px] md:text-[15.5px] leading-[1.25] tracking-[-0.015em] font-bold text-stone-900 flex-1">
+                {feature}
+              </h3>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 14 14"
+                fill="none"
+                className="shrink-0 text-stone-400 group-hover:text-[#FF6600] opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-1 transition-all"
+                aria-hidden
+              >
+                <path
+                  d="M2 12 L12 2 M5 2 L12 2 L12 9"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Process ──────────────────────────────────────────────── */
+function Process({ service }: { service: Service }) {
+  const detailContent = service.detailContent || {};
+  if (!service.process.length) return null;
+
+  return (
+    <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
+      <div className="hero-grain-paper" aria-hidden />
+
+      <div className="container relative z-10 py-20 md:py-24">
+        <div className="grid grid-cols-12 gap-x-8 gap-y-8 items-end mb-12 md:mb-14">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="col-span-12 md:col-span-8"
+          >
+            <div className="flex items-center gap-3 mb-5">
+              <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+              <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+                Methodology
+              </span>
+            </div>
+            <h2 className="font-funnel text-stone-900 font-bold leading-[1.0] tracking-[-0.03em] text-[clamp(1.85rem,3.4vw,2.8rem)] max-w-[22ch]">
+              {detailContent.processTitle || "A cleaner process with"}{" "}
+              <span
+                style={{
+                  fontFamily: "var(--font-newsreader), Georgia, serif",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  color: "#FF6600",
+                }}
+              >
+                fewer bottlenecks.
+              </span>
+            </h2>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="col-span-12 md:col-span-4"
+          >
+            <p className="font-jakarta text-[14.5px] leading-[1.6] text-stone-600 max-w-[42ch]">
+              Every engagement runs on the same rhythm. You'll always know
+              what's shipping and when.
+            </p>
+          </motion.div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+          {service.process.map((step, i) => (
+            <motion.article
+              key={step.step}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.55, delay: (i % 2) * 0.08 }}
+              className="group relative rounded-3xl border border-stone-900/10 bg-stone-50 p-6 md:p-7 hover:-translate-y-1 hover:border-stone-900/25 hover:bg-white hover:shadow-[0_18px_36px_-22px_rgba(15,12,8,0.18)] transition-all duration-500"
+            >
+              <div className="flex items-start gap-5">
+                <span
+                  className="shrink-0 leading-none tracking-[-0.04em]"
+                  style={{
+                    fontFamily: "var(--font-newsreader), Georgia, serif",
+                    fontStyle: "italic",
+                    fontWeight: 500,
+                    fontSize: "clamp(2.8rem, 3.6vw, 3.5rem)",
+                    color: "#FF6600",
+                  }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-funnel text-[clamp(1.2rem,1.6vw,1.45rem)] leading-[1.15] tracking-[-0.02em] font-bold text-stone-900">
+                    {step.step}
+                  </h3>
+                  <p className="mt-3 font-jakarta text-[14.5px] leading-[1.6] text-stone-600 max-w-[44ch]">
+                    {step.desc}
+                  </p>
+                </div>
+              </div>
+            </motion.article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── FAQ ──────────────────────────────────────────────────── */
+function FaqSection({ service }: { service: Service }) {
+  const detailContent = service.detailContent || {};
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  if (!service.faqs.length) return null;
+
+  return (
+    <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
+      <div className="hero-grain-paper" aria-hidden />
+
+      <div className="container relative z-10 py-20 md:py-24">
+        <div className="grid grid-cols-12 gap-x-8 gap-y-10">
+          <div className="col-span-12 lg:col-span-5">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.7 }}
+            >
+              <div className="flex items-center gap-3 mb-5">
+                <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+                <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+                  Common questions
+                </span>
+              </div>
+              <h2 className="font-funnel text-stone-900 font-bold leading-[1.0] tracking-[-0.03em] text-[clamp(1.85rem,3.4vw,2.8rem)] max-w-[20ch]">
+                {detailContent.faqTitle || "Clarity"}{" "}
+                <span
+                  style={{
+                    fontFamily: "var(--font-newsreader), Georgia, serif",
+                    fontStyle: "italic",
+                    fontWeight: 500,
+                    color: "#1c1c1c",
+                  }}
+                >
+                  before kickoff.
+                </span>
+              </h2>
+              <p className="mt-5 font-jakarta text-[14.5px] leading-[1.6] text-stone-600 max-w-[40ch]">
+                The most common questions clients ask before moving ahead with
+                this service.
+              </p>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="col-span-12 lg:col-span-7"
+          >
+            <div className="rounded-3xl border border-stone-900/10 bg-stone-50 overflow-hidden">
+              {service.faqs.map((faq, i) => {
+                const isOpen = i === openIndex;
                 return (
-                  <motion.div
-                    key={outcome}
-                    whileHover={{ y: -4 }}
-                    className="rounded-[1.35rem] border border-gray-100 bg-[linear-gradient(180deg,_#ffffff_0%,_#fff8f3_100%)] p-4 transition-shadow hover:shadow-xl hover:shadow-orange-500/10 md:rounded-[1.7rem] md:p-6"
+                  <div
+                    key={faq.question}
+                    className={i < service.faqs.length - 1 ? "border-b border-stone-900/10" : ""}
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600 md:h-12 md:w-12 md:rounded-2xl">
-                      <OutcomeIcon className="h-4.5 w-4.5 md:h-5 md:w-5" />
-                    </div>
-                    <h3
-                      className="mt-4 text-base font-black leading-snug text-gray-900 md:mt-5 md:text-xl"
-                      style={{ fontFamily: "var(--font-outfit)" }}
+                    <button
+                      type="button"
+                      onClick={() => setOpenIndex(isOpen ? null : i)}
+                      aria-expanded={isOpen}
+                      className="group w-full text-left flex items-center justify-between gap-5 px-6 md:px-8 py-5 md:py-6 cursor-pointer hover:bg-white/40 transition-colors"
                     >
-                      {outcome}
-                    </h3>
-                    <div className="mt-4 h-1.5 w-10 rounded-full bg-orange-500 md:mt-5 md:w-12" />
-                  </motion.div>
+                      <div className="flex items-baseline gap-4 min-w-0 flex-1">
+                        <span className="shrink-0 font-jakarta text-[11px] font-bold tabular-nums tracking-[0.18em] uppercase text-stone-400">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className="font-funnel text-[clamp(1.05rem,1.5vw,1.3rem)] font-bold leading-[1.25] tracking-[-0.02em] text-stone-900">
+                          {faq.question}
+                        </span>
+                      </div>
+                      <span
+                        className={`shrink-0 grid place-items-center w-9 h-9 rounded-full border transition-all duration-300 ${
+                          isOpen
+                            ? "bg-[#FF6600] border-[#FF6600] rotate-45 text-stone-900"
+                            : "border-stone-900/15 text-stone-700 group-hover:border-stone-900"
+                        }`}
+                        aria-hidden
+                      >
+                        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                          <path
+                            d="M7 1 V 13 M 1 7 H 13"
+                            stroke="currentColor"
+                            strokeWidth="1.7"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </span>
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.35, ease: [0.2, 0.7, 0.2, 1] }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-6 md:px-8 pb-7 pt-1">
+                            <div className="pl-7 md:pl-9 max-w-[64ch] border-l-2 border-[#FF6600]/30">
+                              <p className="font-jakarta text-[14.5px] md:text-[15px] leading-[1.65] text-stone-700 pl-5">
+                                {faq.answer}
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 );
               })}
             </div>
-          </div>
+          </motion.div>
         </div>
-      </section>
-
-      <section className="pb-14 md:pb-24">
-        <div className="container">
-          <div className="mb-6 flex flex-col gap-3 md:mb-10 md:gap-4 md:flex-row md:items-end md:justify-between">
-            <div className="max-w-2xl">
-              <span className="section-label">Capabilities</span>
-              <h2
-                className="mt-2.5 text-[1.9rem] font-black leading-[1.08] tracking-[-0.04em] text-gray-900 md:mt-4 md:text-5xl"
-                style={{ fontFamily: "var(--font-outfit)" }}
-              >
-                {detailContent.capabilitiesTitle ||
-                  "Everything included to make the service feel complete."}
-              </h2>
-            </div>
-            <Link href="/contact" className="inline-flex items-center gap-2 font-semibold text-orange-500 transition-colors hover:text-orange-600">
-              Request a proposal
-              <ChevronRight className="h-5 w-5" />
-            </Link>
-          </div>
-
-          <div className="grid gap-2.5 md:grid-cols-2 md:gap-5 xl:grid-cols-3">
-            {service.features.map((feature, index) => (
-              <div
-                key={feature}
-                className="group rounded-[1.2rem] border border-gray-100 bg-white p-3.5 shadow-sm transition-all hover:-translate-y-1 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-500/8 md:rounded-[1.8rem] md:p-6"
-              >
-                <div className="flex items-center gap-3 md:gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 text-xs font-black text-orange-500 md:h-12 md:w-12 md:rounded-2xl md:text-sm">
-                    {String(index + 1).padStart(2, "0")}
-                  </div>
-                  <h3
-                    className="text-base font-black leading-snug text-gray-900 md:text-xl"
-                    style={{ fontFamily: "var(--font-outfit)" }}
-                  >
-                    {feature}
-                  </h3>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#fffaf6] py-14 md:py-24">
-        <div className="container">
-          <div className="max-w-2xl">
-            <span className="section-label">Methodology</span>
-            <h2
-              className="mt-2.5 text-[1.9rem] font-black leading-[1.08] tracking-[-0.04em] text-gray-900 md:mt-4 md:text-5xl"
-              style={{ fontFamily: "var(--font-outfit)" }}
-            >
-              {detailContent.processTitle ||
-                "A cleaner process with fewer bottlenecks and better momentum."}
-            </h2>
-          </div>
-
-          <div className="mt-7 grid gap-3 md:mt-12 md:gap-6 lg:grid-cols-2">
-            {service.process.map((step, index) => (
-              <motion.div
-                key={step.step}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.45, delay: index * 0.06 }}
-                className="rounded-[1.25rem] border border-orange-100 bg-white p-4 shadow-sm md:rounded-[1.9rem] md:p-7"
-              >
-                <div className="flex items-start gap-4 md:gap-5">
-                  <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-orange-500 text-xs font-black text-white shadow-lg shadow-orange-500/25 md:h-14 md:w-14 md:rounded-2xl md:text-sm">
-                    {String(index + 1).padStart(2, "0")}
-                  </div>
-                  <div>
-                    <h3
-                      className="text-xl font-black text-gray-900 md:text-2xl"
-                      style={{ fontFamily: "var(--font-outfit)" }}
-                    >
-                      {step.step}
-                    </h3>
-                    <p className="mt-2 text-[15px] leading-7 text-gray-600 md:mt-3 md:text-base md:leading-8">
-                      {step.desc}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-14 md:py-24">
-        <div className="container">
-          <div className="rounded-[1.5rem] bg-[#161412] px-4 py-7 text-white md:rounded-[2.25rem] md:px-12 md:py-14">
-            <div className="max-w-2xl">
-              <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-orange-300">
-                Common Questions
-              </span>
-              <h2
-                className="mt-2.5 text-[1.9rem] font-black leading-[1.08] tracking-[-0.04em] text-white md:mt-4 md:text-5xl"
-                style={{ fontFamily: "var(--font-outfit)" }}
-              >
-                {detailContent.faqTitle || "Clarity before kickoff."}
-              </h2>
-              <p className="mt-3 text-[15px] leading-7 text-white/65 md:mt-4 md:text-base md:leading-8">
-                The most common questions clients ask before moving ahead with this service.
-              </p>
-            </div>
-
-            <div className="mt-7 grid gap-2.5 md:mt-10 md:gap-5 lg:grid-cols-2">
-              {service.faqs.map((faq) => (
-                <div
-                  key={faq.question}
-                  className="rounded-[1.2rem] border border-white/10 bg-white/5 p-4 backdrop-blur-sm md:rounded-[1.7rem] md:p-6"
-                >
-                  <h3
-                    className="text-lg font-black leading-snug text-orange-200 md:text-xl"
-                    style={{ fontFamily: "var(--font-outfit)" }}
-                  >
-                    {faq.question}
-                  </h3>
-                  <p className="mt-4 text-sm leading-7 text-white/72 md:text-base">
-                    {faq.answer}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <CTA />
-    </main>
+      </div>
+    </section>
   );
 }

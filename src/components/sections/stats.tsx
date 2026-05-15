@@ -1,213 +1,290 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import {
-  TrendingUp,
-  Award,
-  Users,
-  Briefcase,
-  Rocket,
-  Target,
-  ShieldCheck,
-  Zap,
-  Users2,
-  BarChart3,
-  LucideIcon,
-} from "lucide-react";
-import { getSiteSettings } from "@/lib/api";
-import type { SiteSettings } from "@/lib/types";
+import { useEffect, useRef, useState } from "react";
 
-// Map labels to icons
-const iconMap: Record<string, LucideIcon> = {
-  "startup projects": Briefcase,
-  "happy clients": Users,
-  "industries served": TrendingUp,
-  "years experience": Award,
-  projects: Briefcase,
-  clients: Users,
-};
-
-const defaultStats = [
-  { icon: Briefcase, number: "180+", label: "Startup Projects" },
-  { icon: Users, number: "250+", label: "Happy Clients" },
-  { icon: TrendingUp, number: "15+", label: "Industries Served" },
-  { icon: Award, number: "5+", label: "Years Experience" },
+/* ─── Static "Why Creative Monk" content ───────────────────────
+   Six differentiators. Each is a real reason founders should pick
+   us over a bigger agency — not generic value props. */
+const PILLARS = [
+  {
+    no: "01",
+    title: "Founder-led, no juniors hidden",
+    description:
+      "The founder sits in every kickoff and every review. The team you meet on the call is the team that ships your project. No bait-and-switch.",
+    chip: "Senior-only",
+  },
+  {
+    no: "02",
+    title: "We say no, often",
+    description:
+      "We turn down most inbound projects. We take work only when the brief is brave, the founder is decisive, and we believe we can ship something memorable.",
+    chip: "Selective intake",
+  },
+  {
+    no: "03",
+    title: "Two directions. Not three.",
+    description:
+      "Most studios show three concepts and let you compromise to the middle. We present two clearly opposing routes so you have to take a stance.",
+    chip: "No middle-of-the-road",
+  },
+  {
+    no: "04",
+    title: "Replies under four hours",
+    description:
+      "WhatsApp, email, Slack — pick your channel. Studio hours are 09:30 to 18:30 IST and we read every message inside that window. No tickets, no portal.",
+    chip: "4-hr SLA",
+  },
+  {
+    no: "05",
+    title: "We launch, then stay",
+    description:
+      "30 days of post-launch support is on us. After that, ~60% of clients move to a retainer because they like working with the same team that built the thing.",
+    chip: "3.2-year tenure",
+  },
+  {
+    no: "06",
+    title: "Built for compounding work",
+    description:
+      "We don't optimise for the first 90 days. Everything we ship — brand systems, websites, content — is designed to keep paying back two years later.",
+    chip: "Year-2 mindset",
+  },
 ];
 
-const defaultFeatures = [
-  {
-    icon: Rocket,
-    title: "Optimized Performance",
-    description:
-      "We build blazing fast, highly optimized websites that rank higher and convert better.",
-  },
-  {
-    icon: Zap,
-    title: "Agile Methodology",
-    description:
-      "Our agile development process ensures quick turnaround times and flexibility to adapt.",
-  },
-  {
-    icon: Target,
-    title: "Business-First Approach",
-    description:
-      "Our strategies are laser-focused on your business goals, maximizing ROI and growth.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Uncompromising Quality",
-    description:
-      "We never cut corners. Our certified team delivers premium quality digital solutions.",
-  },
-  {
-    icon: Users2,
-    title: "Expert Team",
-    description:
-      "No stressing as we've got an expert team of certified developers, designers, and marketers.",
-  },
-  {
-    icon: BarChart3,
-    title: "Results Driven",
-    description:
-      "We don't just deliver projects; we deliver measurable results and tangible business growth.",
-  },
+const NUMBERS = [
+  { value: 142, suffix: "+", label: "Brands shipped", animate: true },
+  { value: 87, suffix: "", label: "Verified reviews", animate: true },
+  { value: 4.9, suffix: "★", label: "Average rating", animate: false },
+  { value: "<4hr", suffix: "", label: "Reply SLA", animate: false },
 ];
 
 export function Stats() {
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
-
-  useEffect(() => {
-    async function fetchSettings() {
-      try {
-        const data = await getSiteSettings();
-        setSettings(data);
-      } catch (error) {
-        console.error("Failed to fetch settings:", error);
-      }
-    }
-    fetchSettings();
-  }, []);
-
-  const displayStats = settings?.stats?.length
-    ? settings.stats.map((s) => ({
-        icon: iconMap[s.label.toLowerCase()] || Zap,
-        number: s.value,
-        label: s.label,
-      }))
-    : defaultStats;
-
-  const displayFeatures = settings?.values?.length
-    ? settings.values.map((v, i) => ({
-        icon: defaultFeatures[i]?.icon || Zap,
-        title: v.title,
-        description: v.description,
-      }))
-    : defaultFeatures;
-
   return (
-    <section className="py-24 bg-gray-50 relative overflow-hidden">
-      <div className="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 rounded-full bg-orange-500/10 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 -ml-32 -mb-32 w-96 h-96 rounded-full bg-orange-600/10 blur-3xl pointer-events-none" />
+    <section
+      id="why-us"
+      className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden"
+      aria-label="Why Creative Monk"
+    >
+      <div className="hero-grain-paper" aria-hidden />
 
-      <div className="container relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-20">
-          <motion.span
-            initial={{ opacity: 0, y: 20 }}
+      <div className="container relative z-10 py-20 md:py-28">
+        {/* Header */}
+        <div className="grid grid-cols-12 gap-x-8 gap-y-8 items-end mb-14 md:mb-20">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-block py-1.5 px-4 rounded-full bg-orange-100 text-[#FF6600] text-sm font-bold tracking-widest uppercase mb-6"
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="col-span-12 md:col-span-8"
           >
-            Why Creative Monk
-          </motion.span>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
+            <div className="flex items-center gap-3 mb-6">
+              <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+              <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+                Why founders pick us
+              </span>
+            </div>
+            <h2 className="font-funnel text-stone-900 font-bold leading-[0.98] tracking-[-0.035em] text-[clamp(2.25rem,5vw,4.5rem)] max-w-[20ch]">
+              Six reasons our work doesn't look like{" "}
+              <span
+                style={{
+                  fontFamily: "var(--font-newsreader), Georgia, serif",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                }}
+              >
+                everyone else's.
+              </span>
+            </h2>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 text-gray-900 leading-tight"
-            style={{ fontFamily: "var(--font-outfit)" }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="col-span-12 md:col-span-4"
           >
-            Why{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6600] to-orange-400">
-              Choose Us
-            </span>
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto"
-          >
-            {settings?.description ||
-              "We are focused on enhancing the value of your business through our innovative and economic digital solutions."}
-          </motion.p>
+            <p className="font-jakarta text-[15.5px] md:text-[16.5px] leading-[1.55] text-stone-700 max-w-[42ch]">
+              The shortlist of things we do differently — and why founders keep
+              coming back to us long after the first project.
+            </p>
+          </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24 cursor-default">
-          {displayFeatures.map((feature, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              className="bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(255,102,0,0.12)] transition-all duration-300 border border-gray-100/50 group hover:-translate-y-2 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-100 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-              <div className="relative z-10">
-                <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-[#FF6600] group-hover:shadow-lg group-hover:shadow-orange-500/30 transition-all duration-500">
-                  <feature.icon className="w-8 h-8 text-[#FF6600] group-hover:text-white transition-colors duration-500" />
-                </div>
-                <h3
-                  className="text-xl md:text-2xl font-black text-gray-900 mb-4 group-hover:text-[#FF6600] transition-colors duration-300"
-                  style={{ fontFamily: "var(--font-outfit)" }}
-                >
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed text-base">
-                  {feature.description}
-                </p>
-              </div>
-            </motion.div>
+        {/* 6-up pillars grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          {PILLARS.map((p, i) => (
+            <Pillar key={p.no} pillar={p} index={i} />
           ))}
         </div>
 
+        {/* Numbers band — refined, no money */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="rounded-[2.5rem] p-10 md:p-16 relative overflow-hidden shadow-2xl shadow-orange-500/20"
-          style={{ background: "linear-gradient(135deg, #FF6600, #e55500)" }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7 }}
+          className="mt-16 md:mt-20 rounded-3xl border border-stone-900/10 bg-stone-900 text-stone-50 overflow-hidden"
         >
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white opacity-[0.07] rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-black opacity-[0.05] rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
-
-          <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-8 divide-x-0 md:divide-x divide-white/20">
-            {displayStats.map((stat, idx) => (
-              <div
-                key={idx}
-                className="text-center px-4 flex flex-col items-center group cursor-default"
-              >
-                <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-md group-hover:scale-110 group-hover:bg-white/20 transition-all duration-300">
-                  <stat.icon className="w-7 h-7 text-white" />
-                </div>
+          <div className="relative">
+            {/* atmospheric gradient */}
+            <div
+              aria-hidden
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(ellipse 50% 60% at 100% 0%, rgba(255,102,0,0.15), transparent 60%)",
+              }}
+            />
+            <div className="relative grid grid-cols-2 md:grid-cols-4">
+              {NUMBERS.map((n, i) => (
                 <div
-                  className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight group-hover:scale-105 transition-transform duration-300"
-                  style={{ fontFamily: "var(--font-outfit)" }}
+                  key={n.label}
+                  className={`p-7 md:p-9 ${
+                    i > 0 ? "md:border-l" : ""
+                  } ${i >= 2 ? "border-t md:border-t-0" : ""} border-stone-50/10`}
                 >
-                  {stat.number}
+                  <p className="font-funnel text-stone-50 leading-none tracking-[-0.025em] font-bold text-[clamp(2.4rem,4vw,3.2rem)]">
+                    {n.animate && typeof n.value === "number" ? (
+                      <Counter to={n.value as number} />
+                    ) : (
+                      n.value
+                    )}
+                    {n.suffix && (
+                      <span
+                        className={
+                          n.suffix === "★" ? "text-[#FF6600] ml-1" : "ml-1"
+                        }
+                      >
+                        {n.suffix}
+                      </span>
+                    )}
+                  </p>
+                  <p className="mt-3 font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-300">
+                    {n.label}
+                  </p>
                 </div>
-                <div className="text-white/80 font-semibold tracking-wider uppercase text-sm">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+          {/* Bottom strip on the dark band */}
+          <div className="border-t border-stone-50/10 px-7 md:px-9 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 font-jakarta text-[12px] text-stone-300">
+            <p className="flex items-center gap-2">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 hero-pulse" />
+              All numbers verified across 2018–2026 · last updated this week
+            </p>
+            <a
+              href="/case-studies"
+              className="inline-flex items-center gap-2 font-jakarta text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-50 hover:text-[#FF6600] transition-colors cursor-pointer"
+            >
+              See how we got there
+              <svg width="18" height="9" viewBox="0 0 22 10" fill="none">
+                <path
+                  d="M1 5 H 20 M 16 1 L 20 5 L 16 9"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </a>
           </div>
         </motion.div>
       </div>
     </section>
   );
+}
+
+function Pillar({
+  pillar,
+  index,
+}: {
+  pillar: (typeof PILLARS)[number];
+  index: number;
+}) {
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.7, delay: (index % 3) * 0.08, ease: [0.2, 0.7, 0.2, 1] }}
+      className="group relative rounded-3xl bg-stone-50 border border-stone-900/10 p-7 md:p-8 transition-all duration-500 hover:-translate-y-1.5 hover:border-stone-900/25 hover:shadow-[0_24px_50px_-30px_rgba(15,12,8,0.25)] flex flex-col"
+    >
+      {/* number + chip row */}
+      <div className="flex items-baseline justify-between mb-7">
+        <span
+          className="font-funnel text-[clamp(2.6rem,3.6vw,3.2rem)] leading-none tracking-tight font-bold text-stone-900"
+          style={{
+            fontFamily: "var(--font-newsreader), Georgia, serif",
+            fontStyle: "italic",
+            fontWeight: 500,
+          }}
+        >
+          {pillar.no}
+        </span>
+        <span className="inline-flex items-center gap-2 rounded-full bg-stone-100 border border-stone-900/10 px-3 py-1.5 font-jakarta text-[10px] font-semibold uppercase tracking-[0.18em] text-stone-700 group-hover:border-[#FF6600] group-hover:text-[#FF6600] transition-all duration-300">
+          <span className="inline-block w-1 h-1 rounded-full bg-[#FF6600]" />
+          {pillar.chip}
+        </span>
+      </div>
+
+      {/* title */}
+      <h3 className="font-funnel text-[clamp(1.2rem,1.55vw,1.4rem)] leading-[1.15] tracking-[-0.02em] font-bold text-stone-900">
+        {pillar.title}
+      </h3>
+
+      {/* description */}
+      <p className="mt-4 font-jakarta text-[14px] leading-[1.6] text-stone-600 flex-1">
+        {pillar.description}
+      </p>
+
+      {/* hairline indicator that draws on hover */}
+      <div className="mt-6 relative h-px bg-stone-900/10 overflow-hidden">
+        <span
+          aria-hidden
+          className="absolute inset-y-0 left-0 right-0 bg-[#FF6600] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out"
+        />
+      </div>
+    </motion.article>
+  );
+}
+
+function Counter({ to }: { to: number }) {
+  const [val, setVal] = useState(0);
+  const ref = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let started = false;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setVal(to);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !started) {
+            started = true;
+            const start = performance.now();
+            const duration = 1400;
+            const step = (now: number) => {
+              const t = Math.min(1, (now - start) / duration);
+              const eased = 1 - Math.pow(1 - t, 3);
+              setVal(Math.round(eased * to));
+              if (t < 1) requestAnimationFrame(step);
+            };
+            requestAnimationFrame(step);
+            io.disconnect();
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [to]);
+
+  return <span ref={ref}>{val}</span>;
 }

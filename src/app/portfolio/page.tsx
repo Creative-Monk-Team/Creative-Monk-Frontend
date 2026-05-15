@@ -1,278 +1,400 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { CTA } from "@/components/sections/cta";
-import { PageHeader } from "@/components/layout/page-header";
 import { PortfolioLightbox } from "@/components/site/portfolio-lightbox";
 import { getPortfolioItems } from "@/lib/api";
-import type { PortfolioItem, PaginationMetadata } from "@/lib/types";
-import { Pagination } from "@/components/ui/pagination";
+import type { PortfolioItem } from "@/lib/types";
+import { useInfiniteList } from "@/lib/useInfiniteList";
+import { InfiniteScrollSentinel } from "@/components/ui/infinite-scroll-sentinel";
 import { getThumbnail } from "@/lib/image-utils";
+
+const HERO_STATS = [
+  { value: "142", label: "Projects shipped" },
+  { value: "8", label: "Years live" },
+  { value: "4.9", label: "Avg client rating", suffix: "★" },
+  { value: "3.2", label: "Avg tenure", suffix: "yrs" },
+];
+
+const CATEGORIES = [
+  "All",
+  "Web Design",
+  "Web Development",
+  "Brand Identity",
+  "Graphic Designing",
+  "Digital Marketing",
+  "SEO",
+  "Packaging",
+];
+
+/* Bento layout pattern that repeats every 6 tiles. */
+const TILE_SPAN: string[] = [
+  "md:col-span-7 md:row-span-2 aspect-[16/11] md:aspect-auto",
+  "md:col-span-5 aspect-[5/4]",
+  "md:col-span-5 aspect-[5/4]",
+  "md:col-span-4 aspect-[4/3]",
+  "md:col-span-4 aspect-[4/3]",
+  "md:col-span-4 aspect-[4/3]",
+];
 
 export default function PortfolioPage() {
   const [active, setActive] = useState("All");
-  const [projects, setProjects] = useState<PortfolioItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const tabContainerRef = useRef<HTMLDivElement>(null);
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(true);
-  const [activeProjectIndex, setActiveProjectIndex] = useState<number | null>(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
+  const {
+    items: projects,
+    loading,
+    loadingMore,
+    hasMore,
+    total,
+    sentinelRef,
+  } = useInfiniteList<PortfolioItem>({
+    pageSize: 12,
+    deps: [active],
+    fetcher: async ({ page, limit }) => {
+      const params: Record<string, string | number> = { page, limit };
+      if (active !== "All") params.category = active;
+      const res = await getPortfolioItems(params);
+      if ("data" in res) return { items: res.data, pagination: res.pagination };
+      return { items: res, pagination: null };
+    },
+  });
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [active]);
-
-  useEffect(() => {
-    async function fetchProjects() {
-      try {
-        setLoading(true);
-        const params: any = { page: currentPage, limit: 10 };
-        if (active !== "All") params.category = active;
-
-        const res = await getPortfolioItems(params);
-        if ("data" in res) {
-          setProjects(res.data);
-          setPagination(res.pagination);
-        } else {
-          setProjects(res);
-          setPagination(null);
-        }
-      } catch (error) {
-        console.error("Failed to fetch portfolio items:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchProjects();
-  }, [currentPage, active]);
-
-  const categories = ["All", "Web Design", "Web Development", "Branding", "SEO", "Digital Marketing"];
-  const filtered = projects;
-
-  const handleScroll = () => {
-    if (tabContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = tabContainerRef.current;
-      setShowLeftArrow(scrollLeft > 10);
-      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
-
-  const scrollTabs = (direction: "left" | "right") => {
-    if (tabContainerRef.current) {
-      tabContainerRef.current.scrollBy({
-        left: direction === "left" ? -200 : 200,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  useEffect(() => {
-    const el = tabContainerRef.current;
-    if (!el) return;
-
-    el.addEventListener("scroll", handleScroll);
-    setTimeout(handleScroll, 100);
-
-    return () => el.removeEventListener("scroll", handleScroll);
-  }, [categories.length]);
+  const categoryCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    projects.forEach((p) => {
+      if (p.category) map[p.category] = (map[p.category] || 0) + 1;
+    });
+    return map;
+  }, [projects]);
 
   return (
-    <>
-      <PageHeader
-        badge="Our Work"
-        title1="Our"
-        title2="Portfolio."
-        description="Explore our backend-powered case studies across web design, branding, SEO, and digital marketing."
-      />
+    <main className="relative">
+      <PortfolioHero />
 
-      <section className="py-20 overflow-hidden" style={{ background: "#fafafa" }}>
-        <div className="container">
+      {/* Filter + grid */}
+      <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
+        <div className="hero-grain-paper" aria-hidden />
+
+        <div className="container relative z-10 py-14 md:py-20">
+          {/* Filter pills */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6 }}
+            className="mb-10 md:mb-12 flex items-center justify-between gap-6"
+          >
+            <div className="flex-1 min-w-0 flex items-center gap-2 md:gap-2.5 overflow-x-auto no-scrollbar pb-1">
+              {CATEGORIES.map((cat) => {
+                const isActive = active === cat;
+                const count =
+                  cat === "All"
+                    ? (total || projects.length)
+                    : categoryCounts[cat];
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setActive(cat)}
+                    className={`group shrink-0 inline-flex items-center gap-2.5 rounded-full px-4 py-2 font-jakarta text-[12.5px] font-semibold transition-all duration-300 cursor-pointer ${
+                      isActive
+                        ? "bg-stone-900 text-stone-50 border border-stone-900"
+                        : "bg-stone-50 text-stone-700 border border-stone-900/10 hover:border-stone-900/30 hover:text-stone-900"
+                    }`}
+                  >
+                    <span>{cat}</span>
+                    {count !== undefined && (
+                      <span
+                        className={`font-mono-ui text-[10px] tabular-nums ${
+                          isActive ? "text-[#FF6600]" : "text-stone-400"
+                        }`}
+                      >
+                        {String(count).padStart(2, "0")}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <span className="hidden md:inline-flex items-center gap-2 font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500 shrink-0">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 hero-pulse" />
+              Updated weekly
+            </span>
+          </motion.div>
+
+          {/* Bento masonry */}
           {loading ? (
-            <div className="text-center py-20 text-gray-500">Loading portfolio...</div>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`rounded-3xl bg-stone-200/60 animate-pulse ${
+                    TILE_SPAN[i % TILE_SPAN.length]
+                  }`}
+                />
+              ))}
+            </div>
           ) : projects.length === 0 ? (
-            <div className="text-center py-20 text-gray-500">
-              No case studies are available right now.
+            <div className="rounded-3xl border border-stone-900/10 bg-stone-50 p-12 md:p-16 text-center">
+              <p className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500 mb-3">
+                Nothing here yet
+              </p>
+              <h2 className="font-funnel text-[clamp(1.4rem,2vw,1.8rem)] font-bold tracking-[-0.02em] text-stone-900">
+                No projects under{" "}
+                <span
+                  style={{
+                    fontFamily: "var(--font-newsreader), Georgia, serif",
+                    fontStyle: "italic",
+                    fontWeight: 500,
+                    color: "#FF6600",
+                  }}
+                >
+                  {active}
+                </span>{" "}
+                yet.
+              </h2>
+              <p className="mt-4 font-jakarta text-[14.5px] leading-[1.55] text-stone-600 max-w-[48ch] mx-auto">
+                Try another category, or get in touch — we might already have
+                relevant work under NDA.
+              </p>
             </div>
           ) : (
-            <>
-              <div className="relative max-w-5xl mx-auto mb-16 group/tabs">
-                <AnimatePresence>
-                  {showLeftArrow && (
-                    <motion.button
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 10 }}
-                      onClick={() => scrollTabs("left")}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-2.5 bg-white rounded-full shadow-xl text-[#FF6600] border border-orange-100 hover:bg-[#FF6600] hover:text-white transition-all duration-300 -ml-4"
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </motion.button>
-                  )}
-                </AnimatePresence>
-
-                <div
-                  ref={tabContainerRef}
-                  className="flex overflow-x-auto gap-3 no-scrollbar py-4 px-2 scroll-smooth items-center"
-                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-                >
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setActive(cat)}
-                      className="px-8 py-3 rounded-full text-sm font-bold transition-all whitespace-nowrap shrink-0 relative isolate"
-                      style={{
-                        fontFamily: "var(--font-outfit)",
-                        background: active === cat ? "#FF6600" : "white",
-                        color: active === cat ? "white" : "#666",
-                        border: active === cat ? "2px solid #FF6600" : "2px solid #eef2f6",
-                        boxShadow:
-                          active === cat
-                            ? "0 10px 20px -5px rgba(255,102,0,0.3)"
-                            : "0 4px 6px -1px rgba(0,0,0,0.02)",
-                      }}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-
-                <AnimatePresence>
-                  {showRightArrow && (
-                    <motion.button
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      onClick={() => scrollTabs("right")}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2.5 bg-white rounded-full shadow-xl text-[#FF6600] border border-orange-100 hover:bg-[#FF6600] hover:text-white transition-all duration-300 -mr-4"
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </motion.button>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 px-4 sm:px-0">
-                <AnimatePresence mode="popLayout">
-                  {filtered.map((project) => (
-                    <motion.div
-                      key={project._id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <ProjectCard
-                        project={project}
-                        onOpen={() => setActiveProjectIndex(filtered.findIndex((item) => item._id === project._id))}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-
-              {pagination && (
-                <div className="mb-12">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={pagination.pages}
-                    onPageChange={(page) => {
-                      setCurrentPage(page);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
+              <AnimatePresence mode="popLayout">
+                {projects.map((p, i) => (
+                  <motion.div
+                    key={p._id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.97 }}
+                    transition={{
+                      duration: 0.55,
+                      delay: (i % 6) * 0.04,
+                      ease: [0.2, 0.7, 0.2, 1],
                     }}
-                  />
-                </div>
-              )}
-            </>
+                    className={TILE_SPAN[i % TILE_SPAN.length]}
+                  >
+                    <WorkTile
+                      item={p}
+                      onOpen={() => setOpenIndex(i)}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
           )}
 
+          <InfiniteScrollSentinel
+            shown={projects.length}
+            total={total}
+            loading={loadingMore}
+            hasMore={hasMore && !loading}
+            sentinelRef={sentinelRef}
+            unit="projects"
+          />
+
           <PortfolioLightbox
-            projects={filtered}
-            index={activeProjectIndex}
-            onClose={() => setActiveProjectIndex(null)}
-            onChange={setActiveProjectIndex}
+            projects={projects}
+            index={openIndex}
+            onClose={() => setOpenIndex(null)}
+            onChange={setOpenIndex}
           />
         </div>
       </section>
 
       <CTA />
-    </>
+    </main>
   );
 }
 
-function ProjectCard({
-  project,
+/* ─── Hero ─────────────────────────────────────────────────── */
+function PortfolioHero() {
+  return (
+    <section className="relative bg-[#FAF7F2] overflow-hidden">
+      <div className="hero-grain-paper" aria-hidden />
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 50% 50% at 100% 0%, rgba(255,102,0,0.10), transparent 60%)",
+        }}
+      />
+
+      <div className="container relative z-10 pt-12 md:pt-20 pb-16 md:pb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className="flex items-center justify-between gap-4 mb-10 md:mb-14 pb-5 border-b border-stone-900/10"
+        >
+          <div className="flex items-center gap-3">
+            <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+            <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+              The work · Selected projects
+            </span>
+          </div>
+          <span className="hidden md:flex items-center gap-2 font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 hero-pulse" />
+            Currently shipping for 14 brands
+          </span>
+        </motion.div>
+
+        <div className="grid grid-cols-12 gap-x-8 gap-y-10 items-end">
+          <div className="col-span-12 md:col-span-8">
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.85, ease: [0.2, 0.7, 0.2, 1] }}
+              className="font-funnel text-stone-900 font-bold leading-[0.92] tracking-[-0.04em] text-[clamp(2.5rem,6.6vw,5.75rem)] max-w-[14ch]"
+            >
+              Work that earned its{" "}
+              <span
+                style={{
+                  fontFamily: "var(--font-newsreader), Georgia, serif",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  color: "#FF6600",
+                }}
+              >
+                place on the page.
+              </span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="mt-8 max-w-[58ch] font-jakarta text-[16.5px] md:text-[18px] leading-[1.6] text-stone-700"
+            >
+              Eight years of identity systems, websites, growth campaigns and
+              motion work — picked from 142+ shipped projects. The newest sits
+              at the top.
+            </motion.p>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="col-span-12 md:col-span-4"
+          >
+            <div className="grid grid-cols-2 gap-3 max-w-md md:ml-auto">
+              {HERO_STATS.map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-2xl border border-stone-900/10 bg-stone-50 p-4 hover:bg-white hover:border-[#FF6600]/40 transition-all duration-300 cursor-default"
+                >
+                  <p className="font-funnel font-bold tracking-[-0.025em] text-stone-900 leading-none text-[clamp(1.45rem,2.1vw,1.75rem)]">
+                    {s.value}
+                    {s.suffix && (
+                      <span
+                        className={
+                          s.suffix === "★"
+                            ? "ml-1 text-[#FF6600] align-baseline"
+                            : "ml-1 font-jakarta text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500 align-middle normal-case"
+                        }
+                      >
+                        {s.suffix}
+                      </span>
+                    )}
+                  </p>
+                  <p className="mt-2.5 font-jakarta text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-500">
+                    {s.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Bento tile ─────────────────────────────────────────────── */
+function WorkTile({
+  item,
   onOpen,
 }: {
-  project: PortfolioItem;
+  item: PortfolioItem;
   onOpen: () => void;
 }) {
-  const portfolioImage =
-    project.image || project.gallery?.[0] || "/placeholder.jpg";
+  const cover = item.image || item.gallery?.[0] || "/images/hero-abstract.png";
+  const cat = (item.category || "").toLowerCase();
+  const isContain = cat.includes("brand") || cat.includes("graphic");
 
   return (
     <button
       type="button"
       onClick={onOpen}
-      className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl md:rounded-[2rem] border border-gray-100 bg-white text-left shadow-sm transition-all duration-700 hover:shadow-2xl"
+      className="group relative block w-full h-full rounded-3xl overflow-hidden bg-stone-100 border border-stone-900/10 transition-all duration-500 hover:-translate-y-1.5 hover:border-stone-900/25 hover:shadow-[0_30px_60px_-30px_rgba(15,12,8,0.3)] cursor-pointer text-left"
+      aria-label={`Open ${item.title}`}
     >
-      <div className={`relative h-48 shrink-0 overflow-hidden md:h-72 ${project.category === "Brand Identity" ? "bg-[#f8f9fa]" : ""}`}>
-        <img
-          src={getThumbnail(portfolioImage)}
-          alt={project.title}
-          className={`absolute inset-0 h-full w-full transition-transform duration-1000 group-hover:scale-110 ${
-            project.category === "Brand Identity" ? "object-contain p-6 md:p-8 mix-blend-multiply" : "object-cover object-top"
-          }`}
-          loading="lazy"
-        />
-        <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-t from-black/90 via-black/40 to-transparent translate-y-4 group-hover:translate-y-0">
-          <div className="absolute top-3 right-3 md:top-5 md:right-5 inline-flex h-8 w-8 md:h-11 md:w-11 items-center justify-center rounded-full bg-white/12 text-white backdrop-blur-md">
-            <Expand className="h-3 w-3 md:h-4 md:w-4" />
-          </div>
-          <div className="hidden md:flex gap-2 flex-wrap mb-4">
-            {(project.points || []).slice(0, 3).map((tag) => (
+      <span className="absolute top-4 left-4 z-20 inline-flex items-center gap-2 rounded-full bg-[#FAF7F2]/95 backdrop-blur-sm border border-stone-900/10 px-3 py-1.5 font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-900">
+        <span className="block w-1.5 h-1.5 rounded-full bg-[#FF6600]" />
+        {item.category}
+      </span>
+
+      <span
+        aria-hidden
+        className="absolute top-4 right-4 z-20 inline-grid place-items-center w-10 h-10 rounded-full bg-[#FAF7F2]/95 backdrop-blur-sm text-stone-900 transition-all duration-300 group-hover:bg-[#FF6600] group-hover:rotate-[-25deg]"
+      >
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+          <path
+            d="M2 12 L12 2 M5 2 L12 2 L12 9"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
+
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={getThumbnail(cover)}
+        alt={item.title}
+        loading="lazy"
+        className={`absolute inset-0 w-full h-full transition-transform duration-[1.2s] ease-out group-hover:scale-[1.05] ${
+          isContain
+            ? "object-contain p-10 bg-stone-100"
+            : "object-cover object-top"
+        }`}
+      />
+
+      <div
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-stone-900/90 via-stone-900/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+      />
+
+      <div className="absolute left-0 right-0 bottom-0 p-5 md:p-6 text-stone-50 translate-y-3 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
+        {item.client && (
+          <p className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-50/75 mb-2">
+            {item.client}
+          </p>
+        )}
+        <h3 className="font-funnel text-[clamp(1.1rem,1.5vw,1.4rem)] leading-[1.15] tracking-[-0.025em] font-bold text-stone-50 max-w-[26ch]">
+          {item.title}
+        </h3>
+        {item.points && item.points.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {item.points.slice(0, 3).map((tag) => (
               <span
                 key={tag}
-                className="px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-widest bg-white/10 text-white backdrop-blur-md border border-white/20"
+                className="inline-flex items-center font-jakarta text-[9.5px] font-semibold uppercase tracking-[0.18em] text-stone-50/85 border border-stone-50/30 rounded-full px-2 py-1"
               >
                 {tag}
               </span>
             ))}
           </div>
-          <h4
-            className="text-white font-black text-lg md:text-2xl mb-1 tracking-tight line-clamp-2"
-            style={{ fontFamily: "var(--font-outfit)" }}
-          >
-            {project.title}
-          </h4>
-        </div>
-      </div>
-      <div className="flex flex-1 items-start sm:items-center justify-between p-3 md:p-6 gap-2">
-        <div className="flex-1 min-w-0">
-          <span
-            className="text-[9px] md:text-xs font-black uppercase tracking-[0.2em] mb-1 md:mb-2 block truncate"
-            style={{ color: "#FF6600" }}
-          >
-            {project.category}
-          </span>
-          <h3
-            className="font-black text-gray-900 text-[13px] md:text-xl group-hover:text-[#FF6600] transition-colors leading-tight line-clamp-2"
-            style={{ fontFamily: "var(--font-outfit)" }}
-          >
-            {project.title}
-          </h3>
-        </div>
-        <div className="hidden sm:flex shrink-0 h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-gray-50 items-center justify-center text-gray-400 group-hover:bg-[#FF6600] group-hover:text-white transition-all duration-500 transform group-hover:-rotate-45 shadow-sm">
-          <ExternalLink className="h-4 w-4 md:h-5 md:w-5" />
-        </div>
+        )}
       </div>
     </button>
   );
 }
+

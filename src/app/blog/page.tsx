@@ -1,51 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  BookOpen,
-  Calendar,
-  Clock,
-  Layers3,
-  Sparkles,
-} from "lucide-react";
 import { motion } from "framer-motion";
 import { CTA } from "@/components/sections/cta";
-import { PageHeader } from "@/components/layout/page-header";
 import { getBlogs } from "@/lib/api";
-import type { BlogPost, PaginatedResponse, PaginationMetadata } from "@/lib/types";
-import { Pagination } from "@/components/ui/pagination";
+import type { BlogPost } from "@/lib/types";
+import { useInfiniteList } from "@/lib/useInfiniteList";
+import { InfiniteScrollSentinel } from "@/components/ui/infinite-scroll-sentinel";
 import { getThumbnail } from "@/lib/image-utils";
 
-/* ── helpers ───────────────────────────────────────────── */
-
-const categoryThemes: Record<
-  string,
-  { badge: string; chip: string }
-> = {
-  SEO: { badge: "bg-teal-600 text-white", chip: "border-teal-200 bg-teal-50 text-teal-700" },
-  Branding: { badge: "bg-rose-600 text-white", chip: "border-rose-200 bg-rose-50 text-rose-700" },
-  "Web Development": { badge: "bg-blue-600 text-white", chip: "border-blue-200 bg-blue-50 text-blue-700" },
-  "Web Design": { badge: "bg-indigo-600 text-white", chip: "border-indigo-200 bg-indigo-50 text-indigo-700" },
-  "Social Media": { badge: "bg-violet-600 text-white", chip: "border-violet-200 bg-violet-50 text-violet-700" },
-  PPC: { badge: "bg-amber-600 text-white", chip: "border-amber-200 bg-amber-50 text-amber-700" },
-  "Content Marketing": { badge: "bg-emerald-600 text-white", chip: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-  "Digital Marketing": { badge: "bg-orange-600 text-white", chip: "border-orange-200 bg-orange-50 text-orange-700" },
-  Marketing: { badge: "bg-[#FF6600] text-white", chip: "border-orange-200 bg-orange-50 text-[#FF6600]" },
-};
-
-const defaultTheme = { badge: "bg-slate-900 text-white", chip: "border-slate-200 bg-slate-50 text-slate-700" };
-
-function getTheme(cat?: string) {
-  return (cat ? categoryThemes[cat] : undefined) || defaultTheme;
-}
+const CATEGORIES = [
+  "All",
+  "SEO",
+  "Branding",
+  "Web Development",
+  "Web Design",
+  "Social Media",
+  "PPC",
+  "Content Marketing",
+  "Digital Marketing",
+  "Marketing",
+];
 
 function fmtDate(date?: string) {
   if (!date) return "";
   const d = new Date(date);
-  return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  return Number.isNaN(d.getTime())
+    ? ""
+    : d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
 function sortPosts(posts: BlogPost[]) {
@@ -56,270 +39,516 @@ function sortPosts(posts: BlogPost[]) {
   });
 }
 
-/* ── page ──────────────────────────────────────────────── */
-
 export default function BlogPage() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeCategory]);
+  const {
+    items: posts,
+    loading,
+    loadingMore,
+    hasMore,
+    total: totalArticles,
+    sentinelRef,
+  } = useInfiniteList<BlogPost>({
+    pageSize: 9,
+    deps: [activeCategory],
+    fetcher: async ({ page, limit }) => {
+      const params: Record<string, string | number> = { page, limit };
+      if (activeCategory !== "All") params.category = activeCategory;
+      const res = await getBlogs(params);
+      if ("data" in res) return { items: res.data, pagination: res.pagination };
+      return { items: sortPosts(res), pagination: null };
+    },
+  });
 
-  useEffect(() => {
-    setLoading(true);
-    const params: any = { page: currentPage, limit: 10 };
-    if (activeCategory !== "All") params.category = activeCategory;
+  /* Only treat a post as "featured" if it's actually on the first page. */
+  const featured = useMemo(
+    () => (posts.length ? posts.find((p) => p.featured) || posts[0] : undefined),
+    [posts]
+  );
 
-    getBlogs(params)
-      .then((res) => {
-        if ("data" in res) {
-          setPosts(res.data);
-          setPagination(res.pagination);
-        } else {
-          setPosts(sortPosts(res));
-          setPagination(null);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [currentPage, activeCategory]);
-
-  // Categories list
-  const categories = ["All", "SEO", "Branding", "Web Development", "Web Design", "Social Media", "PPC", "Content Marketing", "Digital Marketing", "Marketing"];
-  
-  const featured = posts.find((p) => p.featured) || posts[0];
-  // Since server handles filtering, we don't need to filter by category again.
-  // We just handle the "featured" exclusion on the grid if it's the "All" category.
-  const gridPosts = activeCategory === "All" && featured 
-    ? posts.filter((p) => p.slug !== featured.slug) 
-    : posts;
+  const gridPosts = useMemo(
+    () =>
+      activeCategory === "All" && featured
+        ? posts.filter((p) => p.slug !== featured.slug)
+        : posts,
+    [posts, featured, activeCategory]
+  );
 
   return (
-    <>
-      <PageHeader
-        badge="Insights"
-        title1="Blog &"
-        title2="Insights."
-        description="Expert tips, strategies, and sharper thinking from the Creative Monk team."
-      />
+    <main className="relative">
+      <BlogHero count={totalArticles} />
 
-      {/* ── Main Content ───────────────────────────────── */}
-      <section className="relative overflow-hidden bg-white pb-20 pt-12 md:pb-24 md:pt-14">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:24px_24px] opacity-20" />
-        <div className="pointer-events-none absolute -top-20 right-0 h-[400px] w-[400px] rounded-full bg-orange-500/[0.04] blur-[80px]" />
+      <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
+        <div className="hero-grain-paper" aria-hidden />
 
-        <div className="container relative z-10 mx-auto max-w-7xl px-4">
-          {/* ── Intro row: heading + snapshot ─────────── */}
-          <div className="grid items-start gap-8 lg:grid-cols-[1fr_340px]">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-orange-200/70 bg-orange-50 px-3.5 py-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-[#FF6600]" />
-                <span className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-700">
-                  Editorial Desk
-                </span>
-              </div>
-
-              <h2
-                className="mt-4 max-w-2xl text-3xl font-black leading-[1.1] tracking-tight text-slate-950 md:text-4xl"
-                style={{ fontFamily: "var(--font-outfit)" }}
-              >
-                Ideas for brands that want their digital presence to{" "}
-                <span className="bg-gradient-to-r from-[#FF6600] via-orange-500 to-amber-500 bg-clip-text text-transparent">
-                  feel sharper and perform harder.
-                </span>
-              </h2>
-
-              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-500 md:text-base">
-                Strategy notes, growth lessons, and creative observations from
-                our daily work.
-              </p>
+        <div className="container relative z-10 py-14 md:py-20">
+          {/* Category filter */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6 }}
+            className="mb-10 md:mb-12 flex items-center justify-between gap-6"
+          >
+            <div className="flex-1 min-w-0 flex items-center gap-2 md:gap-2.5 overflow-x-auto no-scrollbar pb-1">
+              {CATEGORIES.map((cat) => {
+                const isActive = activeCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setActiveCategory(cat)}
+                    className={`shrink-0 inline-flex items-center gap-2 rounded-full px-4 py-2 font-jakarta text-[12.5px] font-semibold transition-all duration-300 cursor-pointer ${
+                      isActive
+                        ? "bg-stone-900 text-stone-50 border border-stone-900"
+                        : "bg-stone-50 text-stone-700 border border-stone-900/10 hover:border-stone-900/30 hover:text-stone-900"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
             </div>
+            <span className="hidden md:inline-flex items-center gap-2 font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500 shrink-0">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 hero-pulse" />
+              Posted weekly
+            </span>
+          </motion.div>
 
-            {/* Snapshot card */}
-            <div className="rounded-2xl border border-slate-900/10 bg-slate-950 p-5 text-white shadow-lg">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-orange-300">
-                  <BookOpen className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.24em] text-orange-300">
-                    Reading Snapshot
-                  </p>
-                  <p className="text-base font-black text-white" style={{ fontFamily: "var(--font-outfit)" }}>
-                    Fresh thinking, organized
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
-                  <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-400">Articles</p>
-                  <p className="mt-1 text-lg font-black">{loading ? "--" : String(posts.length).padStart(2, "0")}</p>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
-                  <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-400">Topics</p>
-                  <p className="mt-1 text-lg font-black">{loading ? "--" : String(categories.length - 1).padStart(2, "0")}</p>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
-                  <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-400">Featured</p>
-                  <p className="mt-1 text-sm font-bold">{featured?.category || "SEO"}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Category filters ──────────────────────── */}
-          <div className="mt-7 flex flex-wrap gap-2">
-            {loading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-9 w-24 animate-pulse rounded-full bg-gray-100" />
-                ))
-              : categories.map((cat) => {
-                  const active = activeCategory === cat;
-                  const t = getTheme(cat === "All" ? undefined : cat);
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setActiveCategory(cat)}
-                      className={`rounded-full border px-4 py-2 text-[12px] font-semibold transition-all duration-200 ${
-                        active
-                          ? "border-slate-900 bg-slate-950 text-white shadow-sm"
-                          : `${t.chip} hover:shadow-sm`
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
-          </div>
-
-          {/* ── Featured + Spotlight ──────────────────── */}
           {loading ? (
-            <div className="mt-8 h-[340px] animate-pulse rounded-2xl bg-gray-50" />
+            <SkeletonBlock />
           ) : posts.length === 0 ? (
-            <div className="mt-8 rounded-2xl border border-dashed border-orange-200 bg-[#fafafa] px-6 py-16 text-center">
-              <BookOpen className="mx-auto mb-3 h-8 w-8 text-[#FF6600]/40" />
-              <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#FF6600]">Nothing live yet</p>
-              <p className="mt-2 text-sm text-slate-500">New insights will appear here once published.</p>
-            </div>
-          ) : activeCategory === "All" && featured ? (
-            <Link
-              href={`/blog/${featured.slug}`}
-              className="group mt-8 flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-500 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-orange-500/[0.05] md:flex-row"
-            >
-              <div className="relative h-64 shrink-0 overflow-hidden md:h-[280px] md:w-[50%]">
-                <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/50 via-black/5 to-transparent md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-black/5" />
-                <img src={getThumbnail(featured.coverImage)} alt={featured.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                <div className="absolute left-4 top-4 z-20 flex gap-2">
-                  <span className="rounded-full bg-white/90 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#FF6600] backdrop-blur-sm">Featured</span>
-                  <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${getTheme(featured.category).badge}`}>{featured.category}</span>
-                </div>
-              </div>
-
-              <div className="flex flex-1 flex-col justify-center p-6 md:p-8">
-                <div className="flex flex-wrap gap-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                  <span className="inline-flex items-center gap-1.5"><Calendar className="h-3 w-3 text-[#FF6600]" />{fmtDate(featured.publishedAt) || "Latest"}</span>
-                  <span className="inline-flex items-center gap-1.5"><Clock className="h-3 w-3 text-[#FF6600]" />{featured.readTime || "5 min read"}</span>
-                </div>
-                <h2 className="mt-3 text-xl font-black leading-snug tracking-tight text-slate-950 transition-colors group-hover:text-[#FF6600] md:text-2xl lg:text-3xl" style={{ fontFamily: "var(--font-outfit)" }}>
-                  {featured.title}
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-slate-500 line-clamp-3 md:text-base md:leading-7">{featured.excerpt}</p>
-                <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
-                  <span className="text-xs text-slate-400">{featured.author || "Creative Monk Team"}</span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white transition-colors group-hover:bg-[#FF6600]">
-                    Read Feature <ArrowUpRight className="h-3.5 w-3.5" />
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ) : null}
-
-          {/* ── All Articles ─────────────────────────── */}
-          {!loading && posts.length > 0 && (
+            <EmptyState activeCategory={activeCategory} />
+          ) : (
             <>
-              <div className="mt-14 mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <p className="section-label mb-1.5">
-                    {activeCategory === "All" ? "All Articles" : activeCategory}
+              {/* Featured spotlight — only when on "All" with a featured pick */}
+              {activeCategory === "All" && featured && (
+                <FeaturedSpotlight post={featured} />
+              )}
+
+              {/* Grid section header */}
+              {gridPosts.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-60px" }}
+                  transition={{ duration: 0.6 }}
+                  className={`flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-10 ${
+                    activeCategory === "All" && featured ? "mt-14 md:mt-16" : ""
+                  }`}
+                >
+                  <div className="max-w-2xl">
+                    <div className="flex items-center gap-3 mb-5">
+                      <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+                      <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+                        {activeCategory === "All"
+                          ? "All articles"
+                          : activeCategory}
+                      </span>
+                    </div>
+                    <h2 className="font-funnel text-stone-900 font-bold leading-[1.0] tracking-[-0.03em] text-[clamp(1.85rem,3.4vw,2.8rem)] max-w-[24ch]">
+                      Sharper thinking,{" "}
+                      <span
+                        style={{
+                          fontFamily: "var(--font-newsreader), Georgia, serif",
+                          fontStyle: "italic",
+                          fontWeight: 500,
+                          color: "#1c1c1c",
+                        }}
+                      >
+                        written by the team.
+                      </span>
+                    </h2>
+                  </div>
+                  <p className="font-jakarta text-[12.5px] text-stone-600">
+                    <span className="font-funnel text-[15px] font-bold text-stone-900">
+                      {gridPosts.length}
+                    </span>{" "}
+                    article{gridPosts.length === 1 ? "" : "s"}
+                    {totalArticles > 0 && totalArticles !== posts.length && (
+                      <>
+                        {" "}
+                        of{" "}
+                        <span className="font-funnel text-[15px] font-bold text-stone-900">
+                          {totalArticles}
+                        </span>
+                      </>
+                    )}
                   </p>
-                  <h2 className="text-2xl font-black tracking-tight text-slate-950 md:text-3xl" style={{ fontFamily: "var(--font-outfit)" }}>
-                    Browse all articles
-                  </h2>
-                </div>
-                <div className="inline-flex shrink-0 items-center gap-2 rounded-full border border-gray-100 bg-gray-50 px-3.5 py-2 text-xs font-semibold text-slate-500">
-                  <Layers3 className="h-3.5 w-3.5 text-[#FF6600]" />
-                  {gridPosts.length} article{gridPosts.length === 1 ? "" : "s"}
-                </div>
+                </motion.div>
+              )}
+
+              {/* Article grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+                {gridPosts.map((post, i) => (
+                  <BlogCard key={post.slug} post={post} index={i} />
+                ))}
               </div>
 
-              {gridPosts.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-orange-200 bg-[#fafafa] px-6 py-12 text-center">
-                  <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#FF6600]">No matches</p>
-                  <p className="mt-2 text-sm text-slate-500">Try another category.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                  {gridPosts.map((post) => (
-                    <motion.article
-                      key={post.slug}
-                      initial={{ opacity: 0, y: 18 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, amount: 0.1 }}
-                      transition={{ duration: 0.45 }}
-                    >
-                      <Link
-                        href={`/blog/${post.slug}`}
-                        className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-500 hover:-translate-y-0.5 hover:border-orange-100/60 hover:shadow-lg hover:shadow-orange-500/[0.05]"
-                      >
-                        <div className="relative h-44 overflow-hidden">
-                          <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/30 to-transparent" />
-                          <img src={getThumbnail(post.coverImage)} alt={post.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                          <span className={`absolute left-3.5 top-3.5 z-20 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em] ${getTheme(post.category).badge}`}>{post.category}</span>
-                        </div>
-
-                        <div className="flex flex-1 flex-col p-5">
-                          <div className="mb-2 flex flex-wrap gap-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                            <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3 text-[#FF6600]" />{fmtDate(post.publishedAt) || "Recent"}</span>
-                            <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3 text-[#FF6600]" />{post.readTime || "5 min"}</span>
-                          </div>
-                          <h3 className="text-lg font-black leading-snug tracking-tight text-slate-950 transition-colors group-hover:text-[#FF6600] line-clamp-2" style={{ fontFamily: "var(--font-outfit)" }}>
-                            {post.title}
-                          </h3>
-                          <p className="mt-2 flex-1 text-xs leading-5 text-slate-500 line-clamp-3">{post.excerpt}</p>
-                          <div className="mt-4 flex items-center justify-between border-t border-gray-50 pt-3">
-                            <span className="text-xs text-slate-400">{post.author || "Creative Monk Team"}</span>
-                            <span className="inline-flex items-center gap-1 text-xs font-bold text-[#FF6600]">
-                              Read <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    </motion.article>
-                  ))}
-                </div>
-              )}
-
-              {pagination && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={pagination.pages}
-                  onPageChange={(page) => {
-                    setCurrentPage(page);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                />
-              )}
+              <InfiniteScrollSentinel
+                shown={gridPosts.length}
+                total={
+                  totalArticles
+                    ? activeCategory === "All" && featured
+                      ? totalArticles - 1
+                      : totalArticles
+                    : 0
+                }
+                loading={loadingMore}
+                hasMore={hasMore}
+                sentinelRef={sentinelRef}
+                unit="articles"
+              />
             </>
           )}
         </div>
       </section>
 
       <CTA />
-    </>
+    </main>
+  );
+}
+
+/* ─── Hero ─────────────────────────────────────────────────── */
+function BlogHero({ count }: { count: number }) {
+  const HERO_STATS = [
+    { value: String(count || 0).padStart(2, "0"), label: "Articles live" },
+    { value: "Weekly", label: "New posts" },
+    { value: "5 min", label: "Avg read time" },
+    { value: "By the team", label: "Authored in-house" },
+  ];
+
+  return (
+    <section className="relative bg-[#FAF7F2] overflow-hidden">
+      <div className="hero-grain-paper" aria-hidden />
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 50% 50% at 100% 0%, rgba(255,102,0,0.10), transparent 60%)",
+        }}
+      />
+
+      <div className="container relative z-10 pt-12 md:pt-20 pb-16 md:pb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className="flex items-center justify-between gap-4 mb-10 md:mb-14 pb-5 border-b border-stone-900/10"
+        >
+          <div className="flex items-center gap-3">
+            <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+            <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+              The journal · Insights & notes
+            </span>
+          </div>
+          <span className="hidden md:flex items-center gap-2 font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 hero-pulse" />
+            Updated this week
+          </span>
+        </motion.div>
+
+        <div className="grid grid-cols-12 gap-x-8 gap-y-10 items-end">
+          <div className="col-span-12 md:col-span-8">
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.85, ease: [0.2, 0.7, 0.2, 1] }}
+              className="font-funnel text-stone-900 font-bold leading-[0.92] tracking-[-0.04em] text-[clamp(2.5rem,6.6vw,5.75rem)] max-w-[16ch]"
+            >
+              Notes from{" "}
+              <span
+                style={{
+                  fontFamily: "var(--font-newsreader), Georgia, serif",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  color: "#FF6600",
+                }}
+              >
+                inside the studio.
+              </span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="mt-8 max-w-[60ch] font-jakarta text-[16.5px] md:text-[18px] leading-[1.6] text-stone-700"
+            >
+              Working notes on craft, growth and the messy parts of running a
+              creative studio. Written by whoever shipped the work — no SEO
+              writing pool, no AI auto-posts.
+            </motion.p>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="col-span-12 md:col-span-4"
+          >
+            <div className="grid grid-cols-2 gap-3 max-w-md md:ml-auto">
+              {HERO_STATS.map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-2xl border border-stone-900/10 bg-stone-50 p-4 hover:bg-white hover:border-[#FF6600]/40 transition-all duration-300 cursor-default"
+                >
+                  <p className="font-funnel font-bold tracking-[-0.025em] text-stone-900 leading-[1.0] text-[clamp(1.15rem,1.8vw,1.55rem)]">
+                    {s.value}
+                  </p>
+                  <p className="mt-2.5 font-jakarta text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-500">
+                    {s.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Featured spotlight ───────────────────────────────────── */
+function FeaturedSpotlight({ post }: { post: BlogPost }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.8, ease: [0.2, 0.7, 0.2, 1] }}
+    >
+      <Link
+        href={`/blog/${post.slug}`}
+        className="group relative grid grid-cols-1 lg:grid-cols-12 gap-0 rounded-3xl border border-stone-900/10 bg-stone-50 overflow-hidden hover:border-stone-900/25 hover:shadow-[0_30px_60px_-30px_rgba(15,12,8,0.25)] transition-all duration-500 cursor-pointer"
+      >
+        <div className="relative lg:col-span-7 aspect-[16/10] lg:aspect-auto overflow-hidden bg-stone-100">
+          {post.coverImage ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={getThumbnail(post.coverImage)}
+              alt={post.title}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+            />
+          ) : (
+            <div
+              className="absolute inset-0 grid place-items-center"
+              style={{ background: "linear-gradient(135deg, #FF6600 0%, #1A1410 100%)" }}
+            >
+              <span className="font-funnel text-stone-50 font-bold text-[clamp(2rem,4vw,3rem)] tracking-tight">
+                Creative Monk
+              </span>
+            </div>
+          )}
+
+          <span className="absolute top-5 left-5 inline-flex items-center gap-2 rounded-full bg-stone-900 text-stone-50 px-3 py-1.5 font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em]">
+            <span className="block w-1.5 h-1.5 rounded-full bg-[#FF6600] hero-pulse" />
+            Featured · {post.category || "Journal"}
+          </span>
+
+          <span
+            aria-hidden
+            className="absolute top-5 right-5 inline-grid place-items-center w-12 h-12 rounded-full bg-[#FAF7F2]/95 backdrop-blur-sm text-stone-900 transition-all duration-300 group-hover:bg-[#FF6600] group-hover:rotate-[-25deg]"
+          >
+            <svg width="15" height="15" viewBox="0 0 14 14" fill="none">
+              <path
+                d="M2 12 L12 2 M5 2 L12 2 L12 9"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+        </div>
+
+        <div className="lg:col-span-5 p-7 md:p-10 flex flex-col gap-5">
+          <div className="flex items-center gap-4 font-jakarta text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-500">
+            {post.publishedAt && <span>{fmtDate(post.publishedAt)}</span>}
+            <span className="w-px h-3 bg-stone-300" aria-hidden />
+            <span>{post.readTime || "5 min read"}</span>
+            {post.author && (
+              <>
+                <span className="w-px h-3 bg-stone-300" aria-hidden />
+                <span className="truncate">{post.author}</span>
+              </>
+            )}
+          </div>
+
+          <h3 className="font-funnel text-stone-900 font-bold leading-[1.1] tracking-[-0.025em] text-[clamp(1.6rem,2.6vw,2.25rem)] max-w-[24ch] group-hover:text-stone-900">
+            {post.title}
+          </h3>
+
+          {post.excerpt && (
+            <p className="font-jakarta text-[15px] leading-[1.6] text-stone-600 line-clamp-3 max-w-[52ch]">
+              {post.excerpt}
+            </p>
+          )}
+
+          <div className="mt-auto pt-4 border-t border-stone-900/10 flex items-center justify-between gap-3">
+            <span className="font-jakarta text-[12px] font-semibold uppercase tracking-[0.22em] text-stone-900 inline-flex items-center gap-2 group-hover:text-[#FF6600] transition-colors">
+              Read the article
+              <svg
+                width="18"
+                height="9"
+                viewBox="0 0 22 10"
+                fill="none"
+                className="group-hover:translate-x-1 transition-transform"
+              >
+                <path
+                  d="M1 5 H 20 M 16 1 L 20 5 L 16 9"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            {post.tags && post.tags[0] && (
+              <span className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500">
+                #{post.tags[0]}
+              </span>
+            )}
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
+/* ─── Card ─────────────────────────────────────────────────── */
+function BlogCard({ post, index }: { post: BlogPost; index: number }) {
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.55, delay: (index % 3) * 0.07 }}
+    >
+      <Link
+        href={`/blog/${post.slug}`}
+        className="group flex h-full flex-col rounded-3xl border border-stone-900/10 bg-stone-50 overflow-hidden hover:-translate-y-1.5 hover:border-stone-900/25 hover:shadow-[0_24px_50px_-30px_rgba(15,12,8,0.22)] transition-all duration-500 cursor-pointer"
+      >
+        <div className="relative aspect-[5/3] overflow-hidden bg-stone-100">
+          {post.coverImage ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={getThumbnail(post.coverImage)}
+              alt={post.title}
+              loading="lazy"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+            />
+          ) : (
+            <div
+              className="absolute inset-0 grid place-items-center"
+              style={{ background: "linear-gradient(135deg, #FF6600 0%, #1A1410 100%)" }}
+            >
+              <span className="font-funnel text-stone-50 font-bold text-[clamp(1.5rem,2.5vw,2rem)] tracking-tight">
+                CM
+              </span>
+            </div>
+          )}
+
+          <span className="absolute top-4 left-4 inline-flex items-center gap-2 rounded-full bg-[#FAF7F2]/95 backdrop-blur-sm border border-stone-900/10 px-3 py-1.5 font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-900">
+            <span className="block w-1.5 h-1.5 rounded-full bg-[#FF6600]" />
+            {post.category || "Journal"}
+          </span>
+
+          <span
+            aria-hidden
+            className="absolute top-4 right-4 inline-grid place-items-center w-10 h-10 rounded-full bg-[#FAF7F2]/95 backdrop-blur-sm text-stone-900 transition-all duration-300 group-hover:bg-[#FF6600] group-hover:rotate-[-25deg]"
+          >
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path
+                d="M2 12 L12 2 M5 2 L12 2 L12 9"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+        </div>
+
+        <div className="p-6 md:p-7 flex flex-col flex-1">
+          <div className="flex items-center gap-3 font-jakarta text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-500 mb-4">
+            <span className="text-[#FF6600]">{fmtDate(post.publishedAt) || "Recent"}</span>
+            <span className="w-px h-3 bg-stone-300" aria-hidden />
+            <span>{post.readTime || "5 min read"}</span>
+          </div>
+          <h3 className="font-funnel text-[clamp(1.15rem,1.5vw,1.4rem)] leading-[1.2] tracking-[-0.02em] font-bold text-stone-900 line-clamp-2">
+            {post.title}
+          </h3>
+          {post.excerpt && (
+            <p className="mt-3 font-jakarta text-[13.5px] leading-[1.55] text-stone-600 line-clamp-3 flex-1">
+              {post.excerpt}
+            </p>
+          )}
+          <div className="mt-5 pt-4 border-t border-stone-900/10 flex items-center justify-between gap-3">
+            <span className="font-jakarta text-[11px] text-stone-500 truncate">
+              {post.author || "Creative Monk"}
+            </span>
+            <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-900 inline-flex items-center gap-1.5 group-hover:text-[#FF6600] transition-colors">
+              Read
+              <svg
+                width="14"
+                height="7"
+                viewBox="0 0 22 10"
+                fill="none"
+                className="group-hover:translate-x-1 transition-transform"
+              >
+                <path
+                  d="M1 5 H 20 M 16 1 L 20 5 L 16 9"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+          </div>
+        </div>
+      </Link>
+    </motion.article>
+  );
+}
+
+function SkeletonBlock() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="h-[400px] rounded-3xl bg-stone-200/60 animate-pulse" />
+      ))}
+    </div>
+  );
+}
+
+function EmptyState({ activeCategory }: { activeCategory: string }) {
+  return (
+    <div className="rounded-3xl border border-stone-900/10 bg-stone-50 p-12 md:p-16 text-center">
+      <p className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500 mb-3">
+        Nothing here yet
+      </p>
+      <h2 className="font-funnel text-[clamp(1.4rem,2vw,1.8rem)] font-bold tracking-[-0.02em] text-stone-900">
+        No articles under{" "}
+        <span
+          style={{
+            fontFamily: "var(--font-newsreader), Georgia, serif",
+            fontStyle: "italic",
+            fontWeight: 500,
+            color: "#FF6600",
+          }}
+        >
+          {activeCategory}
+        </span>{" "}
+        yet.
+      </h2>
+      <p className="mt-4 font-jakarta text-[14.5px] leading-[1.55] text-stone-600 max-w-[48ch] mx-auto">
+        Try another category, or come back next week — we ship one new piece
+        every Friday.
+      </p>
+    </div>
   );
 }

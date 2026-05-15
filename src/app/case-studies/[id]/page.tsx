@@ -1,767 +1,961 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  BarChart3,
-  Building2,
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Expand,
-  ExternalLink,
-  LineChart,
-  PieChart,
-  Quote,
-  Target,
-  TrendingUp,
-  X,
-  Zap,
-} from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { motion, AnimatePresence } from "framer-motion";
+import { CTA } from "@/components/sections/cta";
 import { getCaseStudy } from "@/lib/api";
 import type { CaseStudy } from "@/lib/types";
+import { getThumbnail } from "@/lib/image-utils";
+
+/* A "short" metric value (e.g. "+312%", "4.9★", "<4hr") gets the big
+   headline treatment. Long text values ("Web Development", "Strategy
+   + Creative + Execution") render as a smaller, properly-wrapped
+   sub-headline so they don't overflow the column. */
+function isShortValue(v: string | undefined | null): boolean {
+  if (!v) return false;
+  const trimmed = v.trim();
+  if (trimmed.length <= 8) return true;
+  return /^[\d.,+%\-x×₹$KkMm/\s]+$/.test(trimmed);
+}
 
 export default function CaseStudyDetailPage() {
   const { id } = useParams();
-  const [project, setProject] = useState<CaseStudy | null>(null);
+  const [study, setStudy] = useState<CaseStudy | null>(null);
   const [loading, setLoading] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    async function fetchCaseStudy() {
-      try {
-        const data = await getCaseStudy(id as string);
-        setProject(data);
-      } catch (error) {
-        console.error("Failed to fetch case study:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (id) {
-      fetchCaseStudy();
-    }
+    if (!id) return;
+    getCaseStudy(id as string)
+      .then(setStudy)
+      .catch((err) => console.error("Failed to fetch case study:", err))
+      .finally(() => setLoading(false));
   }, [id]);
 
-  const galleryImages = useMemo(() => {
-    if (!project) return [];
-
-    const items = [...(project.gallery || [])];
-    if (project.portfolioImage && !items.includes(project.portfolioImage)) {
-      items.unshift(project.portfolioImage);
-    }
-    if (project.image && !items.includes(project.image)) {
-      items.unshift(project.image);
-    }
-
+  const gallery = useMemo(() => {
+    if (!study) return [];
+    const items: string[] = [];
+    if (study.image) items.push(study.image);
+    if (study.portfolioImage && !items.includes(study.portfolioImage))
+      items.push(study.portfolioImage);
+    (study.gallery || []).forEach((g) => {
+      if (g && !items.includes(g)) items.push(g);
+    });
     return items;
-  }, [project]);
+  }, [study]);
 
   useEffect(() => {
-    if (lightboxIndex === null || galleryImages.length === 0) return undefined;
-
-    function handleKey(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setLightboxIndex(null);
-      }
-
-      if (event.key === "ArrowRight") {
-        setLightboxIndex((current) =>
-          current === null ? current : (current + 1) % galleryImages.length,
+    if (lightboxIndex === null) return undefined;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxIndex(null);
+      if (e.key === "ArrowRight")
+        setLightboxIndex((c) => (c === null ? c : (c + 1) % gallery.length));
+      if (e.key === "ArrowLeft")
+        setLightboxIndex((c) =>
+          c === null ? c : (c - 1 + gallery.length) % gallery.length
         );
-      }
-
-      if (event.key === "ArrowLeft") {
-        setLightboxIndex((current) =>
-          current === null
-            ? current
-            : (current - 1 + galleryImages.length) % galleryImages.length,
-        );
-      }
-    }
-
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [galleryImages.length, lightboxIndex]);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [lightboxIndex, gallery.length]);
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center pt-8">
-        <div className="flex flex-col items-center justify-center">
-          <div className="mb-4 h-12 w-12 rounded-full border-4 border-orange-500 border-t-transparent animate-spin" />
-          <p className="text-lg font-medium text-gray-500">Loading Case Study...</p>
+      <main className="min-h-screen bg-[#FAF7F2] grid place-items-center">
+        <div className="flex flex-col items-center gap-4 text-stone-500">
+          <div className="w-10 h-10 border-2 border-[#FF6600] border-t-transparent rounded-full animate-spin" />
+          <p className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.22em]">
+            Loading case study…
+          </p>
         </div>
       </main>
     );
   }
 
-  if (!project) {
+  if (!study) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <main className="min-h-screen bg-[#FAF7F2] grid place-items-center">
         <div className="text-center">
-          <h2
-            className="mb-4 text-3xl font-bold text-gray-900"
-            style={{ fontFamily: "var(--font-poppins)" }}
+          <h1 className="font-funnel text-stone-900 font-bold text-3xl tracking-tight">
+            Case study not found.
+          </h1>
+          <Link
+            href="/case-studies"
+            className="mt-6 inline-flex items-center gap-2 font-jakarta text-[12px] font-semibold uppercase tracking-[0.22em] text-stone-900 cursor-pointer"
           >
-            Case Study Not Found
-          </h2>
-          <p className="mb-8 text-gray-600">
-            We couldn&apos;t find the case study you were looking for.
-          </p>
-          <Link href="/case-studies" className="btn-primary inline-flex gap-2">
-            <ArrowLeft className="w-4 h-4" /> Back to Case Studies
+            ← Back to case studies
           </Link>
         </div>
-      </div>
+      </main>
     );
   }
 
-  const activeLightboxImage =
-    lightboxIndex !== null && galleryImages[lightboxIndex]
-      ? galleryImages[lightboxIndex]
-      : null;
-
-  const isGraphicDesign = ["Graphic Design", "Branding"].includes(project.category);
-  const isWebDev = ["Web Development"].includes(project.category);
-  const isMarketing = ["SEO", "Social Media", "Digital Marketing"].includes(project.category);
-
   return (
-    <>
-      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(255,122,26,0.18),_transparent_34%),linear-gradient(180deg,_#1e1c1b_0%,_#161412_48%,_#ffffff_100%)] pt-14 pb-16 md:pt-20 md:pb-22 lg:pt-24 lg:pb-26">
-        <div className="absolute inset-0">
-          <img
-            src={project.image || "/placeholder.jpg"}
-            alt={project.title}
-            className="h-full w-full object-cover opacity-16"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(15,12,10,0.96)_14%,rgba(15,12,10,0.86)_52%,rgba(15,12,10,0.45)_100%)]" />
-          <div className="absolute right-[-10%] top-20 h-72 w-72 rounded-full bg-orange-500/18 blur-3xl" />
-          <div className="absolute bottom-0 left-[-8%] h-64 w-64 rounded-full bg-white/8 blur-3xl" />
-        </div>
-        <div className="container relative z-10">
+    <main className="relative">
+      <DetailHero study={study} />
+      <Snapshot study={study} />
+      {(study.challenges?.length || study.solutions?.length || study.results?.length) && (
+        <ChallengeSolutionResults study={study} />
+      )}
+      {study.content && <LongRead study={study} />}
+      {gallery.length > 0 && <Gallery images={gallery} onOpen={setLightboxIndex} />}
+      {study.testimonial?.text && <Testimonial study={study} />}
+      <CTA />
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightboxIndex !== null && gallery[lightboxIndex] && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[100] bg-stone-900/95 backdrop-blur-md grid place-items-center p-6 cursor-pointer"
+            onClick={() => setLightboxIndex(null)}
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxIndex(null);
+              }}
+              className="absolute top-6 right-6 grid place-items-center w-11 h-11 rounded-full bg-stone-50 text-stone-900 cursor-pointer hover:bg-[#FF6600] transition-colors z-10"
+              aria-label="Close"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path
+                  d="M2 2 L12 12 M12 2 L2 12"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+            {gallery.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightboxIndex(
+                      (c) => (c === null ? c : (c - 1 + gallery.length) % gallery.length)
+                    );
+                  }}
+                  className="absolute left-6 top-1/2 -translate-y-1/2 grid place-items-center w-11 h-11 rounded-full bg-stone-50 text-stone-900 cursor-pointer hover:bg-[#FF6600] transition-colors"
+                  aria-label="Previous"
+                >
+                  <svg width="14" height="9" viewBox="0 0 22 10" fill="none">
+                    <path
+                      d="M21 5 H 2 M 6 1 L 2 5 L 6 9"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightboxIndex((c) =>
+                      c === null ? c : (c + 1) % gallery.length
+                    );
+                  }}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 grid place-items-center w-11 h-11 rounded-full bg-stone-50 text-stone-900 cursor-pointer hover:bg-[#FF6600] transition-colors"
+                  aria-label="Next"
+                >
+                  <svg width="14" height="9" viewBox="0 0 22 10" fill="none">
+                    <path
+                      d="M1 5 H 20 M 16 1 L 20 5 L 16 9"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <span className="absolute bottom-6 left-1/2 -translate-x-1/2 font-jakarta text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-300">
+                  {lightboxIndex + 1} / {gallery.length}
+                </span>
+              </>
+            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={gallery[lightboxIndex]}
+              alt=""
+              className="max-h-[88vh] max-w-[92vw] rounded-2xl object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </main>
+  );
+}
+
+/* ─── Hero ─────────────────────────────────────────────────── */
+function DetailHero({ study }: { study: CaseStudy }) {
+  const cover = study.portfolioImage || study.image || study.gallery?.[0];
+  return (
+    <section className="relative bg-[#FAF7F2] overflow-hidden">
+      <div className="hero-grain-paper" aria-hidden />
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 55% 50% at 100% 0%, rgba(255,102,0,0.10), transparent 60%)",
+        }}
+      />
+
+      <div className="container relative z-10 pt-10 md:pt-16 pb-16 md:pb-20">
+        {/* Back link / breadcrumb */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex items-center justify-between gap-4 mb-10 md:mb-14 pb-5 border-b border-stone-900/10"
+        >
           <Link
             href="/case-studies"
-            className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.22em] text-white/72 backdrop-blur-sm transition-all hover:border-orange-400/40 hover:bg-white/10 hover:text-white md:mb-10 md:px-5 md:py-3 md:text-xs"
+            className="group inline-flex items-center gap-2 font-jakarta text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-700 hover:text-stone-900 cursor-pointer"
           >
-            <ArrowLeft className="h-4 w-4" /> Back to Case Studies
+            <svg
+              width="14"
+              height="9"
+              viewBox="0 0 22 10"
+              fill="none"
+              className="group-hover:-translate-x-1 transition-transform"
+            >
+              <path
+                d="M21 5 H 2 M 6 1 L 2 5 L 6 9"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            All case studies
           </Link>
-
-          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] lg:gap-14">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.05 }}
-              className="order-2 w-full lg:order-2"
-            >
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] border border-white/10 bg-black/20 shadow-[0_30px_80px_rgba(0,0,0,0.28)]">
-                <img
-                  src={project.image || "/placeholder.jpg"}
-                  alt={project.title}
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-                {galleryImages.length > 1 ? (
-                  <button
-                    type="button"
-                    onClick={() => setLightboxIndex(0)}
-                    className="absolute right-4 bottom-4 inline-flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm transition-colors hover:bg-black/75"
-                  >
-                    <Expand className="h-4 w-4" />
-                    Open Gallery
-                  </button>
-                ) : null}
-              </div>
-            </motion.div>
-
-            <div className="order-1 w-full lg:order-1">
-              <motion.span
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-5 inline-flex rounded-full border border-orange-400/30 bg-orange-500/12 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.24em] text-orange-200 md:mb-6"
-              >
-                {project.category}
-              </motion.span>
-              <motion.h1
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.08 }}
-                className="mb-6 max-w-full text-[2.35rem] font-black leading-[0.95]  text-white md:mb-6 md:text-[3.6rem]"
-                style={{ fontFamily: "var(--font-poppins)" }}
-              >
-                {project.title}
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.16 }}
-                className="mb-8 max-w-[34rem] text-[1rem] leading-[1.85] font-medium text-white/74 md:mb-9 md:text-[1.15rem]"
-              >
-                {project.description}
-              </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.24 }}
-                className="max-w-4xl"
-              >
-                <HeroSummaryCard
-                  client={project.client}
-                  duration={project.duration}
-                  services={project.services}
-                />
-              </motion.div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-14 md:py-18 lg:py-20">
-        <div className="container mx-auto max-w-[1120px] space-y-16 md:space-y-20">
-          {project.content && (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm md:p-10"
-            >
-              <span className="section-label">Overview</span>
-              <h2
-                className="mt-3 text-[2rem] font-black leading-tight text-gray-900 md:text-4xl"
-                style={{ fontFamily: "var(--font-poppins)" }}
-              >
-                Project Overview
-              </h2>
-              <p className="mt-5 whitespace-pre-line text-[15px] leading-8 text-gray-600 md:text-lg">
-                {project.content}
-              </p>
-            </motion.div>
-          )}
-
-          {(project.challenges?.length || project.solutions?.length) && (
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
-              {project.challenges && project.challenges.length > 0 && (
-                <ContentPanel
-                  title="The Challenge"
-                  icon={
-                    <Target className="h-6 w-6 rounded-xl bg-red-50 p-1.5 text-red-500" />
-                  }
-                  items={project.challenges}
-                  itemDotClassName="bg-red-400"
-                  cardClassName="border-gray-100 bg-white"
-                />
-              )}
-
-              {project.solutions && project.solutions.length > 0 && (
-                <ContentPanel
-                  title="Our Solution"
-                  icon={
-                    <CheckCircle2 className="h-6 w-6 rounded-xl bg-orange-50 p-1.5 text-[#FF6600]" />
-                  }
-                  items={project.solutions}
-                  itemDotClassName="bg-[#FF6600]"
-                  cardClassName="border-orange-100 bg-orange-50/60"
-                />
-              )}
-            </div>
-          )}
-
-          {galleryImages.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="space-y-6"
-            >
-              <div>
-                <span className="section-label">Showcase</span>
-                <h2
-                  className="mt-3 text-[2rem] font-black leading-tight text-gray-900 md:text-4xl"
-                  style={{ fontFamily: "var(--font-poppins)" }}
-                >
-                  Project Gallery
-                </h2>
-              </div>
-
-              {isGraphicDesign ? (
-                <GraphicDesignShowcase images={galleryImages} title={project.title} onOpenLightbox={setLightboxIndex} />
-              ) : isWebDev ? (
-                <WebDevShowcase images={galleryImages} title={project.title} onOpenLightbox={setLightboxIndex} />
-              ) : (
-                <DefaultGallery images={galleryImages} title={project.title} setLightboxIndex={setLightboxIndex} />
-              )}
-            </motion.div>
-          )}
-
-          {project.testimonial?.text && (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="relative overflow-hidden rounded-[2.3rem] bg-gray-900 px-6 py-10 md:px-10 md:py-14"
-            >
-              <Quote className="absolute -top-5 -left-5 h-36 w-36 rotate-[-12deg] text-white/5 md:h-48 md:w-48" />
-              <div className="relative z-10 mx-auto max-w-3xl text-center">
-                <p className="text-[1.45rem] leading-[1.55] text-gray-100 md:text-[2rem]">
-                  &quot;{project.testimonial.text}&quot;
-                </p>
-                <div className="mt-8">
-                  <div className="text-lg font-bold text-[#FF6600]">
-                    {project.testimonial.author}
-                  </div>
-                  <div className="mt-1 text-sm text-gray-400">
-                    {project.testimonial.role}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="overflow-hidden rounded-[2.3rem] border border-[#221913] bg-[radial-gradient(circle_at_top,_rgba(255,122,26,0.14),_transparent_34%),linear-gradient(180deg,_#1b1612_0%,_#14110f_100%)] px-6 py-8 text-white shadow-[0_30px_80px_rgba(17,12,10,0.24)] md:px-10 md:py-12"
-          >
-            <div className="mb-8 flex items-center gap-4 md:mb-10">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/6 text-[#FF6600] backdrop-blur-sm">
-                <TrendingUp className="h-5 w-5" />
-              </div>
-              <div>
-                <h2
-                  className="text-2xl font-black text-white md:text-3xl"
-                  style={{ fontFamily: "var(--font-poppins)" }}
-                >
-                  The Impact
-                </h2>
-                <p className="mt-0.5 text-sm text-white/50">
-                  Measurable results from this project.
-                </p>
-              </div>
-            </div>
-
-            {project.metrics && project.metrics.length > 0 && (
-              isMarketing ? (
-                <MarketingMetricsDashboard metrics={project.metrics} />
-              ) : (
-                <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 md:mb-12 md:gap-4 lg:grid-cols-3">
-                  {project.metrics.map((metric, idx) => {
-                    const isNumeric = /^[\d+%$.,\s]+$/.test(metric.value.trim());
-                    return (
-                      <div
-                        key={idx}
-                        className="rounded-2xl border border-white/10 bg-white/6 px-4 py-5 backdrop-blur-sm md:px-5 md:py-6"
-                      >
-                        <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-white/45 md:text-[11px]">
-                          {metric.label}
-                        </span>
-                        <span
-                          className={`mt-2 block font-black leading-tight text-[#FF6600] ${isNumeric ? "text-2xl md:text-3xl" : "text-base md:text-lg"}`}
-                          style={{ fontFamily: "var(--font-poppins)" }}
-                        >
-                          {metric.value}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )
+          <span className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500 flex items-center gap-2">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#FF6600]" />
+            {study.category}
+            {study.client && (
+              <>
+                <span className="text-stone-300">·</span>
+                <span>{study.client}</span>
+              </>
             )}
+          </span>
+        </motion.div>
 
-            {project.results && project.results.length > 0 && (
-              <div className="border-t border-white/10 pt-8 md:pt-10">
-                <span className="mb-6 block text-[11px] font-bold uppercase tracking-[0.24em] text-orange-200 md:mb-8">
-                  Outcome Highlights
-                </span>
+        <div className="grid grid-cols-12 gap-x-8 gap-y-12 items-start">
+          {/* Left — typography */}
+          <div className="col-span-12 lg:col-span-7">
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.85, ease: [0.2, 0.7, 0.2, 1] }}
+              className="font-funnel text-stone-900 font-bold leading-[0.95] tracking-[-0.035em] text-[clamp(2.25rem,5.4vw,4.75rem)] max-w-[20ch]"
+            >
+              {study.title}
+            </motion.h1>
 
-                <div className="space-y-3">
-                  {project.results.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-start gap-4 rounded-xl border border-white/8 bg-white/[0.04] px-5 py-4 backdrop-blur-sm"
+            <motion.p
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="mt-7 max-w-[60ch] font-jakarta text-[16.5px] md:text-[18px] leading-[1.6] text-stone-700"
+            >
+              {study.description}
+            </motion.p>
+
+            {/* Quick fact row */}
+            <motion.dl
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="mt-10 grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-5 max-w-xl"
+            >
+              {study.client && (
+                <div>
+                  <dt className="font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-500">
+                    Client
+                  </dt>
+                  <dd className="mt-1.5 font-funnel text-[15px] font-bold tracking-[-0.015em] text-stone-900">
+                    {study.client}
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt className="font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-500">
+                  Category
+                </dt>
+                <dd className="mt-1.5 font-funnel text-[15px] font-bold tracking-[-0.015em] text-stone-900">
+                  {study.category}
+                </dd>
+              </div>
+              {study.duration && (
+                <div>
+                  <dt className="font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-500">
+                    Duration
+                  </dt>
+                  <dd className="mt-1.5 font-funnel text-[15px] font-bold tracking-[-0.015em] text-stone-900">
+                    {study.duration}
+                  </dd>
+                </div>
+              )}
+            </motion.dl>
+
+            {/* Services chips */}
+            {study.services && study.services.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.4 }}
+                className="mt-8"
+              >
+                <p className="font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-500 mb-3">
+                  Services delivered
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {study.services.map((s) => (
+                    <span
+                      key={s}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-stone-900/15 px-3 py-1.5 font-jakarta text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-700"
                     >
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#FF6600]" />
-                      <p className="text-sm font-medium leading-6 text-white/80 md:text-base md:leading-7">
-                        {item}
-                      </p>
-                    </div>
+                      <span className="block w-1 h-1 rounded-full bg-[#FF6600]" />
+                      {s}
+                    </span>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
-          </motion.div>
 
-          {project.link && (
-            <div className="pt-2 text-center">
-              <a
-                href={project.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary inline-flex gap-2 px-7 py-4 text-base md:text-lg"
-              >
-                Visit Live Project <ExternalLink className="h-5 w-5" />
-              </a>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <Dialog open={lightboxIndex !== null} onOpenChange={(open) => !open && setLightboxIndex(null)}>
-        <DialogContent
-          showCloseButton={false}
-          className="max-w-[min(1200px,calc(100%-1.5rem))] overflow-hidden rounded-[1.75rem] border-0 bg-[#111111] p-0 shadow-2xl"
-        >
-          <DialogTitle className="sr-only">
-            {project.title} gallery preview
-          </DialogTitle>
-          {activeLightboxImage ? (
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setLightboxIndex(null)}
-                className="absolute top-4 right-4 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75"
-              >
-                <X className="h-5 w-5" />
-              </button>
-
-              {galleryImages.length > 1 ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setLightboxIndex((current) =>
-                        current === null
-                          ? current
-                          : (current - 1 + galleryImages.length) % galleryImages.length,
-                      )
-                    }
-                    className="absolute left-4 top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setLightboxIndex((current) =>
-                        current === null ? current : (current + 1) % galleryImages.length,
-                      )
-                    }
-                    className="absolute right-4 top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                </>
-              ) : null}
-
-              <div className="max-h-[82vh] overflow-hidden">
-                <img
-                  src={activeLightboxImage}
-                  alt={`${project.title} gallery preview`}
-                  className="max-h-[82vh] w-full object-contain"
-                />
-              </div>
-
-              <div className="flex items-center justify-between border-t border-white/10 bg-white/5 px-5 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
-                <span>{project.title}</span>
-                <span>
-                  {(lightboxIndex || 0) + 1} / {galleryImages.length}
-                </span>
-              </div>
-            </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-}
-
-function HeroSummaryCard({
-  client,
-  duration,
-  services,
-}: {
-  client?: string;
-  duration?: string;
-  services?: string[];
-}) {
-  const items = [
-    client
-      ? {
-          label: "Client",
-          value: client,
-          icon: <Building2 className="h-4 w-4" />,
-        }
-      : null,
-    duration
-      ? {
-          label: "Duration",
-          value: duration,
-          icon: <Clock className="h-4 w-4" />,
-        }
-      : null,
-    services && services.length > 0
-      ? {
-          label: "Services",
-          value: services.join(", "),
-          icon: <Zap className="h-4 w-4" />,
-        }
-      : null,
-  ].filter(Boolean) as Array<{ label: string; value: string; icon: React.ReactNode }>;
-
-  if (!items.length) return null;
-
-  return (
-    <div className="rounded-[1.7rem] border border-white/10 bg-white/[0.07] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.16)] backdrop-blur-sm md:p-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-[0.9fr_0.6fr_1.5fr] xl:gap-5">
-        {items.map((item) => (
-          <div
-            key={item.label}
-            className="min-w-0 rounded-[1.2rem] border border-white/8 bg-black/10 px-4 py-4"
-          >
-            <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-white/42">
-              {item.icon}
-              {item.label}
-            </div>
-            <div className="break-words text-[1.02rem] font-semibold leading-[1.55] text-white md:text-[1.12rem]">
-              {item.value}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ContentPanel({
-  title,
-  icon,
-  items,
-  itemDotClassName,
-  cardClassName,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  items: string[];
-  itemDotClassName: string;
-  cardClassName: string;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="space-y-5"
-    >
-      <div
-        className="flex items-center gap-3 text-[1.65rem] font-bold text-gray-900 md:text-3xl"
-        style={{ fontFamily: "var(--font-poppins)" }}
-      >
-        {icon}
-        <h2>{title}</h2>
-      </div>
-      <div className="space-y-3 md:space-y-4">
-        {items.map((item, idx) => (
-          <div
-            key={idx}
-            className={`flex gap-4 rounded-[1.6rem] border p-5 shadow-sm ${cardClassName}`}
-          >
-            <div className={`mt-2 h-2 w-2 shrink-0 rounded-full ${itemDotClassName}`} />
-            <p className="text-[15px] font-medium leading-8 text-gray-700 md:text-base">
-              {item}
-            </p>
-          </div>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
-function DefaultGallery({ images, title, setLightboxIndex }: { images: string[], title: string, setLightboxIndex: (idx: number) => void }) {
-  return (
-    <div className="relative">
-      <Swiper
-        modules={[Navigation]}
-        navigation={{
-          prevEl: ".case-study-gallery-prev",
-          nextEl: ".case-study-gallery-next",
-        }}
-        spaceBetween={18}
-        slidesPerView={1.15}
-        breakpoints={{
-          640: { slidesPerView: 1.5 },
-          1024: { slidesPerView: 3 },
-        }}
-        className="!overflow-visible"
-      >
-        {images.map((img, idx) => (
-          <SwiperSlide key={`${img}-${idx}`}>
-            <button
-              type="button"
-              onClick={() => setLightboxIndex(idx)}
-              className="group relative block w-full overflow-hidden rounded-[1.8rem] border border-gray-100 bg-white shadow-sm"
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.5 }}
+              className="mt-9 flex flex-wrap items-center gap-4 md:gap-5"
             >
-              <div className="absolute top-4 right-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-transform group-hover:scale-105">
-                <Expand className="h-4 w-4" />
-              </div>
-              <div className="aspect-[4/3] overflow-hidden">
-                <img
-                  src={img}
-                  alt={`${title} gallery ${idx + 1}`}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              <Link
+                href="/contact"
+                className="group relative inline-flex items-center gap-3 rounded-full bg-stone-900 text-stone-50 pl-6 pr-2 py-2 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-[0_18px_40px_-18px_rgba(15,12,8,0.5)]"
+              >
+                <span
+                  aria-hidden
+                  className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, transparent, rgba(255,102,0,0.85), transparent)",
+                  }}
                 />
+                <span className="relative font-funnel text-[15px] font-semibold tracking-tight">
+                  Want something like this?
+                </span>
+                <span className="relative inline-grid place-items-center w-10 h-10 rounded-full bg-[#FF6600] text-stone-900 group-hover:bg-stone-50 group-hover:rotate-[-30deg] transition-all duration-300">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                    <path
+                      d="M2 12 L12 2 M5 2 L12 2 L12 9"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </Link>
+
+              {study.link && (
+                <a
+                  href={study.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center gap-3 font-jakarta text-[12px] font-semibold uppercase tracking-[0.22em] text-stone-900 cursor-pointer"
+                >
+                  <span className="relative">
+                    Visit live project
+                    <span className="absolute left-0 -bottom-1 h-px w-full bg-stone-900 origin-left scale-x-100 group-hover:scale-x-0 transition-transform duration-400" />
+                    <span className="absolute left-0 -bottom-1 h-px w-full bg-[#FF6600] origin-right scale-x-0 group-hover:scale-x-100 transition-transform duration-400 delay-100" />
+                  </span>
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                    <path
+                      d="M2 12 L12 2 M5 2 L12 2 L12 9"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </a>
+              )}
+            </motion.div>
+          </div>
+
+          {/* Right — cover */}
+          <motion.aside
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.85, delay: 0.15, ease: [0.2, 0.7, 0.2, 1] }}
+            className="col-span-12 lg:col-span-5 relative"
+          >
+            <div className="relative max-w-[480px] mx-auto">
+              <span className="absolute -top-3 -right-2 z-30 bg-[#FF6600] text-stone-900 rounded-2xl px-3.5 py-2 shadow-[0_14px_28px_-12px_rgba(255,102,0,0.55)] rotate-[5deg] font-jakarta text-[10px] font-bold uppercase tracking-[0.22em]">
+                Case file · {String(study.order || 1).padStart(2, "0")}
+              </span>
+
+              <div className="relative aspect-[5/6] rounded-[28px] overflow-hidden border border-stone-900/15 bg-stone-50 shadow-[0_30px_60px_-30px_rgba(15,12,8,0.3)]">
+                {cover ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={cover}
+                    alt={study.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="absolute inset-0 grid place-items-center"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #FF6600 0%, #1A1410 100%)",
+                    }}
+                  >
+                    <span className="font-funnel text-stone-50 font-bold tracking-tight text-[clamp(2.5rem,4vw,4rem)]">
+                      {study.client || study.title}
+                    </span>
+                  </div>
+                )}
+
+                <div
+                  aria-hidden
+                  className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/15 to-transparent"
+                />
+
+                <span className="absolute top-5 left-5 font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-50/85">
+                  Case file · MMXXVI
+                </span>
+
+                {/* Bottom card: promote a metric to "Headline outcome" only
+                    if it actually looks like a numeric outcome. Otherwise fall
+                    back to a project snapshot showing 2-3 key facts. */}
+                {(() => {
+                  const numericMetric = study.metrics?.find((m) =>
+                    isShortValue(m.value)
+                  );
+                  if (numericMetric) {
+                    return (
+                      <div className="absolute left-5 right-5 bottom-5 rounded-2xl bg-[#FAF7F2]/95 backdrop-blur-md border border-stone-900/10 p-5">
+                        <p className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500 mb-2">
+                          Headline outcome
+                        </p>
+                        <p className="font-funnel font-bold leading-none tracking-[-0.04em] text-stone-900 text-[clamp(2rem,3.4vw,2.6rem)] break-words">
+                          <span style={{ color: "#FF6600" }}>
+                            {numericMetric.value}
+                          </span>
+                        </p>
+                        <p className="mt-2 font-jakarta text-[12.5px] text-stone-600">
+                          {numericMetric.label}
+                        </p>
+                      </div>
+                    );
+                  }
+                  if (study.metrics && study.metrics.length > 0) {
+                    return (
+                      <div className="absolute left-5 right-5 bottom-5 rounded-2xl bg-[#FAF7F2]/95 backdrop-blur-md border border-stone-900/10 p-5">
+                        <p className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500 mb-3">
+                          At a glance
+                        </p>
+                        <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+                          {study.metrics.slice(0, 4).map((m, i) => (
+                            <div key={m.label + i} className="min-w-0">
+                              <dt className="font-jakarta text-[9.5px] font-semibold uppercase tracking-[0.2em] text-stone-500 mb-1">
+                                {m.label}
+                              </dt>
+                              <dd className="font-funnel text-[13px] font-bold tracking-[-0.015em] text-stone-900 leading-tight break-words">
+                                {m.value}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
-            </button>
-          </SwiperSlide>
-        ))}
-      </Swiper>
-
-      {images.length > 1 ? (
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            className="case-study-gallery-prev inline-flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:text-[#FF6600]"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            className="case-study-gallery-next inline-flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:text-[#FF6600]"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function GraphicDesignShowcase({ images, onOpenLightbox, title }: { images: string[], onOpenLightbox: (idx: number) => void, title: string }) {
-  return (
-    <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-      {images.map((img, idx) => (
-        <button
-          key={idx}
-          onClick={() => onOpenLightbox(idx)}
-          className="group relative block w-full overflow-hidden rounded-[1.8rem] border border-gray-100 bg-gray-50 shadow-sm break-inside-avoid"
-        >
-          <div className="absolute inset-0 z-10 bg-black/0 transition-colors duration-500 group-hover:bg-black/20" />
-          <div className="absolute top-1/2 left-1/2 z-20 -translate-x-1/2 -translate-y-1/2 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-110">
-             <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#FF6600] shadow-xl">
-               <Expand className="h-5 w-5" />
-             </div>
-          </div>
-          <img src={img} alt={`${title} ${idx + 1}`} className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.02]" />
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function WebDevShowcase({ images, title, onOpenLightbox }: { images: string[], title: string, onOpenLightbox: (idx: number) => void }) {
-  const firstImage = images[0];
-  const remainingImages = images.slice(1);
-  return (
-    <div className="space-y-12">
-      <div className="relative mx-auto w-full max-w-[1000px] rounded-[1.8rem] border border-gray-200 bg-[#f1f5f9] shadow-2xl overflow-hidden">
-        <div className="flex h-[3.25rem] w-full items-center gap-2 border-b border-gray-200 bg-[#f8fafc] px-5">
-          <div className="flex gap-2">
-            <div className="h-3.5 w-3.5 rounded-full bg-[#ef4444]" />
-            <div className="h-3.5 w-3.5 rounded-full bg-[#f59e0b]" />
-            <div className="h-3.5 w-3.5 rounded-full bg-[#22c55e]" />
-          </div>
-          <div className="mx-auto flex h-8 w-1/2 items-center justify-center rounded-lg bg-white box-shadow-sm text-xs font-medium text-gray-500 shadow-sm">
-            {title.replace(/\s+/g, "").toLowerCase()}.com
-          </div>
-        </div>
-        
-        <div 
-          className="relative max-h-[75vh] w-full overflow-y-auto bg-white scroll-smooth"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          <style dangerouslySetInnerHTML={{ __html: `
-            .browser-scroll::-webkit-scrollbar { display: none; }
-          `}} />
-          <img
-            src={firstImage}
-            alt={`${title} homepage`}
-            className="w-full h-auto object-cover object-top hover:object-bottom transition-all"
-            style={{ transitionDuration: "12s", transitionTimingFunction: "linear" }}
-          />
+            </div>
+          </motion.aside>
         </div>
       </div>
-      
-      {remainingImages.length > 0 && (
-         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {remainingImages.map((img, idx) => (
-                <button
-                  key={idx + 1}
-                  onClick={() => onOpenLightbox(idx + 1)}
-                  className="group relative block w-full overflow-hidden rounded-[1.8rem] border border-gray-100 shadow-sm aspect-video bg-gray-50"
-                >
-                  <img src={img} alt={`${title} screenshot ${idx + 2}`} className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 transition-all duration-300 group-hover:opacity-100 bg-white p-3 rounded-full text-[#FF6600] shadow-xl group-hover:scale-110">
-                     <Expand className="h-5 w-5" />
-                  </div>
-                </button>
-            ))}
-         </div>
-      )}
-    </div>
+    </section>
   );
 }
 
-function MarketingMetricsDashboard({ metrics }: { metrics: { label: string, value: string }[] }) {
-  const icons = [TrendingUp, BarChart3, PieChart, LineChart];
-  
+/* ─── Snapshot — all metrics in a strip ─────────────────────── */
+function Snapshot({ study }: { study: CaseStudy }) {
+  if (!study.metrics || study.metrics.length === 0) return null;
+
+  /* Decide section header based on whether metrics are real outcome
+     numbers or just project metadata (e.g. "Web Development"). */
+  const hasNumericMetric = study.metrics.some((m) => isShortValue(m.value));
+  const headerEyebrow = hasNumericMetric ? "The numbers" : "Project snapshot";
+  const headerLead = hasNumericMetric ? "What changed" : "The key facts";
+  const headerAccent = hasNumericMetric
+    ? "after we shipped."
+    : "for this engagement.";
+
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8 md:mb-12">
-      {metrics.map((metric, idx) => {
-        const Icon = icons[idx % icons.length];
-        const isNumeric = /^[\d+%$.,\s]+$/.test(metric.value.trim());
-        
-        return (
-          <div
-            key={idx}
-            className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.04] p-8 backdrop-blur-md transition-all hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(255,102,0,0.4)]"
-          >
-            <div className="absolute right-0 top-0 -mr-8 -mt-8 h-32 w-32 rounded-full bg-orange-500/20 blur-3xl transition-all group-hover:bg-orange-500/40" />
-            
-            <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-[1.1rem] bg-white/5 text-[#FF6600] shadow-[inset_0_1px_3px_rgba(255,255,255,0.1)] ring-1 ring-white/10">
-               <Icon className="h-6 w-6" />
-            </div>
-            
-            <dt className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/50 mb-2">
-              {metric.label}
-            </dt>
-            
-            <dd className="flex items-baseline gap-2">
-              <span
-                className={`font-black tracking-tight text-white ${isNumeric ? "text-4xl lg:text-[2.75rem]" : "text-2xl lg:text-3xl"}`}
-                style={{ fontFamily: "var(--font-poppins)" }}
-              >
-                {metric.value}
-              </span>
-              {isNumeric && metric.value.includes("+") && (
-                <span className="flex items-center text-sm font-bold text-green-400">
-                  <ArrowUpRight className="h-5 w-5" />
+    <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
+      <div className="hero-grain-paper" aria-hidden />
+
+      <div className="container relative z-10 py-16 md:py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7 }}
+          className="rounded-3xl border border-stone-900/10 bg-stone-900 text-stone-50 overflow-hidden"
+        >
+          <div className="relative px-7 md:px-10 py-7 md:py-8 border-b border-stone-50/15 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div>
+              <p className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-400 mb-2">
+                {headerEyebrow}
+              </p>
+              <h2 className="font-funnel text-[clamp(1.5rem,2.4vw,2rem)] font-bold tracking-[-0.025em] leading-[1.15] text-stone-50">
+                {headerLead}{" "}
+                <span
+                  style={{
+                    fontFamily: "var(--font-newsreader), Georgia, serif",
+                    fontStyle: "italic",
+                    fontWeight: 500,
+                    color: "#FF6600",
+                  }}
+                >
+                  {headerAccent}
                 </span>
-              )}
-            </dd>
+              </h2>
+            </div>
+            <span className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-300 flex items-center gap-2">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 hero-pulse" />
+              Verified · client-signed
+            </span>
           </div>
-        );
-      })}
-    </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4">
+            {study.metrics.map((m, i) => {
+              const big = isShortValue(m.value);
+              return (
+                <div
+                  key={m.label + i}
+                  className={`p-7 md:p-9 ${i > 0 ? "md:border-l" : ""} ${
+                    i >= 2 ? "border-t md:border-t-0" : ""
+                  } border-stone-50/10 min-w-0`}
+                >
+                  <p
+                    className={`font-funnel text-stone-50 font-bold tracking-[-0.03em] break-words ${
+                      big
+                        ? "text-[clamp(2rem,3.4vw,2.8rem)] leading-[1.0]"
+                        : "text-[clamp(1.1rem,1.6vw,1.4rem)] leading-[1.2]"
+                    }`}
+                  >
+                    {m.value}
+                  </p>
+                  <p className="mt-3 font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-300">
+                    {m.label}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Challenge / Solution / Results 3-column ──────────────── */
+function ChallengeSolutionResults({ study }: { study: CaseStudy }) {
+  const groups = [
+    {
+      label: "The challenge",
+      italic: "what we walked into",
+      items: study.challenges || [],
+      accent: "#FF6600",
+    },
+    {
+      label: "The solution",
+      italic: "what we built",
+      items: study.solutions || [],
+      accent: "#0F0C08",
+    },
+    {
+      label: "The results",
+      italic: "what shipped",
+      items: study.results || [],
+      accent: "#4A5D3A",
+    },
+  ].filter((g) => g.items.length > 0);
+
+  if (groups.length === 0) return null;
+
+  return (
+    <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
+      <div className="hero-grain-paper" aria-hidden />
+
+      <div className="container relative z-10 py-20 md:py-24">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7 }}
+          className="mb-12 md:mb-14"
+        >
+          <div className="flex items-center gap-3 mb-5">
+            <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+            <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+              The arc
+            </span>
+          </div>
+          <h2 className="font-funnel text-stone-900 font-bold leading-[1.0] tracking-[-0.03em] text-[clamp(1.85rem,3.4vw,2.8rem)] max-w-[20ch]">
+            From brief to{" "}
+            <span
+              style={{
+                fontFamily: "var(--font-newsreader), Georgia, serif",
+                fontStyle: "italic",
+                fontWeight: 500,
+                color: "#1c1c1c",
+              }}
+            >
+              client-signed launch.
+            </span>
+          </h2>
+        </motion.div>
+
+        <div className={`grid grid-cols-1 ${groups.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"} gap-5 md:gap-6`}>
+          {groups.map((g, i) => (
+            <motion.article
+              key={g.label}
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.65, delay: i * 0.08 }}
+              className="rounded-3xl border border-stone-900/10 bg-stone-50 p-7 md:p-8 hover:border-stone-900/25 hover:bg-white hover:-translate-y-1 hover:shadow-[0_24px_50px_-30px_rgba(15,12,8,0.2)] transition-all duration-500"
+            >
+              <div className="flex items-baseline justify-between mb-7">
+                <span
+                  className="font-funnel leading-none tracking-[-0.04em]"
+                  style={{
+                    fontFamily: "var(--font-newsreader), Georgia, serif",
+                    fontStyle: "italic",
+                    fontWeight: 500,
+                    fontSize: "clamp(2.4rem, 3vw, 2.8rem)",
+                    color: g.accent,
+                  }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span
+                  className="block w-2 h-2 rounded-full"
+                  style={{ background: g.accent }}
+                />
+              </div>
+
+              <h3 className="font-funnel text-[clamp(1.2rem,1.6vw,1.45rem)] leading-[1.15] tracking-[-0.02em] font-bold text-stone-900">
+                {g.label}
+                <span
+                  className="block mt-1 text-[0.72em]"
+                  style={{
+                    fontFamily: "var(--font-newsreader), Georgia, serif",
+                    fontStyle: "italic",
+                    fontWeight: 400,
+                    color: "#6b6b70",
+                  }}
+                >
+                  — {g.italic}.
+                </span>
+              </h3>
+
+              <ul className="mt-5 space-y-3">
+                {g.items.map((item, j) => (
+                  <li
+                    key={item + j}
+                    className="flex items-baseline gap-3 font-jakarta text-[14px] leading-[1.55] text-stone-700"
+                  >
+                    <span
+                      className="font-mono-ui text-[10px] tabular-nums shrink-0 mt-1"
+                      style={{ color: g.accent }}
+                    >
+                      {String(j + 1).padStart(2, "0")}
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </motion.article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Long-read content ────────────────────────────────────── */
+function LongRead({ study }: { study: CaseStudy }) {
+  return (
+    <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
+      <div className="hero-grain-paper" aria-hidden />
+
+      <div className="container relative z-10 py-20 md:py-24">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7 }}
+          className="grid grid-cols-12 gap-x-8 gap-y-10"
+        >
+          <div className="col-span-12 lg:col-span-4">
+            <div className="flex items-center gap-3 mb-5">
+              <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+              <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+                The long read
+              </span>
+            </div>
+            <h2 className="font-funnel text-stone-900 font-bold leading-[1.0] tracking-[-0.03em] text-[clamp(1.6rem,2.6vw,2.2rem)]">
+              The full{" "}
+              <span
+                style={{
+                  fontFamily: "var(--font-newsreader), Georgia, serif",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  color: "#FF6600",
+                }}
+              >
+                story.
+              </span>
+            </h2>
+          </div>
+
+          <div className="col-span-12 lg:col-span-8">
+            <article
+              className="font-jakarta text-[15.5px] md:text-[16.5px] leading-[1.75] text-stone-700 max-w-[64ch] [&>p]:mt-5 [&>p:first-child]:mt-0 [&>h2]:mt-10 [&>h2]:mb-3 [&>h2]:font-funnel [&>h2]:text-stone-900 [&>h2]:font-bold [&>h2]:text-[clamp(1.25rem,1.6vw,1.5rem)] [&>h2]:tracking-[-0.02em] [&>h3]:mt-8 [&>h3]:font-funnel [&>h3]:font-bold [&>h3]:text-stone-900 [&>strong]:text-stone-900 [&>strong]:font-bold [&>em]:font-newsreader [&>em]:italic [&>em]:font-normal [&>blockquote]:my-6 [&>blockquote]:pl-5 [&>blockquote]:border-l-2 [&>blockquote]:border-[#FF6600] [&>blockquote]:italic [&>ul]:mt-5 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:mt-5 [&>ol]:list-decimal [&>ol]:pl-5"
+              dangerouslySetInnerHTML={{ __html: study.content || "" }}
+            />
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Gallery ──────────────────────────────────────────────── */
+function Gallery({
+  images,
+  onOpen,
+}: {
+  images: string[];
+  onOpen: (i: number) => void;
+}) {
+  return (
+    <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
+      <div className="hero-grain-paper" aria-hidden />
+
+      <div className="container relative z-10 py-20 md:py-24">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7 }}
+          className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-10"
+        >
+          <div>
+            <div className="flex items-center gap-3 mb-5">
+              <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+              <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+                The gallery
+              </span>
+            </div>
+            <h2 className="font-funnel text-stone-900 font-bold leading-[1.0] tracking-[-0.03em] text-[clamp(1.85rem,3vw,2.5rem)]">
+              The work,{" "}
+              <span
+                style={{
+                  fontFamily: "var(--font-newsreader), Georgia, serif",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  color: "#FF6600",
+                }}
+              >
+                in full.
+              </span>
+            </h2>
+          </div>
+          <p className="font-jakarta text-[12px] font-semibold uppercase tracking-[0.22em] text-stone-500">
+            {images.length} image{images.length === 1 ? "" : "s"} · click to expand
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
+          {images.map((img, i) => {
+            const span =
+              i === 0
+                ? "md:col-span-12 aspect-[16/8]"
+                : i % 5 === 1 || i % 5 === 2
+                  ? "md:col-span-6 aspect-[5/4]"
+                  : "md:col-span-4 aspect-[4/3]";
+            return (
+              <motion.button
+                key={img + i}
+                type="button"
+                onClick={() => onOpen(i)}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.6, delay: (i % 5) * 0.06 }}
+                className={`group relative block w-full rounded-3xl overflow-hidden border border-stone-900/10 bg-stone-100 hover:-translate-y-1 hover:border-stone-900/25 hover:shadow-[0_24px_50px_-30px_rgba(15,12,8,0.22)] transition-all duration-500 cursor-pointer ${span}`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={getThumbnail(img)}
+                  alt=""
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                />
+                <span
+                  aria-hidden
+                  className="absolute top-4 right-4 inline-grid place-items-center w-11 h-11 rounded-full bg-[#FAF7F2]/95 backdrop-blur-sm text-stone-900 opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-90 transition-all duration-300"
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path
+                      d="M2 5 V 2 H 5 M 9 2 H 12 V 5 M 12 9 V 12 H 9 M 5 12 H 2 V 9"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+                <span className="absolute top-4 left-4 font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-50 bg-stone-900/70 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                  {String(i + 1).padStart(2, "0")} / {String(images.length).padStart(2, "0")}
+                </span>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Testimonial ──────────────────────────────────────────── */
+function Testimonial({ study }: { study: CaseStudy }) {
+  const t = study.testimonial!;
+  const initials = (t.author || study.client || "CM")
+    .split(" ")
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  return (
+    <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
+      <div className="hero-grain-paper" aria-hidden />
+
+      <div className="container relative z-10 py-20 md:py-24">
+        <motion.figure
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.75, ease: [0.2, 0.7, 0.2, 1] }}
+          className="relative rounded-3xl border border-stone-900/10 bg-stone-50 overflow-hidden p-8 md:p-12"
+        >
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(ellipse 40% 60% at 100% 0%, rgba(255,102,0,0.08), transparent 60%)",
+            }}
+          />
+          <span
+            aria-hidden
+            className="absolute top-6 right-7 leading-none text-[#FF6600]/15 select-none pointer-events-none"
+            style={{
+              fontFamily: "var(--font-newsreader), Georgia, serif",
+              fontStyle: "italic",
+              fontWeight: 500,
+              fontSize: "clamp(7rem, 12vw, 11rem)",
+            }}
+          >
+            &ldquo;
+          </span>
+
+          <p className="relative font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500 mb-6 flex items-center gap-2">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#FF6600]" />
+            Words from the client
+          </p>
+
+          <blockquote
+            className="relative font-funnel text-stone-900 font-medium leading-[1.25] tracking-[-0.02em] text-[clamp(1.5rem,2.6vw,2.25rem)] max-w-[36ch]"
+          >
+            <span
+              style={{
+                fontFamily: "var(--font-newsreader), Georgia, serif",
+                fontStyle: "italic",
+                fontWeight: 500,
+                color: "#FF6600",
+              }}
+            >
+              &ldquo;
+            </span>
+            {t.text}
+            <span
+              style={{
+                fontFamily: "var(--font-newsreader), Georgia, serif",
+                fontStyle: "italic",
+                fontWeight: 500,
+                color: "#FF6600",
+              }}
+            >
+              &rdquo;
+            </span>
+          </blockquote>
+
+          <figcaption className="relative mt-8 pt-6 border-t border-stone-900/10 flex items-center gap-4">
+            <div className="grid place-items-center w-14 h-14 rounded-full bg-[#FF6600] text-stone-50 ring-2 ring-[#FAF7F2] shrink-0">
+              <span className="font-funnel text-[17px] font-bold tracking-tight">
+                {initials}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              {t.author && (
+                <p className="font-funnel text-[16px] font-bold tracking-[-0.015em] text-stone-900 leading-none">
+                  {t.author}
+                </p>
+              )}
+              <p className="font-jakarta text-[12.5px] text-stone-600 mt-1.5">
+                {t.role && <span>{t.role}</span>}
+                {t.role && study.client && <span className="text-stone-300"> · </span>}
+                {study.client && <span>{study.client}</span>}
+              </p>
+            </div>
+            <div className="hidden md:flex gap-0.5">
+              {[0, 1, 2, 3, 4].map((s) => (
+                <svg
+                  key={s}
+                  width="13"
+                  height="13"
+                  viewBox="0 0 14 14"
+                  fill="currentColor"
+                  className="text-[#FF6600]"
+                >
+                  <path d="M7 0 L8.7 5.3 L14 5.3 L9.7 8.5 L11.4 13.8 L7 10.6 L2.6 13.8 L4.3 8.5 L0 5.3 L5.3 5.3 Z" />
+                </svg>
+              ))}
+            </div>
+          </figcaption>
+        </motion.figure>
+      </div>
+    </section>
   );
 }

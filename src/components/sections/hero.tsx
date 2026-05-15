@@ -1,327 +1,653 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  TrendingUp,
-  Star,
-  Zap,
-  Sparkles,
-  Rocket,
-} from "lucide-react";
 import { motion } from "framer-motion";
-import { getSiteSettings } from "@/lib/api";
-import type { SiteSettings } from "@/lib/types";
+
+const HERO = {
+  status: "Open studio · 3 slots left for Q3",
+  eyebrow: "Independent creative studio",
+  lineA: "We help",
+  lineB: "ambitious",
+  accent: "brands win",
+  lineC: "the internet.",
+  lede:
+    "Identities, websites and growth campaigns for founders who'd rather be unforgettable than safe.",
+  primary: { label: "Start a project", href: "/contact" },
+  secondary: { label: "See selected work", href: "/portfolio" },
+};
+
+const DIARY_ENTRIES = [
+  {
+    day: "Mon",
+    client: "Hive Management",
+    activity: "Brand workshop · Day 03",
+    status: "Shipping",
+    progress: 92,
+  },
+  {
+    day: "Tue",
+    client: "Woodhouse Café",
+    activity: "Photo shoot · Sector 17",
+    status: "In review",
+    progress: 72,
+  },
+  {
+    day: "Wed",
+    client: "Chatha Foods",
+    activity: "Packaging rounds · v3",
+    status: "Designing",
+    progress: 55,
+  },
+  {
+    day: "Fri",
+    client: "Brightlight Solar",
+    activity: "Site launch · go-live",
+    status: "On deck",
+    progress: 18,
+  },
+];
+
+const BENTO_STATS = [
+  { value: 142, suffix: "+", label: "Brands shipped", animate: true },
+  { value: 8, suffix: "yrs", label: "In studio" },
+  { value: 4.9, suffix: "★", label: "From 87 reviews" },
+  { value: "<4hr", label: "Avg reply" },
+];
+
+const MARQUEE = [
+  "Brand Identity",
+  "Web Design",
+  "Performance Marketing",
+  "SEO & Content",
+  "Motion & Film",
+  "Social Strategy",
+  "Product UI",
+  "E-commerce",
+];
 
 export function Hero() {
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchSettings() {
-      try {
-        const data = await getSiteSettings();
-        setSettings(data);
-      } catch (error) {
-        console.error("Failed to fetch settings:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchSettings();
-  }, []);
-
-  const heroData = settings?.hero || {
-    eyebrow: "Award-Winning Agency",
-    title: "Ignite Your",
-    highlight: "Revenue Engine",
-    description:
-      "We engineer high-performance marketing ecosystems that transform ambitious brands into market leaders through data-driven precision.",
-    primaryCtaLabel: "Claim Your Free Audit",
-    primaryCtaHref: "/contact",
-    secondaryCtaLabel: "Explore Case Studies",
-    secondaryCtaHref: "/portfolio",
-    trustPoints: [],
-  };
-
-  const trustMetrics = settings?.stats?.slice(0, 2).map((s) => ({
-    label: s.label,
-    value: s.value,
-  })) || [
-    { label: "Avg. Client ROI", value: "342%" },
-    { label: "Projects Won", value: "500+" },
-  ];
-
   return (
-    <section className="relative pb-16 pt-24 md:pb-24 md:pt-32 lg:pt-10 lg:pb-20 bg-white overflow-hidden min-h-[85vh] flex items-center">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-50 via-white to-white"></div>
-      <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-orange-200/40 rounded-full blur-[40px] md:blur-[80px]" />
-      <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[250px] md:w-[500px] h-[250px] md:h-[500px] bg-orange-100/50 rounded-full blur-[30px] md:blur-[60px]" />
+    <section className="relative overflow-hidden bg-[#FAF7F2]">
+      <div className="hero-grain-paper" aria-hidden />
+      <BackgroundAtmosphere />
 
-      <div className="container">
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-8 items-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="max-w-2xl text-center lg:text-left mx-auto lg:mx-0"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50/80 backdrop-blur-sm border border-orange-100/50 mb-8 md:mb-10 group hover:bg-orange-100/80 transition-all duration-300"
-            >
-              <div className="relative w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center overflow-hidden">
-                <img
-                  src="/images/icon-logo.png"
-                  alt="Creative Monk"
-                  className="w-4 h-4 object-contain relative z-10"
-                />
-                <motion.div
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 bg-gradient-to-tr from-orange-100 to-transparent opacity-40"
-                />
-              </div>
-              <span
-                className="text-[#FF6600] text-[10px] md:text-xs font-black tracking-[0.2em] uppercase"
-                style={{ fontFamily: "var(--font-outfit)" }}
-              >
-                {heroData.eyebrow}
+      <StatusStrip />
+
+      <div className="container relative z-10 pt-10 lg:pt-14 pb-8">
+        <div className="grid grid-cols-12 gap-x-8 gap-y-14 items-center">
+          {/* LEFT — type column */}
+          <div className="col-span-12 lg:col-span-7">
+            <div className="flex items-center gap-3 mb-7">
+              <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+              <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+                {HERO.eyebrow}
               </span>
-              <Sparkles className="w-3 h-3 text-orange-400 group-hover:rotate-12 transition-transform" />
-            </motion.div>
-
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-gray-900 tracking-tight leading-[1.1] mb-6">
-              {heroData.title} <br className="hidden lg:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-orange-400 relative inline-block pb-3 mt-2 lg:mt-0">
-                {heroData.highlight}
-                <motion.svg
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  whileInView={{ pathLength: 1, opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.5, delay: 0.8 }}
-                  className="absolute bottom-0 left-0 w-full"
-                  height="12"
-                  viewBox="0 0 100 12"
-                  preserveAspectRatio="none"
-                >
-                  <path
-                    d="M0,10 Q50,0 100,10"
-                    stroke="#f97316"
-                    strokeWidth="4"
-                    fill="none"
-                    opacity="0.4"
-                    strokeLinecap="round"
-                  />
-                </motion.svg>
-              </span>
-            </h1>
-
-            <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-10 leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium">
-              {heroData.description}
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-16 px-4 sm:px-0">
-              <Link
-                href={heroData.primaryCtaHref || "/contact"}
-                className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl transition-all shadow-2xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-1 overflow-hidden"
-              >
-                <motion.div
-                  initial={{ x: "-100%" }}
-                  whileHover={{ x: "100%" }}
-                  transition={{ duration: 0.8 }}
-                  className="absolute inset-0 bg-white/20 -skew-x-12"
-                />
-                {heroData.primaryCtaLabel}
-                <Rocket className="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href={heroData.secondaryCtaHref || "/portfolio"}
-                className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-white/50 backdrop-blur-sm hover:bg-white text-gray-800 font-bold rounded-2xl border-2 border-orange-100 hover:border-orange-200 transition-all hover:shadow-xl hover:-translate-y-1"
-              >
-                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center group-hover:bg-orange-100 transition-colors">
-                  <TrendingUp className="w-4 h-4 text-orange-600" />
-                </div>
-                {heroData.secondaryCtaLabel}
-              </Link>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 pt-10 border-t border-gray-100 relative">
-              <div className="absolute -top-px left-1/2 -translate-x-1/2 lg:left-0 lg:translate-x-0 w-20 h-[2px] bg-orange-500" />
+            <Headline />
 
-              {trustMetrics.map((mt, i) => (
-                <div
-                  key={i}
-                  className={`text-center lg:text-left ${i > 0 ? "border-l border-gray-100 md:border-none pl-4 md:pl-0" : ""}`}
-                >
-                  <p
-                    className="text-3xl font-black text-gray-900 mb-1 tracking-tight"
-                    style={{ fontFamily: "var(--font-outfit)" }}
-                  >
-                    {mt.value}
-                  </p>
-                  <p className="text-[11px] uppercase tracking-wider text-gray-500 font-extrabold">
-                    {mt.label}
-                  </p>
-                </div>
-              ))}
-
-              <div className="col-span-2 md:col-span-1 flex flex-col items-center lg:items-start pt-6 md:pt-0 border-t border-gray-50 md:border-none">
-                <div className="flex mb-2 gap-0.5">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className="w-4 h-4 text-orange-500 fill-orange-500"
-                    />
-                  ))}
-                </div>
-                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-extrabold">
-                  Rated 4.9/5 by Clients
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
-          <div className="relative h-[500px] lg:h-[600px] w-full hidden lg:block">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative w-80 h-80 rounded-full border border-orange-100 bg-white/50 backdrop-blur-3xl shadow-2xl shadow-orange-500/10 flex items-center justify-center animate-[spin_30s_linear_infinite]">
-                <div className="absolute w-64 h-64 rounded-full border-2 border-dashed border-orange-200" />
-              </div>
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 50, y: -20 }}
-              animate={{ opacity: 1, x: 0, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="absolute top-[10%] left-[5%] bg-white p-4 rounded-2xl shadow-xl shadow-orange-900/5 border border-gray-50 w-60 z-10"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-600">
-                  <TrendingUp className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">
-                    Traffic Growth
-                  </p>
-                  <p className="text-xl font-extrabold text-gray-900">
-                    +124.5%
-                  </p>
-                </div>
-              </div>
-              <div className="w-full h-14 flex items-end gap-1.5">
-                {[40, 60, 45, 75, 65, 90, 100].map((h, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 bg-orange-50 rounded-t-sm relative overflow-hidden h-full"
-                  >
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: `${h}%` }}
-                      transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
-                      className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-orange-500 to-orange-400 rounded-t-sm"
-                    />
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="absolute top-[35%] right-[-5%] bg-white p-5 rounded-2xl shadow-2xl shadow-orange-500/10 border border-orange-50 w-64 z-20"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm font-semibold text-gray-700">
-                  Active Leads
-                </p>
-                <span className="px-2.5 py-1 bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-wider rounded-full border border-green-100">
-                  Live Connect
-                </span>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="flex -space-x-3">
-                  <div className="w-10 h-10 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center">
-                    <span className="text-xs font-bold text-blue-700">A</span>
-                  </div>
-                  <div className="w-10 h-10 rounded-full border-2 border-white bg-green-100 flex items-center justify-center">
-                    <span className="text-xs font-bold text-green-700">K</span>
-                  </div>
-                  <div className="w-10 h-10 rounded-full border-2 border-white bg-orange-50 flex items-center justify-center">
-                    <span className="text-xs font-bold text-orange-600">
-                      +89
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="absolute bottom-[10%] left-[15%] bg-white p-5 rounded-2xl shadow-xl shadow-orange-900/5 border border-gray-50 flex items-center gap-5 w-56 z-10"
+              transition={{ duration: 0.7, delay: 0.9 }}
+              className="mt-7 font-jakarta text-[16.5px] md:text-[17.5px] leading-[1.55] text-stone-700 max-w-[54ch]"
             >
-              <div className="relative w-16 h-16">
-                <svg className="w-full h-full -rotate-90">
-                  <circle
-                    cx="32"
-                    cy="32"
-                    r="28"
-                    stroke="currentColor"
-                    strokeWidth="6"
-                    fill="transparent"
-                    className="text-gray-100"
-                  />
-                  <motion.circle
-                    initial={{ strokeDasharray: "0 176" }}
-                    animate={{ strokeDasharray: "172 176" }}
-                    transition={{ duration: 1.5, delay: 1 }}
-                    cx="32"
-                    cy="32"
-                    r="28"
-                    stroke="currentColor"
-                    strokeWidth="6"
-                    fill="transparent"
-                    className="text-orange-500"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center flex-col">
-                  <span className="text-lg font-extrabold text-gray-900 leading-none">
-                    98
-                  </span>
-                </div>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
-                  SEO Score
-                </p>
-                <p className="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded inline-block">
-                  Excellent
-                </p>
-              </div>
+              {HERO.lede}
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 1.05 }}
+              className="mt-9 flex flex-wrap items-center gap-4 md:gap-6"
+            >
+              <PrimaryCta />
+              <SecondaryCta />
             </motion.div>
 
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 1, type: "spring" }}
-                className="w-36 h-36 bg-gradient-to-br from-orange-400 to-orange-600 rounded-3xl shadow-2xl shadow-orange-500/40 rotate-[15deg] flex items-center justify-center border-4 border-white/20 backdrop-blur-sm overflow-hidden"
-              >
-                <img
-                  src="/images/icon-logo.png"
-                  alt="Creative Monk"
-                  className="w-20 h-20 object-contain brightness-0 invert"
-                />
-              </motion.div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 1.2 }}
+              className="mt-10"
+            >
+              <RatingCallout />
+            </motion.div>
+          </div>
+
+          {/* RIGHT — Studio Diary board */}
+          <div className="col-span-12 lg:col-span-5 relative">
+            <StudioDiary />
           </div>
         </div>
+
+        <BentoBar />
       </div>
+
+      <BottomMarquee />
     </section>
+  );
+}
+
+/* ─── Headline — refined, no decorative font ───
+   Approach: the whole headline is Funnel Display.
+   The accent uses Fraunces italic (in INK, not orange) for a quiet, classy emphasis,
+   with a thin orange underline that sits cleanly under the word.
+   No more "graffiti" feel. */
+function Headline() {
+  return (
+    <h1 className="font-funnel text-stone-900 font-bold leading-[0.96] tracking-[-0.035em] text-[clamp(2.5rem,6vw,5.25rem)]">
+      <span className="block">
+        <span className="hero-rise inline-block" style={{ animationDelay: "0.05s" }}>
+          {HERO.lineA}
+        </span>
+      </span>
+      <span className="block">
+        <span className="hero-rise inline-block mr-[0.22em]" style={{ animationDelay: "0.18s" }}>
+          {HERO.lineB}
+        </span>
+        <span
+          className="hero-rise inline-block relative"
+          style={{
+            animationDelay: "0.3s",
+            fontFamily: "var(--font-newsreader), Georgia, serif",
+            fontStyle: "italic",
+            fontWeight: 500,
+            color: "#1c1c1c",
+          }}
+        >
+          {HERO.accent}
+          <svg
+            aria-hidden
+            viewBox="0 0 320 8"
+            preserveAspectRatio="none"
+            className="hero-underline absolute left-0 -bottom-[0.04em] w-full h-[0.18em]"
+          >
+            <path
+              d="M2 5 Q 80 1, 160 4 T 318 3"
+              fill="none"
+              stroke="#FF6600"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          </svg>
+        </span>
+      </span>
+      <span className="block">
+        <span className="hero-rise inline-block" style={{ animationDelay: "0.42s" }}>
+          {HERO.lineC}
+        </span>
+      </span>
+    </h1>
+  );
+}
+
+/* ─── Status strip ─── */
+function StatusStrip() {
+  return (
+    <div className="border-b border-stone-900/10 bg-[#FAF7F2]/70 backdrop-blur-sm relative z-10">
+      <div className="container flex items-center justify-between gap-6 py-3 font-jakarta text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-700">
+        <span className="flex items-center gap-2">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 hero-pulse" />
+          {HERO.status}
+        </span>
+        <span className="hidden md:inline tracking-[0.28em] text-stone-500">
+          Est. 2018 · 142 brands · Worldwide
+        </span>
+        <span className="text-stone-500 hidden sm:flex items-center gap-2">
+          <CalendarGlyph />
+          <span>Next slot: Aug 12</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Studio Diary board — vertical bulletin showing what's shipping this week ─── */
+function StudioDiary() {
+  return (
+    <div className="relative max-w-[440px] mx-auto">
+      {/* Decorative pin at top-center */}
+      <span
+        aria-hidden
+        className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-30 w-5 h-5 rounded-full bg-[#FF6600] ring-4 ring-[#FAF7F2] shadow-[0_4px_10px_rgba(255,102,0,0.35)]"
+      />
+
+      {/* Floating sticky-note "Open for Q3" stamp */}
+      <motion.div
+        initial={{ opacity: 0, y: -8, rotate: 0, scale: 0.92 }}
+        animate={{ opacity: 1, y: 0, rotate: 6, scale: 1 }}
+        transition={{ duration: 0.7, delay: 1.0, type: "spring", stiffness: 200, damping: 18 }}
+        className="absolute -top-5 -right-2 md:-right-4 z-40 hero-drift"
+        style={{ ["--rot" as any]: "6deg" }}
+      >
+        <div className="bg-[#FF6600] text-stone-900 rounded-2xl px-4 py-3 shadow-[0_14px_28px_-12px_rgba(255,102,0,0.5)]">
+          <p
+            className="font-funnel text-[12px] font-bold uppercase tracking-[0.14em] leading-tight flex items-center gap-1.5"
+          >
+            <DecorativeStar className="w-3.5 h-3.5 text-stone-900" />
+            Open for Q3
+          </p>
+          <p
+            className="text-[12.5px] mt-0.5 leading-tight"
+            style={{
+              fontFamily: "var(--font-newsreader), Georgia, serif",
+              fontStyle: "italic",
+              fontWeight: 400,
+            }}
+          >
+            3 slots left
+          </p>
+        </div>
+      </motion.div>
+
+      {/* Tiny floating progress badge — bottom-left */}
+      <motion.div
+        initial={{ opacity: 0, y: 12, x: -10 }}
+        animate={{ opacity: 1, y: 0, x: 0 }}
+        transition={{ duration: 0.6, delay: 1.2 }}
+        className="absolute -bottom-4 -left-3 md:left-2 z-40 hero-drift"
+        style={{ ["--rot" as any]: "-3deg" }}
+      >
+        <div className="bg-stone-900 text-stone-50 rounded-2xl px-4 py-2.5 shadow-[0_20px_36px_-16px_rgba(15,12,8,0.5)] flex items-center gap-3">
+          <span className="grid place-items-center w-9 h-9 rounded-full bg-emerald-500 text-stone-900">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path
+                d="M2 7 L6 11 L12 4"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+          <div>
+            <p className="font-jakarta text-[9px] font-semibold uppercase tracking-[0.22em] text-stone-400">
+              Avg reply
+            </p>
+            <p className="font-funnel text-[14px] font-bold tracking-tight leading-none mt-0.5">
+              &lt; 4 working hrs
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Main diary card */}
+      <motion.article
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.4, ease: [0.2, 0.7, 0.2, 1] }}
+        className="relative bg-stone-50 rounded-[28px] border border-stone-900/15 px-7 py-8 md:px-8 md:py-9 shadow-[0_30px_60px_-30px_rgba(15,12,8,0.25)]"
+        style={{ transform: "rotate(-0.6deg)" }}
+      >
+        {/* Header */}
+        <div className="flex items-baseline justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 hero-pulse" />
+            <span className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.24em] text-stone-700">
+              Studio Diary
+            </span>
+          </div>
+          <span className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500">
+            Week 28 · 2026
+          </span>
+        </div>
+
+        {/* Editorial title */}
+        <h3 className="font-funnel font-bold tracking-[-0.025em] leading-[1.1] text-[clamp(1.55rem,2.4vw,1.95rem)] text-stone-900">
+          This week we&apos;re{" "}
+          <span
+            style={{
+              fontFamily: "var(--font-newsreader), Georgia, serif",
+              fontStyle: "italic",
+              fontWeight: 500,
+              color: "#FF6600",
+            }}
+          >
+            shipping for…
+          </span>
+        </h3>
+
+        {/* Diary entries */}
+        <ul className="mt-7 space-y-4">
+          {DIARY_ENTRIES.map((entry, i) => (
+            <motion.li
+              key={entry.client}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 + i * 0.1 }}
+              className="group flex items-center gap-3.5"
+            >
+              <span className="shrink-0 grid place-items-center w-10 h-10 rounded-full bg-stone-100 border border-stone-900/10">
+                <span className="font-jakarta text-[10px] font-bold uppercase tracking-[0.14em] text-stone-700">
+                  {entry.day}
+                </span>
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-funnel text-[14.5px] font-bold tracking-[-0.015em] text-stone-900 truncate">
+                  {entry.client}
+                </p>
+                <p
+                  className="text-[12px] text-stone-500 truncate"
+                  style={{
+                    fontFamily: "var(--font-newsreader), Georgia, serif",
+                    fontStyle: "italic",
+                    fontWeight: 400,
+                  }}
+                >
+                  {entry.activity}
+                </p>
+              </div>
+              <div className="shrink-0 flex flex-col items-end gap-1.5">
+                <span
+                  className={`font-jakarta text-[9px] font-semibold uppercase tracking-[0.18em] ${
+                    entry.progress > 80
+                      ? "text-emerald-700"
+                      : entry.progress > 30
+                        ? "text-[#FF6600]"
+                        : "text-stone-400"
+                  }`}
+                >
+                  {entry.status}
+                </span>
+                <span
+                  className="block h-1 w-12 rounded-full bg-stone-200 overflow-hidden"
+                  aria-label={`${entry.progress}% complete`}
+                >
+                  <motion.span
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: entry.progress / 100 }}
+                    transition={{ duration: 0.9, delay: 1.0 + i * 0.1, ease: "easeOut" }}
+                    style={{
+                      transformOrigin: "left",
+                      background:
+                        entry.progress > 80
+                          ? "#059669"
+                          : entry.progress > 30
+                            ? "#FF6600"
+                            : "#a8a29e",
+                    }}
+                    className="block h-full"
+                  />
+                </span>
+              </div>
+            </motion.li>
+          ))}
+        </ul>
+
+        {/* Footer — signature */}
+        <div className="mt-7 pt-5 border-t border-stone-900/10 flex items-end justify-between gap-3">
+          <div>
+            <p
+              className="text-[15px] text-stone-700 leading-none"
+              style={{
+                fontFamily: "var(--font-newsreader), Georgia, serif",
+                fontStyle: "italic",
+                fontWeight: 400,
+              }}
+            >
+              — Sahil
+            </p>
+            <p className="font-mono-ui text-[9.5px] uppercase tracking-[0.22em] text-stone-400 mt-1.5">
+              Founder · updated 14m ago
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-1.5 font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-700">
+            <span className="block w-1.5 h-1.5 rounded-full bg-emerald-500 hero-pulse" />
+            Live
+          </span>
+        </div>
+      </motion.article>
+    </div>
+  );
+}
+
+function DecorativeStar({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg aria-hidden viewBox="0 0 24 24" fill="currentColor" className={className} style={style}>
+      <path d="M12 1 L13 9 L20 6 L15 12 L23 13 L15 14 L20 20 L13 17 L12 25 L11 17 L4 20 L9 14 L1 13 L9 12 L4 6 L11 9 Z" />
+    </svg>
+  );
+}
+
+function CalendarGlyph() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden>
+      <rect x="1.5" y="3" width="11" height="9.5" rx="1.2" stroke="currentColor" strokeWidth="1.2" />
+      <path
+        d="M1.5 6 H 12.5 M 4.5 1.5 V 4 M 9.5 1.5 V 4"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function RatingCallout() {
+  return (
+    <div className="inline-flex items-center gap-3">
+      <div className="flex -space-x-2">
+        {[
+          { bg: "#FF6600", t: "A" },
+          { bg: "#1A1410", t: "M" },
+          { bg: "#4A5D3A", t: "K" },
+        ].map((a, i) => (
+          <span
+            key={i}
+            className="inline-grid place-items-center w-8 h-8 rounded-full ring-2 ring-[#FAF7F2] text-[11.5px] font-bold text-stone-50 font-jakarta"
+            style={{ background: a.bg }}
+          >
+            {a.t}
+          </span>
+        ))}
+      </div>
+      <div className="flex flex-col leading-tight">
+        <div className="flex items-center gap-0.5" aria-label="4.9 out of 5">
+          {[0, 1, 2, 3, 4].map((s) => (
+            <svg
+              key={s}
+              width="11"
+              height="11"
+              viewBox="0 0 14 14"
+              fill="currentColor"
+              className="text-[#FF6600]"
+            >
+              <path d="M7 0 L8.7 5.3 L14 5.3 L9.7 8.5 L11.4 13.8 L7 10.6 L2.6 13.8 L4.3 8.5 L0 5.3 L5.3 5.3 Z" />
+            </svg>
+          ))}
+        </div>
+        <p className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.18em] text-stone-600 mt-1">
+          4.9 / 5 from 87 founders
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function PrimaryCta() {
+  return (
+    <Link
+      href={HERO.primary.href}
+      className="group relative inline-flex items-center gap-3 rounded-full bg-stone-900 text-stone-50 pl-6 pr-2 py-2 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-[0_16px_36px_-18px_rgba(15,12,8,0.5)]"
+    >
+      <span
+        aria-hidden
+        className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out"
+        style={{
+          background: "linear-gradient(90deg, transparent, rgba(255,102,0,0.85), transparent)",
+        }}
+      />
+      <span className="relative font-funnel text-[15px] font-semibold tracking-tight">
+        {HERO.primary.label}
+      </span>
+      <span className="relative inline-grid place-items-center w-9 h-9 rounded-full bg-[#FF6600] text-stone-900 group-hover:bg-stone-50 group-hover:rotate-[-30deg] transition-all duration-300">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+          <path
+            d="M2 12 L12 2 M5 2 L12 2 L12 9"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
+    </Link>
+  );
+}
+
+function SecondaryCta() {
+  return (
+    <Link
+      href={HERO.secondary.href}
+      className="group inline-flex items-center gap-3 font-jakarta text-[12px] font-semibold uppercase tracking-[0.22em] text-stone-900 cursor-pointer"
+    >
+      <span className="relative">
+        {HERO.secondary.label}
+        <span className="absolute left-0 -bottom-1 h-px w-full bg-stone-900 origin-left scale-x-100 group-hover:scale-x-0 transition-transform duration-400" />
+        <span className="absolute left-0 -bottom-1 h-px w-full bg-[#FF6600] origin-right scale-x-0 group-hover:scale-x-100 transition-transform duration-400 delay-100" />
+      </span>
+      <svg
+        width="20"
+        height="10"
+        viewBox="0 0 22 10"
+        fill="none"
+        className="group-hover:translate-x-1 transition-transform"
+      >
+        <path
+          d="M1 5 H 20 M 16 1 L 20 5 L 16 9"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </Link>
+  );
+}
+
+function BentoBar() {
+  return (
+    <div className="mt-16 md:mt-20 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      {BENTO_STATS.map((s, i) => (
+        <motion.div
+          key={s.label}
+          initial={{ opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, delay: i * 0.08 }}
+          className="group relative rounded-2xl bg-stone-50 border border-stone-900/10 p-5 md:p-6 hover:border-[#FF6600]/40 hover:bg-white transition-all duration-300 cursor-default"
+        >
+          <p className="font-funnel font-bold tracking-[-0.025em] text-stone-900 leading-none text-[clamp(1.6rem,2.4vw,2.1rem)]">
+            {s.animate && typeof s.value === "number" ? (
+              <Counter to={s.value as number} />
+            ) : (
+              s.value
+            )}
+            {s.suffix && (
+              <span className={s.suffix === "★" ? "text-[#FF6600] ml-1" : "ml-1 text-stone-900"}>
+                {s.suffix}
+              </span>
+            )}
+          </p>
+          <p className="mt-3 font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+            {s.label}
+          </p>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+function Counter({ to }: { to: number }) {
+  const [val, setVal] = useState(0);
+  const ref = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let started = false;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setVal(to);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !started) {
+            started = true;
+            const start = performance.now();
+            const duration = 1400;
+            const step = (now: number) => {
+              const t = Math.min(1, (now - start) / duration);
+              const eased = 1 - Math.pow(1 - t, 3);
+              setVal(Math.round(eased * to));
+              if (t < 1) requestAnimationFrame(step);
+            };
+            requestAnimationFrame(step);
+            io.disconnect();
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [to]);
+
+  return <span ref={ref}>{val}</span>;
+}
+
+function BottomMarquee() {
+  return (
+    <div className="relative z-10 mt-12 md:mt-14 border-y border-stone-900/10 bg-stone-900 text-stone-50 overflow-hidden">
+      <div className="hero-marquee py-4">
+        {[0, 1].map((dup) => (
+          <div
+            key={dup}
+            aria-hidden={dup === 1}
+            className="flex items-center gap-10 pr-10 whitespace-nowrap"
+          >
+            {MARQUEE.map((item, i) => (
+              <span key={`${dup}-${i}`} className="flex items-center gap-10">
+                <span className="font-funnel text-[22px] md:text-[28px] font-bold tracking-[-0.025em] leading-none">
+                  {item}
+                </span>
+                <span className="text-[#FF6600] text-base" aria-hidden>
+                  ✦
+                </span>
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BackgroundAtmosphere() {
+  return (
+    <>
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 55% 45% at 100% 0%, rgba(255,102,0,0.08), transparent 60%), radial-gradient(ellipse 60% 35% at 0% 100%, rgba(74,93,58,0.05), transparent 60%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="absolute -top-24 right-[4%] w-[360px] h-[360px] rounded-full border border-dashed border-stone-900/10 hidden lg:block"
+      />
+    </>
   );
 }

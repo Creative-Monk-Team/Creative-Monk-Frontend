@@ -1,468 +1,541 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useState } from "react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  BarChart3,
-  Globe2,
-  Layers3,
-  Palette,
-  Sparkles,
-  Zap,
-  type LucideIcon,
-} from "lucide-react";
-import { getServiceCategories, getServices } from "@/lib/api";
-import type { Service, ServiceCategory } from "@/lib/types";
+import { motion, AnimatePresence } from "framer-motion";
 
-type CategoryTheme = {
-  accent: string;
-  glow: string;
-  badge: string;
-  iconWrap: string;
-  chip: string;
-  stat: string;
-};
-
-const categoryThemes: CategoryTheme[] = [
+/* ─── Three service buckets ───────────────────────────────────
+   Founders self-select by what they want to feel/buy/spread —
+   not by deliverable name. */
+const BUCKETS = [
   {
-    accent: "from-orange-500/[0.18] via-orange-100/75 to-white",
-    glow: "bg-orange-400/20",
-    badge: "border-orange-200/80 bg-orange-50/90 text-orange-700",
-    iconWrap:
-      "bg-gradient-to-br from-orange-500 to-orange-400 text-white shadow-lg shadow-orange-500/25",
-    chip: "border-orange-200/70 bg-white/80 hover:border-orange-300 hover:bg-orange-50/80",
-    stat: "text-orange-600",
+    roman: "I",
+    eyebrow: "Brand & Identity",
+    italic: "to feel",
+    title: "Brands people remember",
+    description:
+      "Logos, identity systems, naming and packaging engineered to outlast a TVC cycle — built around your real difference, not the loudest visual trend.",
+    deliverables: [
+      "Logo & wordmark",
+      "Visual identity system",
+      "Brand strategy & naming",
+      "Packaging & print",
+      "Brand book & guidelines",
+      "Social system",
+    ],
+    timeline: "4–6 weeks",
+    deliverableCount: "12+ assets",
+    href: "/services/branding",
+    accent: "#FF6600",
+    panelTone: "var(--paper-warm, #f3eee2)",
   },
   {
-    accent: "from-amber-500/[0.18] via-amber-100/75 to-white",
-    glow: "bg-amber-400/20",
-    badge: "border-amber-200/80 bg-amber-50/90 text-amber-700",
-    iconWrap:
-      "bg-gradient-to-br from-amber-500 to-orange-400 text-white shadow-lg shadow-amber-500/25",
-    chip: "border-amber-200/70 bg-white/80 hover:border-amber-300 hover:bg-amber-50/80",
-    stat: "text-amber-700",
+    roman: "II",
+    eyebrow: "Web & Performance",
+    italic: "to convert",
+    title: "Websites that close",
+    description:
+      "Sites you'd be proud to send to a procurement team. Fast, SEO-clean, conversion-tuned — and a paid-media engine that actually pays back.",
+    deliverables: [
+      "Web design & build",
+      "Conversion optimisation",
+      "SEO & content",
+      "Performance marketing",
+      "Landing pages",
+      "E-commerce (Shopify, WP)",
+    ],
+    timeline: "6–10 weeks",
+    deliverableCount: "20+ deliverables",
+    href: "/services",
+    accent: "#0F0C08",
+    panelTone: "#ECE5D6",
   },
   {
-    accent: "from-slate-900/10 via-slate-100/80 to-white",
-    glow: "bg-slate-400/20",
-    badge: "border-slate-200 bg-slate-50/90 text-slate-700",
-    iconWrap:
-      "bg-gradient-to-br from-slate-900 to-slate-700 text-white shadow-lg shadow-slate-900/20",
-    chip: "border-slate-200/80 bg-white/80 hover:border-slate-300 hover:bg-slate-50/80",
-    stat: "text-slate-700",
-  },
-  {
-    accent: "from-orange-500/[0.14] via-rose-50/80 to-white",
-    glow: "bg-rose-300/20",
-    badge: "border-orange-100/80 bg-white/90 text-slate-700",
-    iconWrap:
-      "bg-gradient-to-br from-orange-500 to-slate-900 text-white shadow-lg shadow-orange-500/20",
-    chip: "border-orange-100/80 bg-white/80 hover:border-orange-200 hover:bg-orange-50/70",
-    stat: "text-slate-900",
+    roman: "III",
+    eyebrow: "Motion & Story",
+    italic: "to spread",
+    title: "Stories worth sharing",
+    description:
+      "Brand films, social-first reels, photography and editorial direction that earn the share, not just the impression.",
+    deliverables: [
+      "Brand films",
+      "Reels & shorts",
+      "Product photography",
+      "Animation & motion",
+      "Social strategy",
+      "Editorial direction",
+    ],
+    timeline: "3–5 weeks",
+    deliverableCount: "Full content library",
+    href: "/services",
+    accent: "#4A5D3A",
+    panelTone: "#1A1410",
+    panelInverted: true,
   },
 ];
 
-function getCategoryMeta(slug: string, index: number) {
-  const theme = categoryThemes[index % categoryThemes.length];
-
-  switch (slug?.toLowerCase()) {
-    case "website-designing-development":
-      return {
-        ...theme,
-        Icon: Globe2,
-        eyebrow: "Build",
-        focus: "Fast, scalable web experiences",
-      };
-    case "digital-marketing":
-      return {
-        ...theme,
-        Icon: BarChart3,
-        eyebrow: "Scale",
-        focus: "Campaigns tuned for growth",
-      };
-    case "graphic-designing":
-      return {
-        ...theme,
-        Icon: Palette,
-        eyebrow: "Shape",
-        focus: "Brand visuals that stand out",
-      };
-    default:
-      return {
-        ...theme,
-        Icon: Layers3,
-        eyebrow: "Craft",
-        focus: "Creative systems with business intent",
-      };
-  }
-}
-
-function MetricCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
-        {label}
-      </p>
-      <p
-        className="mt-3 text-3xl font-black tracking-tight text-white"
-        style={{ fontFamily: "var(--font-outfit)" }}
-      >
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function ValuePill({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex items-start gap-4 rounded-[1.25rem] border border-white/10 bg-white/5 px-4 py-4 backdrop-blur-sm">
-      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-white/10 text-orange-300">
-        <Icon className="h-5 w-5" />
-      </div>
-      <div>
-        <p
-          className="text-base font-bold text-white"
-          style={{ fontFamily: "var(--font-outfit)" }}
-        >
-          {title}
-        </p>
-        <p className="mt-1 text-sm leading-6 text-slate-300">{description}</p>
-      </div>
-    </div>
-  );
-}
-
 export function Services() {
-  const [categories, setCategories] = useState<ServiceCategory[]>([]);
-  const [allServices, setAllServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [catData, servData] = await Promise.all([
-          getServiceCategories(),
-          getServices(),
-        ]);
-        setCategories(catData);
-        setAllServices(servData);
-      } catch (error) {
-        console.error("Failed to fetch services:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
-
-  if (!loading && categories.length === 0) {
-    return null;
-  }
-
-  const totalServices = allServices.length;
-  const totalCategories = categories.length;
+  const [activeIndex, setActiveIndex] = useState(0);
+  const active = BUCKETS[activeIndex];
 
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#fff8f3_45%,#f8fafc_100%)] py-24">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,102,0,0.12),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(15,23,42,0.08),transparent_28%)]" />
-      <div className="absolute inset-0 opacity-[0.07] [background-image:linear-gradient(to_right,#f97316_1px,transparent_1px),linear-gradient(to_bottom,#f97316_1px,transparent_1px)] [background-size:72px_72px]" />
-      <div className="absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-orange-200/30 blur-3xl" />
+    <section
+      id="services"
+      className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden"
+      aria-label="Services"
+    >
+      <div className="hero-grain-paper" aria-hidden />
 
-      <div className="container relative z-10">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] lg:items-end">
-          <div className="max-w-3xl">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="inline-flex items-center gap-2 rounded-full border border-orange-200/70 bg-white/80 px-4 py-2 shadow-sm shadow-orange-100/60 backdrop-blur-sm"
-            >
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500/10 text-[#FF6600]">
-                <Sparkles className="h-3.5 w-3.5" />
-              </span>
-              <span className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-700">
-                What We Offer
-              </span>
-            </motion.div>
-
-            <motion.h2
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.08 }}
-              className="mt-6 text-4xl font-black leading-[1.05] tracking-tight text-slate-950 md:text-5xl lg:text-6xl"
-              style={{ fontFamily: "var(--font-outfit)" }}
-            >
-              Services designed to{" "}
-              <span className="bg-gradient-to-r from-[#FF6600] via-orange-500 to-amber-500 bg-clip-text text-transparent">
-                look sharp, convert faster, and scale cleanly.
-              </span>
-            </motion.h2>
-
-            <motion.p
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.16 }}
-              className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 md:text-xl"
-            >
-              We bring strategy, design, development, and marketing together so
-              every touchpoint feels premium and performs like it should.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.24 }}
-              className="mt-8 flex flex-wrap gap-3"
-            >
-              <div className="rounded-full border border-white/80 bg-white/[0.85] px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-200/50 backdrop-blur-sm">
-                {loading
-                  ? "Loading capabilities..."
-                  : `${String(totalCategories).padStart(2, "0")} strategic categories`}
-              </div>
-              <div className="rounded-full border border-white/80 bg-white/[0.85] px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-200/50 backdrop-blur-sm">
-                {loading
-                  ? "Building the list..."
-                  : `${String(totalServices).padStart(2, "0")} specialist services`}
-              </div>
-              <div className="rounded-full border border-orange-100 bg-orange-50/80 px-5 py-3 text-sm font-semibold text-[#FF6600] shadow-sm shadow-orange-100/50 backdrop-blur-sm">
-                One partner from concept to growth
-              </div>
-            </motion.div>
-          </div>
-
+      <div className="container relative z-10 py-20 md:py-28">
+        {/* Header */}
+        <div className="grid grid-cols-12 gap-x-8 gap-y-8 items-end mb-14 md:mb-20">
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.18 }}
-            className="relative overflow-hidden rounded-[2rem] border border-slate-900/10 bg-slate-950 p-8 text-white shadow-[0_40px_120px_-60px_rgba(15,23,42,0.85)]"
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="col-span-12 md:col-span-8"
           >
-            <div className="absolute -right-14 top-0 h-40 w-40 rounded-full bg-orange-500/20 blur-3xl" />
-            <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-white/10 blur-3xl" />
-
-            <div className="relative">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-orange-300">
-                <Zap className="h-3.5 w-3.5" />
-                Growth Stack
-              </div>
-
-              <h3
-                className="mt-5 max-w-md text-3xl font-black leading-tight text-white"
-                style={{ fontFamily: "var(--font-outfit)" }}
-              >
-                A tighter blend of creative direction and execution.
-              </h3>
-              <p className="mt-4 max-w-lg text-sm leading-7 text-slate-300">
-                Every offering is shaped to help the brand feel more credible,
-                the user journey feel more deliberate, and the outcome feel more
-                measurable.
-              </p>
-
-              <div className="mt-8 grid grid-cols-2 gap-4">
-                <MetricCard
-                  label="Categories"
-                  value={loading ? "--" : String(totalCategories).padStart(2, "0")}
-                />
-                <MetricCard
-                  label="Services"
-                  value={loading ? "--" : String(totalServices).padStart(2, "0")}
-                />
-              </div>
-
-              <div className="mt-5 space-y-3">
-                <ValuePill
-                  icon={Globe2}
-                  title="Brand to browser consistency"
-                  description="Interfaces, messaging, and interactions are shaped to feel like one system."
-                />
-                <ValuePill
-                  icon={BarChart3}
-                  title="Performance-minded delivery"
-                  description="Growth work is supported by structure, speed, and a cleaner conversion path."
-                />
-              </div>
+            <div className="flex items-center gap-3 mb-6">
+              <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+              <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+                What we do
+              </span>
             </div>
+            <h2 className="font-funnel text-stone-900 font-bold leading-[0.98] tracking-[-0.035em] text-[clamp(2.25rem,5vw,4.5rem)] max-w-[18ch]">
+              Three things we do.{" "}
+              <span
+                style={{
+                  fontFamily: "var(--font-newsreader), Georgia, serif",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  color: "#1c1c1c",
+                }}
+              >
+                All of them well.
+              </span>
+            </h2>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="col-span-12 md:col-span-4"
+          >
+            <p className="font-jakarta text-[15.5px] md:text-[16.5px] leading-[1.55] text-stone-700 max-w-[44ch]">
+              Not 47 service line-items. Three buckets where the work compounds.
+              Hover a tab to see what's inside.
+            </p>
           </motion.div>
         </div>
 
-        <div className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {loading
-            ? Array.from({ length: 3 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-[430px] rounded-[2rem] border border-white/70 bg-white/80 animate-pulse shadow-[0_24px_80px_-50px_rgba(15,23,42,0.25)]"
-                />
-              ))
-            : categories.map((category, index) => {
-                const meta = getCategoryMeta(category.slug, index);
-                const subServices = allServices
-                  .filter((service) => service.category === category.slug)
-                  .sort((a, b) => a.order - b.order);
-                const featuredServices = subServices.slice(0, 4);
-                const Icon = meta.Icon;
+        {/* Interactive tab layout — tabs left, preview right */}
+        <div className="grid grid-cols-12 gap-5 md:gap-7 rounded-[32px] border border-stone-900/10 bg-stone-50 overflow-hidden">
+          {/* Tabs column */}
+          <div className="col-span-12 lg:col-span-5 flex flex-col">
+            {BUCKETS.map((b, i) => {
+              const isActive = i === activeIndex;
+              return (
+                <button
+                  key={b.roman}
+                  type="button"
+                  onMouseEnter={() => setActiveIndex(i)}
+                  onClick={() => setActiveIndex(i)}
+                  aria-pressed={isActive}
+                  className={`group relative text-left p-7 md:p-8 lg:p-10 cursor-pointer transition-all duration-500 overflow-hidden border-stone-900/10 ${
+                    i < BUCKETS.length - 1 ? "border-b" : ""
+                  } ${
+                    isActive
+                      ? "bg-white"
+                      : "bg-stone-50 hover:bg-white/40"
+                  }`}
+                >
+                  {/* Active accent bar on the left */}
+                  <motion.span
+                    aria-hidden
+                    animate={{ scaleY: isActive ? 1 : 0 }}
+                    transition={{ duration: 0.5, ease: [0.2, 0.7, 0.2, 1] }}
+                    style={{ background: b.accent, transformOrigin: "top" }}
+                    className="absolute left-0 top-0 bottom-0 w-[3px]"
+                  />
 
-                return (
-                  <motion.article
-                    key={category._id}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    transition={{ delay: index * 0.12 }}
-                    className="group relative flex"
-                  >
-                    <div className="relative flex h-full w-full flex-col overflow-hidden rounded-[2rem] border border-white/80 bg-white/75 p-7 shadow-[0_28px_90px_-55px_rgba(15,23,42,0.28)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_40px_120px_-55px_rgba(255,102,0,0.28)]">
-                      <div
-                        className={`absolute inset-0 bg-gradient-to-br ${meta.accent}`}
-                      />
-                      <div
-                        className={`absolute -right-10 top-14 h-32 w-32 rounded-full ${meta.glow} blur-3xl transition-transform duration-500 group-hover:scale-125`}
-                      />
-                      <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
+                  <div className="flex items-start gap-5 md:gap-6">
+                    {/* Roman numeral */}
+                    <span
+                      className="shrink-0 leading-none tracking-[-0.04em] transition-all duration-500"
+                      style={{
+                        fontFamily: "var(--font-newsreader), Georgia, serif",
+                        fontStyle: "italic",
+                        fontWeight: 500,
+                        fontSize: isActive ? "clamp(3.5rem, 5vw, 5rem)" : "clamp(2.25rem, 3.2vw, 3.2rem)",
+                        color: isActive ? b.accent : "#1c1c1c",
+                        opacity: isActive ? 1 : 0.35,
+                      }}
+                    >
+                      {b.roman}
+                    </span>
 
-                      <div className="relative z-10 flex h-full flex-col">
-                        <div className="flex items-start justify-between gap-4">
-                          <div
-                            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] ${meta.badge}`}
-                          >
-                            <Sparkles className="h-3.5 w-3.5" />
-                            {meta.eyebrow}
-                          </div>
-                          <span className="text-sm font-bold tracking-[0.26em] text-slate-300">
-                            {String(index + 1).padStart(2, "0")}
-                          </span>
-                        </div>
-
-                        <div className="mt-7 flex items-center justify-between gap-4">
-                          <div
-                            className={`flex h-16 w-16 items-center justify-center rounded-[1.35rem] ${meta.iconWrap}`}
-                          >
-                            <Icon className="h-7 w-7" />
-                          </div>
-                          <div className="rounded-[1.35rem] border border-white/80 bg-white/75 px-4 py-3 text-right shadow-sm shadow-slate-200/50">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400">
-                              Services
-                            </p>
-                            <p
-                              className={`mt-1 text-2xl font-black tracking-tight ${meta.stat}`}
-                              style={{ fontFamily: "var(--font-outfit)" }}
-                            >
-                              {String(subServices.length).padStart(2, "0")}
-                            </p>
-                          </div>
-                        </div>
-
-                        <h3
-                          className="mt-8 text-3xl font-black leading-tight text-slate-950"
-                          style={{ fontFamily: "var(--font-outfit)" }}
+                    <div className="flex-1 min-w-0">
+                      {/* Eyebrow chip */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <span
+                          className="block w-1.5 h-1.5 rounded-full transition-all duration-300"
+                          style={{
+                            background: b.accent,
+                            opacity: isActive ? 1 : 0.3,
+                          }}
+                        />
+                        <span
+                          className={`font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] transition-colors duration-300 ${
+                            isActive ? "text-stone-900" : "text-stone-500"
+                          }`}
                         >
-                          {category.title}
-                        </h3>
-                        <p className="mt-4 text-base leading-7 text-slate-600">
-                          {category.description}
-                        </p>
-
-                        <div className="mt-7">
-                          <div className="mb-4 flex items-center justify-between gap-3">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
-                              Popular capabilities
-                            </p>
-                            {subServices.length > featuredServices.length ? (
-                              <span className="rounded-full border border-white/80 bg-white/70 px-3 py-1 text-xs font-semibold text-slate-500">
-                                +{subServices.length - featuredServices.length} more
-                              </span>
-                            ) : null}
-                          </div>
-
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            {featuredServices.map((service) => (
-                              <Link
-                                key={service._id}
-                                href={`/services/${service.slug}`}
-                                className={`group/link flex min-h-[76px] items-center justify-between gap-3 rounded-[1.25rem] border px-4 py-4 text-sm font-semibold text-slate-700 transition-all duration-300 ${meta.chip}`}
-                              >
-                                <span className="line-clamp-2">
-                                  {service.shortTitle || service.title}
-                                </span>
-                                <ArrowRight className="h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-300 group-hover/link:translate-x-1 group-hover/link:text-[#FF6600]" />
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="mt-auto flex items-end justify-between gap-4 border-t border-slate-200/70 pt-7">
-                          <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
-                              Best for
-                            </p>
-                            <p className="mt-2 text-sm font-semibold text-slate-700">
-                              {meta.focus}
-                            </p>
-                          </div>
-
-                          <Link
-                            href="/services"
-                            className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition-all duration-300 hover:bg-[#FF6600]"
-                          >
-                            Explore
-                            <ArrowUpRight className="h-4 w-4" />
-                          </Link>
-                        </div>
+                          {b.eyebrow}
+                        </span>
                       </div>
+
+                      {/* Title */}
+                      <h3
+                        className={`font-funnel font-bold tracking-[-0.025em] leading-[1.1] transition-all duration-500 ${
+                          isActive
+                            ? "text-stone-900 text-[clamp(1.5rem,2.2vw,1.95rem)]"
+                            : "text-stone-500 text-[clamp(1.25rem,1.7vw,1.55rem)]"
+                        }`}
+                      >
+                        {b.title}
+                        <span
+                          className="block mt-1 text-[0.65em]"
+                          style={{
+                            fontFamily: "var(--font-newsreader), Georgia, serif",
+                            fontStyle: "italic",
+                            fontWeight: 500,
+                            color: isActive
+                              ? b.accent === "#0F0C08"
+                                ? "#1c1c1c"
+                                : b.accent
+                              : "#a8a29e",
+                          }}
+                        >
+                          — {b.italic}.
+                        </span>
+                      </h3>
+
+                      {/* Expand-on-active description */}
+                      <AnimatePresence>
+                        {isActive && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.4, ease: [0.2, 0.7, 0.2, 1] }}
+                            className="overflow-hidden"
+                          >
+                            <p className="mt-5 font-jakarta text-[14.5px] leading-[1.6] text-stone-600 max-w-[44ch]">
+                              {b.description}
+                            </p>
+                            <div className="mt-6 flex items-center gap-5 font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.18em]">
+                              <span className="flex items-center gap-2">
+                                <span className="text-stone-400">Timeline</span>
+                                <span className="text-stone-900">{b.timeline}</span>
+                              </span>
+                              <span className="w-px h-3 bg-stone-300" aria-hidden />
+                              <span className="flex items-center gap-2">
+                                <span className="text-stone-400">Includes</span>
+                                <span className="text-stone-900">
+                                  {b.deliverableCount}
+                                </span>
+                              </span>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                  </motion.article>
-                );
-              })}
+
+                    {/* Arrow indicator */}
+                    <span
+                      className={`shrink-0 grid place-items-center w-10 h-10 rounded-full transition-all duration-500 ${
+                        isActive
+                          ? "bg-stone-900 text-stone-50 rotate-[-25deg]"
+                          : "bg-transparent text-stone-400 border border-stone-900/10"
+                      }`}
+                      aria-hidden
+                    >
+                      <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                        <path
+                          d="M2 12 L12 2 M5 2 L12 2 L12 9"
+                          stroke="currentColor"
+                          strokeWidth="1.7"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Preview panel — purely typographic, flex column to avoid overlap */}
+          <div
+            className="col-span-12 lg:col-span-7 relative overflow-hidden transition-colors duration-700 flex flex-col"
+            style={{ background: active.panelTone }}
+          >
+            <div className="hero-grain-paper" aria-hidden />
+
+            {/* atmospheric gradient based on accent */}
+            <div
+              aria-hidden
+              className="absolute inset-0 pointer-events-none transition-opacity duration-700"
+              style={{
+                background: `radial-gradient(ellipse 60% 60% at 100% 0%, ${active.accent}22, transparent 60%)`,
+              }}
+            />
+
+            {/* Background Roman numeral — clipped to the top half so it never
+                crosses the deliverables card. Pure background watermark. */}
+            <div
+              aria-hidden
+              className="absolute top-0 right-0 left-0 h-[55%] pointer-events-none overflow-hidden"
+            >
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={`r-${active.roman}`}
+                  initial={{ opacity: 0, scale: 1.04 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.7, ease: [0.2, 0.7, 0.2, 1] }}
+                  className="absolute -top-[14%] right-[-4%] leading-[0.8] tracking-[-0.06em] font-bold select-none"
+                  style={{
+                    fontFamily: "var(--font-newsreader), Georgia, serif",
+                    fontStyle: "italic",
+                    fontWeight: 500,
+                    fontSize: "clamp(10rem, 22vw, 19rem)",
+                    color: active.panelInverted ? "#FAF7F2" : active.accent,
+                    opacity: active.panelInverted ? 0.10 : 0.10,
+                  }}
+                >
+                  {active.roman}
+                </motion.span>
+              </AnimatePresence>
+            </div>
+
+            {/* TOP — eyebrow + pill */}
+            <div className="relative z-10 flex items-center justify-between gap-3 px-7 md:px-9 pt-7 md:pt-9">
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="block w-1.5 h-1.5 rounded-full shrink-0"
+                  style={{ background: active.accent }}
+                />
+                <span
+                  className={`font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.24em] ${
+                    active.panelInverted ? "text-stone-300" : "text-stone-600"
+                  }`}
+                >
+                  Tab {String(activeIndex + 1).padStart(2, "0")} / 03 · {active.eyebrow}
+                </span>
+              </div>
+              <span
+                className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 font-jakarta text-[9.5px] font-semibold uppercase tracking-[0.22em] shrink-0 ${
+                  active.panelInverted
+                    ? "border-stone-50/25 text-stone-50/90 bg-stone-50/[0.04]"
+                    : "border-stone-900/15 text-stone-700 bg-stone-50/60"
+                }`}
+              >
+                {active.timeline}
+              </span>
+            </div>
+
+            {/* MIDDLE — editorial title block (flex-1, vertically centered) */}
+            <div className="relative z-10 flex-1 flex flex-col justify-center px-7 md:px-9 py-12 md:py-16">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`title-${active.roman}`}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.5, ease: [0.2, 0.7, 0.2, 1] }}
+                  className="max-w-[24ch]"
+                >
+                  <h3
+                    className={`font-funnel font-bold leading-[0.98] tracking-[-0.035em] text-[clamp(2rem,3.8vw,3.1rem)] ${
+                      active.panelInverted ? "text-stone-50" : "text-stone-900"
+                    }`}
+                  >
+                    {active.title}
+                  </h3>
+                  <p
+                    className="mt-3 text-[clamp(1rem,1.4vw,1.25rem)] leading-[1.2]"
+                    style={{
+                      fontFamily: "var(--font-newsreader), Georgia, serif",
+                      fontStyle: "italic",
+                      fontWeight: 400,
+                      color: active.panelInverted
+                        ? "#FF6600"
+                        : active.accent === "#0F0C08"
+                          ? "#1c1c1c"
+                          : active.accent,
+                    }}
+                  >
+                    — {active.italic}.
+                  </p>
+                  <p
+                    className={`mt-6 font-jakarta text-[14.5px] md:text-[15.5px] leading-[1.6] max-w-[44ch] ${
+                      active.panelInverted ? "text-stone-200/90" : "text-stone-700"
+                    }`}
+                  >
+                    {active.description}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* BOTTOM — deliverables card, naturally placed, no overlap */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`bottom-${active.roman}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.5, delay: 0.05 }}
+                className={`relative z-10 mx-7 md:mx-9 mb-7 md:mb-9 rounded-2xl border p-5 md:p-6 backdrop-blur-sm ${
+                  active.panelInverted
+                    ? "border-stone-50/20 bg-[#0F0C08]/85"
+                    : "border-stone-900/10 bg-[#FAF7F2]/95"
+                }`}
+              >
+                <p
+                  className={`font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] mb-3 flex items-center gap-2 ${
+                    active.panelInverted ? "text-stone-300" : "text-stone-500"
+                  }`}
+                >
+                  <span
+                    className="block w-1 h-1 rounded-full"
+                    style={{ background: active.accent }}
+                  />
+                  What's inside · {active.deliverableCount}
+                </p>
+                <ul className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-5">
+                  {active.deliverables.map((d, i) => (
+                    <li
+                      key={d}
+                      className={`flex items-baseline gap-2 font-jakarta text-[12.5px] ${
+                        active.panelInverted ? "text-stone-100" : "text-stone-700"
+                      }`}
+                    >
+                      <span
+                        className="font-mono-ui text-[9.5px] tabular-nums shrink-0"
+                        style={{ color: active.accent }}
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      {d}
+                    </li>
+                  ))}
+                </ul>
+
+                <div
+                  className={`pt-4 border-t flex items-center justify-between gap-4 ${
+                    active.panelInverted ? "border-stone-50/15" : "border-stone-900/10"
+                  }`}
+                >
+                  <span
+                    className={`font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.2em] ${
+                      active.panelInverted ? "text-stone-400" : "text-stone-500"
+                    }`}
+                  >
+                    {active.timeline}
+                  </span>
+                  <Link
+                    href={active.href}
+                    className={`group/exp inline-flex items-center gap-2 font-jakarta text-[11.5px] font-semibold uppercase tracking-[0.22em] cursor-pointer ${
+                      active.panelInverted ? "text-stone-50" : "text-stone-900"
+                    }`}
+                  >
+                    <span className="relative">
+                      Explore
+                      <span
+                        className={`absolute left-0 -bottom-1 h-px w-full origin-left scale-x-100 group-hover/exp:scale-x-0 transition-transform duration-400 ${
+                          active.panelInverted ? "bg-stone-50" : "bg-stone-900"
+                        }`}
+                      />
+                      <span
+                        className="absolute left-0 -bottom-1 h-px w-full origin-right scale-x-0 group-hover/exp:scale-x-100 transition-transform duration-400 delay-100"
+                        style={{ background: active.accent }}
+                      />
+                    </span>
+                    <svg
+                      width="18"
+                      height="9"
+                      viewBox="0 0 22 10"
+                      fill="none"
+                      className="group-hover/exp:translate-x-1 transition-transform"
+                    >
+                      <path
+                        d="M1 5 H 20 M 16 1 L 20 5 L 16 9"
+                        stroke="currentColor"
+                        strokeWidth="1.3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </Link>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
 
+        {/* Bottom — Calendly band */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.25 }}
-          className="mt-16 flex flex-col items-center justify-between gap-4 rounded-[2rem] border border-white/80 bg-white/80 px-6 py-6 text-center shadow-[0_24px_80px_-50px_rgba(15,23,42,0.22)] backdrop-blur-sm md:flex-row md:text-left"
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.7 }}
+          className="mt-14 md:mt-16 rounded-3xl border border-stone-900/10 bg-stone-900 text-stone-50 p-7 md:p-9 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
         >
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#FF6600]">
-              Full Capability View
+          <div className="max-w-2xl">
+            <p className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.24em] text-stone-400 mb-3">
+              Still unsure which bucket fits?
             </p>
-            <h3
-              className="mt-2 text-2xl font-black text-slate-950"
-              style={{ fontFamily: "var(--font-outfit)" }}
-            >
-              Need the complete service lineup?
+            <h3 className="font-funnel text-[clamp(1.5rem,2.4vw,2rem)] leading-[1.1] tracking-[-0.025em] font-bold text-stone-50">
+              We'll scope it with you in{" "}
+              <span
+                style={{
+                  fontFamily: "var(--font-newsreader), Georgia, serif",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  color: "#FF6600",
+                }}
+              >
+                a thirty-minute call.
+              </span>
             </h3>
-            <p className="mt-2 text-sm leading-7 text-slate-600">
-              Browse every specialization and find the right mix for your next
-              growth move.
+            <p className="mt-3 font-jakarta text-[14.5px] leading-[1.55] text-stone-300 max-w-[52ch]">
+              No discovery decks, no demo. Just a real conversation about what
+              you're building and whether we're the right fit.
             </p>
           </div>
 
           <Link
-            href="/services"
-            className="inline-flex items-center gap-3 rounded-full bg-[#FF6600] px-7 py-4 text-sm font-bold text-white shadow-xl shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1 hover:bg-orange-600"
+            href="/contact"
+            className="group relative inline-flex items-center gap-3 rounded-full bg-stone-50 text-stone-900 pl-6 pr-2 py-2 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-[0_18px_40px_-18px_rgba(255,102,0,0.55)] shrink-0"
           >
-            View All Services
-            <ArrowRight className="h-5 w-5" />
+            <span className="relative font-funnel text-[15px] font-semibold tracking-tight">
+              Book a 30-min call
+            </span>
+            <span className="relative inline-grid place-items-center w-10 h-10 rounded-full bg-[#FF6600] text-stone-900 group-hover:bg-stone-900 group-hover:text-stone-50 group-hover:rotate-[-30deg] transition-all duration-300">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                <path
+                  d="M2 12 L12 2 M5 2 L12 2 L12 9"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
           </Link>
         </motion.div>
       </div>

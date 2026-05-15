@@ -1,9 +1,19 @@
 import type { Metadata, Viewport } from "next";
 
-import { Outfit, Inter } from "next/font/google";
+import {
+  Fraunces,
+  Instrument_Sans,
+  Instrument_Serif,
+  JetBrains_Mono,
+  Funnel_Display,
+  Caprasimo,
+  Plus_Jakarta_Sans,
+  Newsreader,
+} from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { ScrollToTop } from "@/components/layout/scroll-to-top";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from "@next/third-parties/google";
@@ -12,16 +22,68 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 
 
-const outfit = Outfit({
+const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-outfit",
+  variable: "--font-fraunces",
+  axes: ["SOFT", "WONK", "opsz"],
   display: "swap",
+  style: ["normal", "italic"],
 });
 
-const inter = Inter({
+const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-instrument-sans",
   display: "swap",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  variable: "--font-instrument-serif",
+  display: "swap",
+  weight: ["400"],
+  style: ["normal", "italic"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jb-mono",
+  display: "swap",
+  weight: ["400", "500", "600"],
+});
+
+/* New display + body system — used by the hero and any section that
+   opts in via the v4-* variable names. */
+const funnelDisplay = Funnel_Display({
+  subsets: ["latin"],
+  variable: "--font-funnel-display",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const caprasimo = Caprasimo({
+  subsets: ["latin"],
+  variable: "--font-caprasimo",
+  display: "swap",
+  weight: ["400"],
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+/* New accent serif — replaces Fraunces italic across the site.
+   Slimmer, more editorial, variable optical-size axis. */
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  variable: "--font-newsreader",
+  axes: ["opsz"],
+  display: "swap",
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -164,9 +226,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${outfit.variable} ${inter.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} ${funnelDisplay.variable} ${caprasimo.variable} ${jakarta.variable} ${newsreader.variable}`}>
       <body
-        style={{ fontFamily: "var(--font-inter, 'Inter', sans-serif)" }}
+        style={{ fontFamily: "var(--font-instrument-sans), system-ui, sans-serif" }}
         className="overflow-x-hidden"
       >
         <div className="flex min-h-screen flex-col overflow-x-hidden">
@@ -174,6 +236,7 @@ export default function RootLayout({
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
+          <ScrollToTop />
         </div>
         <Analytics />
         <script

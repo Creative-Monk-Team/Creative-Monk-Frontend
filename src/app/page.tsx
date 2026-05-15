@@ -3,7 +3,6 @@ import { Hero } from "@/components/sections/hero";
 import { ClientMarquee } from "@/components/sections/client-marquee";
 import { Services } from "@/components/sections/services";
 import { Process } from "@/components/sections/process";
-import { Stats } from "@/components/sections/stats";
 import { Portfolio } from "@/components/sections/portfolio";
 import { Testimonials } from "@/components/sections/testimonials";
 import { FAQ } from "@/components/sections/faq";
@@ -123,13 +122,12 @@ export default function Home() {
       <Hero />
       <ClientMarquee />
       <Services />
-      <Stats />
       <Portfolio />
       <Process />
       <Testimonials />
       <RecentBlogs />
       <FAQ />
-      <ContactForm className="bg-white border-t border-gray-100" />
+      <ContactForm />
       <CTA />
     </>
   );

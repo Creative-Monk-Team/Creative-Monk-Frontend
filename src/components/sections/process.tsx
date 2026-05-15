@@ -1,104 +1,275 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Search, Lightbulb, Code2, Rocket } from "lucide-react";
+import { useState } from "react";
+
+/* ─── Five-stage studio process ────────────────────────────────
+   Each stage has a date marker, a real deliverable, and an
+   artefact you can actually point at. */
+const STAGES = [
+  {
+    no: "01",
+    day: "Day 0–3",
+    title: "Discovery",
+    italic: "we listen",
+    description:
+      "60-minute founder call, competitive teardown and a one-page creative brief we both sign before any meter starts running.",
+    artefact: "creative_brief.pdf",
+    accent: "#FF6600",
+  },
+  {
+    no: "02",
+    day: "Day 4–10",
+    title: "Direction",
+    italic: "we take a stance",
+    description:
+      "Two clearly opposing creative routes — not three. You pick a side; we don't hide our point of view in a neutral middle option.",
+    artefact: "route_a · route_b",
+    accent: "#0F0C08",
+  },
+  {
+    no: "03",
+    day: "Day 11–25",
+    title: "Craft",
+    italic: "we make the thing",
+    description:
+      "The identity gets built out across applications. The website lands on a staging URL you can show your co-founder on a Saturday.",
+    artefact: "staging.creativemonk.in",
+    accent: "#FF6600",
+  },
+  {
+    no: "04",
+    day: "Day 26–40",
+    title: "Polish",
+    italic: "we sweat the details",
+    description:
+      "Type kerning, micro-copy, edge cases, responsive states, accessibility passes. The hidden 50% that separates good work from great.",
+    artefact: "qa_checklist.md",
+    accent: "#4A5D3A",
+  },
+  {
+    no: "05",
+    day: "Day 41–45",
+    title: "Ship",
+    italic: "then we stay",
+    description:
+      "Launch in your timezone. First 30 days of bugs and tweaks are on us — no support tickets, just WhatsApp.",
+    artefact: "launch_postmortem.md",
+    accent: "#FF6600",
+  },
+];
 
 export function Process() {
-  const steps = [
-    {
-      num: "01",
-      icon: Search,
-      title: "Discovery & Strategy",
-      desc: "We analyze your business goals, target audience, and competitors to create a roadmap for success.",
-      color: "bg-blue-50 text-blue-600",
-    },
-    {
-      num: "02",
-      icon: Lightbulb,
-      title: "Creative Design",
-      desc: "Our designers craft beautiful, intuitive interfaces that align with your brand identity.",
-      color: "bg-orange-50 text-[#FF6600]",
-    },
-    {
-      num: "03",
-      icon: Code2,
-      title: "Development",
-      desc: "We bring designs to life with clean, scalable code optimized for speed and performance.",
-      color: "bg-orange-50 text-[#FF6600]",
-    },
-    {
-      num: "04",
-      icon: Rocket,
-      title: "Launch & Optimize",
-      desc: "After a flawless launch, we monitor data and continuously optimize for better ROI.",
-      color: "bg-purple-50 text-purple-600",
-    },
-  ];
+  const [activeIndex, setActiveIndex] = useState(0);
 
   return (
-    <section className="section-padding bg-gray-50 border-t border-gray-100 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-white opacity-40 skew-x-12 transform translate-x-20 pointer-events-none" />
+    <section
+      id="process"
+      className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden"
+      aria-label="Our process"
+    >
+      <div className="hero-grain-paper" aria-hidden />
 
-      <div className="container relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="section-label inline-block mb-3">How We Work</span>
-          <h2
-            className="text-3xl md:text-5xl font-black text-gray-900 mb-6"
-            style={{ fontFamily: "var(--font-outfit)" }}
+      <div className="container relative z-10 py-20 md:py-28">
+        {/* Header */}
+        <div className="grid grid-cols-12 gap-x-8 gap-y-8 items-end mb-14 md:mb-20">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="col-span-12 md:col-span-8"
           >
-            A Proven Process for{" "}
-            <span className="text-[#FF6600]">Digital Success</span>
-          </h2>
-          <p className="text-gray-600 text-lg leading-relaxed">
-            We don&apos;t just guess. We follow a data-driven, systematic approach to
-            ensure every project is delivered on time, on budget, and exceeds
-            expectations.
-          </p>
+            <div className="flex items-center gap-3 mb-6">
+              <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
+              <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
+                How we work
+              </span>
+            </div>
+            <h2 className="font-funnel text-stone-900 font-bold leading-[0.98] tracking-[-0.035em] text-[clamp(2.25rem,5vw,4.5rem)] max-w-[20ch]">
+              A signed brief in week one.{" "}
+              <span
+                style={{
+                  fontFamily: "var(--font-newsreader), Georgia, serif",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  color: "#1c1c1c",
+                }}
+              >
+                Live in six.
+              </span>
+            </h2>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="col-span-12 md:col-span-4"
+          >
+            <p className="font-jakarta text-[15.5px] md:text-[16.5px] leading-[1.55] text-stone-700 max-w-[42ch]">
+              No mystery phases or vague Gantt charts. Every stage has a date,
+              a deliverable and a real human you can talk to.
+            </p>
+          </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {steps.map((step, index) => (
-            <motion.div
-              key={step.num}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative group"
+        {/* Connected horizontal timeline */}
+        <div className="relative">
+          {/* base connecting line */}
+          <div
+            aria-hidden
+            className="absolute left-0 right-0 top-[26px] h-px bg-stone-900/15 hidden md:block"
+          />
+          {/* progress line up to active step */}
+          <motion.div
+            aria-hidden
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: (activeIndex + 1) / STAGES.length }}
+            transition={{ duration: 0.5, ease: [0.2, 0.7, 0.2, 1] }}
+            style={{ transformOrigin: "left" }}
+            className="absolute left-0 right-0 top-[26px] h-[2px] bg-[#FF6600] hidden md:block z-10"
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-y-12 md:gap-x-3 lg:gap-x-4">
+            {STAGES.map((stage, i) => {
+              const isActive = i <= activeIndex;
+              const isCurrent = i === activeIndex;
+              return (
+                <button
+                  key={stage.no}
+                  type="button"
+                  onMouseEnter={() => setActiveIndex(i)}
+                  onClick={() => setActiveIndex(i)}
+                  aria-pressed={isCurrent}
+                  className="group relative text-left cursor-pointer"
+                >
+                  {/* Big node on the timeline */}
+                  <div className="relative flex items-center justify-start mb-7 md:justify-start">
+                    <motion.span
+                      animate={{
+                        scale: isCurrent ? 1.15 : 1,
+                        background: isCurrent
+                          ? "#FF6600"
+                          : isActive
+                            ? "#FF6600"
+                            : "#FAF7F2",
+                        borderColor: isActive ? "#FF6600" : "rgba(15,12,8,0.15)",
+                      }}
+                      transition={{ duration: 0.4 }}
+                      className="relative z-20 grid place-items-center w-[52px] h-[52px] rounded-full border-2 shadow-[0_0_0_6px_rgba(250,247,242,1)]"
+                    >
+                      <motion.span
+                        animate={{
+                          color: isActive ? "#FAF7F2" : "#1c1c1c",
+                          opacity: isActive ? 1 : 0.4,
+                        }}
+                        transition={{ duration: 0.4 }}
+                        className="font-funnel text-[15px] font-bold tracking-tight tabular-nums"
+                      >
+                        {stage.no}
+                      </motion.span>
+                      {/* Pulse ring when current */}
+                      {isCurrent && (
+                        <motion.span
+                          aria-hidden
+                          initial={{ scale: 0.8, opacity: 0.6 }}
+                          animate={{ scale: 1.6, opacity: 0 }}
+                          transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }}
+                          className="absolute inset-0 rounded-full border-2 border-[#FF6600]"
+                        />
+                      )}
+                    </motion.span>
+                  </div>
+
+                  {/* Stage card */}
+                  <motion.div
+                    animate={{
+                      borderColor: isCurrent ? "#FF6600" : "rgba(15,12,8,0.10)",
+                      backgroundColor: isCurrent ? "#FFFFFF" : "#FAF7F2",
+                      y: isCurrent ? -3 : 0,
+                    }}
+                    transition={{ duration: 0.4 }}
+                    className="rounded-2xl border p-6 md:p-7 transition-shadow duration-500 group-hover:shadow-[0_18px_36px_-22px_rgba(15,12,8,0.18)]"
+                  >
+                    {/* day marker */}
+                    <p
+                      className="font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] mb-3 transition-colors duration-300"
+                      style={{ color: isCurrent ? stage.accent : "#a8a29e" }}
+                    >
+                      {stage.day}
+                    </p>
+
+                    {/* title */}
+                    <h3 className="font-funnel font-bold tracking-[-0.025em] leading-[1.1] text-[clamp(1.2rem,1.6vw,1.45rem)] text-stone-900">
+                      {stage.title}
+                      <span
+                        className="block mt-1 text-[0.72em]"
+                        style={{
+                          fontFamily: "var(--font-newsreader), Georgia, serif",
+                          fontStyle: "italic",
+                          fontWeight: 400,
+                          color: "#6b6b70",
+                        }}
+                      >
+                        — {stage.italic}.
+                      </span>
+                    </h3>
+
+                    <p className="mt-4 font-jakarta text-[13.5px] leading-[1.6] text-stone-600">
+                      {stage.description}
+                    </p>
+
+                    {/* Artefact chip */}
+                    <div className="mt-5 pt-4 border-t border-stone-900/10">
+                      <p className="flex items-center gap-2 font-mono-ui text-[10.5px] uppercase tracking-[0.18em] text-stone-500">
+                        <span
+                          className="inline-block h-1 w-1 rounded-full"
+                          style={{ background: stage.accent }}
+                        />
+                        {stage.artefact}
+                      </p>
+                    </div>
+                  </motion.div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Bottom stats strip */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7 }}
+          className="mt-14 md:mt-16 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"
+        >
+          {[
+            { value: "45", suffix: "days", label: "Average engagement" },
+            { value: "30", suffix: "days", label: "Free post-launch support" },
+            { value: "0", suffix: "missed", label: "Deadlines, last 24 months" },
+            { value: "<4hr", suffix: "", label: "Reply SLA across stages" },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="rounded-2xl border border-stone-900/10 bg-stone-50 p-5 md:p-6 hover:border-[#FF6600]/40 hover:bg-white transition-all duration-300 cursor-default"
             >
-              {/* Connection Line (Desktop) */}
-              {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-10 left-[60%] w-[80%] h-[2px] border-t-2 border-dashed border-gray-300 z-0" />
-              )}
-
-              <div className="relative z-10 bg-white rounded-2xl p-8 shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 h-full">
-                <div
-                  className="absolute -top-5 -right-5 text-6xl font-black text-gray-100 opacity-50 select-none group-hover:text-orange-50 transition-colors duration-300"
-                  style={{ fontFamily: "var(--font-outfit)" }}
-                >
-                  {step.num}
-                </div>
-
-                <div
-                  className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110 ${step.color}`}
-                >
-                  <step.icon className="h-6 w-6" />
-                </div>
-
-                <h3
-                  className="text-xl font-bold text-gray-900 mb-3"
-                  style={{ fontFamily: "var(--font-outfit)" }}
-                >
-                  {step.title}
-                </h3>
-
-                <p className="text-gray-500 text-sm leading-relaxed">
-                  {step.desc}
-                </p>
-              </div>
-            </motion.div>
+              <p className="font-funnel font-bold tracking-[-0.025em] text-stone-900 leading-none text-[clamp(1.7rem,2.4vw,2.1rem)]">
+                {s.value}
+                {s.suffix && (
+                  <span className="ml-1.5 font-jakarta text-[12px] font-semibold uppercase tracking-[0.18em] text-stone-500 align-middle normal-case">
+                    {s.suffix}
+                  </span>
+                )}
+              </p>
+              <p className="mt-3 font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                {s.label}
+              </p>
+            </div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
