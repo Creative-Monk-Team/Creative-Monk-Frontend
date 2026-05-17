@@ -21,6 +21,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SmoothScrollProvider } from "@/components/motion/smooth-scroll-provider";
 import { CursorHalo } from "@/components/motion/cursor-halo";
 import { SiteLoader } from "@/components/site/loader";
+import { EnquiryPopup } from "@/components/site/enquiry-popup";
 
 
 
@@ -245,6 +246,7 @@ export default function RootLayout({
           <Footer />
           <ScrollToTop />
         </div>
+        <EnquiryPopup />
         <Analytics />
         <script
           type="application/ld+json"
