@@ -213,12 +213,6 @@ function StageRow({ stage, index }: { stage: Stage; index: number }) {
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes process-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50%      { opacity: 0.4; transform: scale(1.4); }
-        }
-      `}</style>
     </motion.li>
   );
 }

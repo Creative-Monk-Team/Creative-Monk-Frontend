@@ -3,16 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Swiper, SwiperSlide, type SwiperRef } from "swiper/react";
+import { EffectFade, Autoplay, Keyboard } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/effect-fade";
 import { homepageContentApi } from "@/lib/api";
 import { Magnetic } from "@/components/motion/magnetic";
 import { MarqueeStrip } from "@/components/motion/marquee-strip";
 
-/* ─── Hero v5 — "Studio Press" ─────────────────────────────────
-   Magazine-cover composition for the homepage. The hero is a
-   designed object: asymmetric grid, outline-stroke typography on
-   the middle headline line, a rotating circular stamp, edition
-   marks like a print issue, an inline numbered service index, and
-   a masthead-style stats ribbon. The aesthetic IS the proof. */
+/* ─── Hero v6 — "The Reel" ──────────────────────────────────────
+   The hero IS the work. Full-bleed Swiper carousel of project visuals
+   slow-pans behind massive editorial typography. Live "Now showing"
+   caption + slide counter on the right edge sync to the active slide.
+   Cursor-tracking radial glow lights the page. The aesthetic and the
+   proof in the same frame — no clicks required to know we can design. */
 
 type BentoStat = { value: number | string; suffix?: string; label: string; animate?: boolean };
 type HeroPayload = {
@@ -28,6 +32,65 @@ type HeroPayload = {
   bentoStats?: BentoStat[];
   marquee?: string[];
 };
+
+/* The featured work reel — five slides, hand-picked for agency
+   aesthetic. Real client wiring lands later via the portfolio API. */
+type ReelItem = {
+  client: string;
+  discipline: string;
+  outcome: string;
+  year: string;
+  image: string;
+  accent: string;
+};
+
+const FEATURED_REEL: ReelItem[] = [
+  {
+    client: "Hive Management",
+    discipline: "Brand · Web · Performance",
+    outcome: "+312% qualified leads · 90 days",
+    year: "2024",
+    image:
+      "https://images.unsplash.com/photo-1561070791-2526d30994b8?w=2400&q=85&auto=format&fit=crop",
+    accent: "#FF6600",
+  },
+  {
+    client: "Chatha Foods",
+    discipline: "Identity · Packaging",
+    outcome: "14 SKUs onto DMart shelves",
+    year: "2024",
+    image:
+      "https://images.unsplash.com/photo-1542435503-956c469947f6?w=2400&q=85&auto=format&fit=crop",
+    accent: "#E5B04A",
+  },
+  {
+    client: "Woodhouse Café",
+    discipline: "Brand · Social · Photography",
+    outcome: "+38K Instagram in 90 days",
+    year: "2024",
+    image:
+      "https://images.unsplash.com/photo-1559028012-481c04fa702d?w=2400&q=85&auto=format&fit=crop",
+    accent: "#4A5D3A",
+  },
+  {
+    client: "Brightlight Solar",
+    discipline: "Web · SEO · Content",
+    outcome: "3× organic search traffic",
+    year: "2025",
+    image:
+      "https://images.unsplash.com/photo-1551434678-e076c223a692?w=2400&q=85&auto=format&fit=crop",
+    accent: "#3E63DD",
+  },
+  {
+    client: "Triple Six Beer",
+    discipline: "Brand · Packaging · Motion",
+    outcome: "Category re-launch, 4 markets",
+    year: "2025",
+    image:
+      "https://images.unsplash.com/photo-1558655146-d09347e92766?w=2400&q=85&auto=format&fit=crop",
+    accent: "#FF6600",
+  },
+];
 
 const FALLBACK_HERO: Required<Omit<HeroPayload, "bentoStats" | "marquee">> & {
   bentoStats: BentoStat[];
@@ -61,13 +124,6 @@ const FALLBACK_HERO: Required<Omit<HeroPayload, "bentoStats" | "marquee">> & {
   ],
 };
 
-const INDEX_LINKS = [
-  { num: "01", label: "Identity",  href: "/services/branding" },
-  { num: "02", label: "Web",       href: "/services/web-development" },
-  { num: "03", label: "Growth",    href: "/services/digital-marketing" },
-  { num: "04", label: "Motion",    href: "/services" },
-];
-
 function useHero() {
   const [data, setData] = useState(FALLBACK_HERO);
   useEffect(() => {
@@ -95,11 +151,11 @@ function useHero() {
 
 export function Hero() {
   const data = useHero();
-  const sectionRef = useRef<HTMLElement | null>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const swiperRef = useRef<SwiperRef | null>(null);
 
   return (
     <section
-      ref={sectionRef}
       className="relative isolate overflow-hidden flex flex-col"
       style={{
         minHeight: "100vh",
@@ -107,454 +163,125 @@ export function Hero() {
         color: "var(--site-fg, #F5F1E8)",
       }}
     >
-      {/* Subtle paper texture — fixed dot pattern + edge vignette */}
-      <PaperTexture />
+      {/* ── Background reel ── */}
+      <Swiper
+        ref={swiperRef}
+        modules={[EffectFade, Autoplay, Keyboard]}
+        effect="fade"
+        fadeEffect={{ crossFade: true }}
+        autoplay={{ delay: 6000, disableOnInteraction: false }}
+        loop
+        keyboard={{ enabled: true }}
+        speed={1100}
+        onSlideChange={(swiper) => setActiveIdx(swiper.realIndex)}
+        className="!absolute !inset-0 !w-full !h-full pointer-events-none"
+        style={{ zIndex: 0 }}
+      >
+        {FEATURED_REEL.map((item) => (
+          <SwiperSlide key={item.client}>
+            <div className="relative w-full h-full overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={item.image}
+                alt={`${item.client} — ${item.discipline}`}
+                className="absolute inset-0 w-full h-full object-cover ken-burns"
+                style={{ filter: "saturate(0.92) contrast(1.05)" }}
+                draggable={false}
+              />
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
 
+      {/* ── Overlays (stacked z-order) ─────────────────────────────
+         1. dark vignette to make text readable
+         2. orange-tinted gradient from the active slide's accent
+         3. dot grid texture
+         4. cursor-tracking radial glow                              */}
+      <ReelOverlay activeIdx={activeIdx} />
+
+      {/* ── Status strip ── */}
       <StatusStrip status={data.status} />
 
-      {/* Stage */}
-      <div className="relative z-10 flex-1 flex items-stretch">
-        <div className="container w-full py-12 lg:py-16 flex-1 flex flex-col">
-
-          {/* Editorial top row — Nº mark left, decorative rules center, stamp right */}
-          <div className="grid grid-cols-12 gap-x-8 items-start">
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.1 }}
-              className="col-span-12 md:col-span-7 lg:col-span-6"
-            >
-              <EditionMark />
-            </motion.div>
-
-            <div className="hidden md:flex md:col-span-5 lg:col-span-6 items-start justify-end">
-              <RotatingStamp />
-            </div>
-          </div>
-
-          {/* Big composition area — asymmetric: headline cols 1-7,
-              editorial sidebar with pull quote cols 8-12 */}
-          <div className="flex-1 grid grid-cols-12 gap-x-8 items-center mt-8 lg:mt-0">
-            <div className="col-span-12 lg:col-span-7 relative">
-              {/* Floating ✦ — top-left, decorative */}
-              <motion.span
-                aria-hidden
-                initial={{ opacity: 0, rotate: -20, scale: 0.6 }}
-                animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                transition={{ duration: 0.9, delay: 0.4, ease: [0.2, 0.7, 0.2, 1] }}
-                className="absolute -left-1 -top-6 select-none pointer-events-none"
-                style={{
-                  fontFamily: "var(--font-newsreader), Georgia, serif",
-                  fontStyle: "italic",
-                  fontSize: 32,
-                  color: "var(--site-accent)",
-                  textShadow: "0 0 24px rgba(255,102,0,0.5)",
-                  lineHeight: 1,
-                }}
-              >
-                ✦
-              </motion.span>
-
+      {/* ── Stage ── */}
+      <div className="relative z-10 flex-1 flex items-center">
+        <div className="container w-full py-10 lg:py-12">
+          <div className="grid grid-cols-12 gap-x-8 gap-y-10 items-end">
+            {/* LEFT — type column */}
+            <div className="col-span-12 lg:col-span-8">
+              <Eyebrow text={data.eyebrow} />
               <Statement
                 lineA={data.lineA}
                 lineB={data.lineB}
                 accent={data.accent}
                 lineC={data.lineC}
               />
-            </div>
 
-            {/* Editorial sidebar — pull quote + vertical spine */}
-            <div className="hidden lg:flex col-span-5 flex-col gap-8 pl-6">
-              <PullQuote />
-              <FeaturedTag />
-            </div>
-          </div>
+              <motion.p
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.85, ease: [0.2, 0.7, 0.2, 1] }}
+                className="mt-7 max-w-[52ch]"
+                style={{
+                  fontSize: "clamp(15px, 1.15vw, 17.5px)",
+                  lineHeight: 1.55,
+                  color: "rgba(245,241,232,0.78)",
+                  textShadow: "0 1px 14px rgba(0,0,0,0.4)",
+                }}
+              >
+                {data.lede}
+              </motion.p>
 
-          {/* Bottom slab — promise + CTAs + index */}
-          <div className="grid grid-cols-12 gap-x-8 gap-y-10 mt-10 lg:mt-12">
-            {/* Promise + CTAs */}
-            <div className="col-span-12 lg:col-span-7">
               <motion.div
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.85, delay: 0.85, ease: [0.2, 0.7, 0.2, 1] }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <span aria-hidden style={{ display: "block", height: 1, width: 24, background: "var(--site-accent)" }} />
-                  <span className="site-eyebrow">The promise</span>
-                </div>
-                <p
-                  style={{
-                    fontSize: "clamp(15.5px, 1.2vw, 17.5px)",
-                    lineHeight: 1.55,
-                    color: "var(--site-fg-mute)",
-                    maxWidth: "52ch",
-                  }}
-                >
-                  {data.lede}
-                </p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.85, delay: 1.0, ease: [0.2, 0.7, 0.2, 1] }}
-                className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-4"
+                transition={{ duration: 0.9, delay: 1.0, ease: [0.2, 0.7, 0.2, 1] }}
+                className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4"
               >
                 <PrimaryCta primary={data.primary} />
                 <SecondaryCta secondary={data.secondary} />
               </motion.div>
             </div>
 
-            {/* Service Index — right column, numbered */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.85, delay: 1.1, ease: [0.2, 0.7, 0.2, 1] }}
-              className="col-span-12 lg:col-span-5 lg:pl-6 lg:border-l"
-              style={{ borderColor: "var(--site-line)" }}
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <span aria-hidden style={{ display: "block", height: 1, width: 24, background: "var(--site-accent)" }} />
-                <span className="site-eyebrow">Index — services</span>
-              </div>
-              <ul className="space-y-1.5">
-                {INDEX_LINKS.map((item) => (
-                  <IndexRow key={item.num} item={item} />
-                ))}
-              </ul>
-            </motion.div>
+            {/* RIGHT — reel meta column */}
+            <div className="hidden lg:flex col-span-4 flex-col items-end gap-8">
+              <ReelCounter
+                activeIdx={activeIdx}
+                total={FEATURED_REEL.length}
+                onJump={(i) => swiperRef.current?.swiper.slideToLoop(i)}
+              />
+            </div>
           </div>
+
+          {/* "Now showing" caption row — full width, anchored to the bottom */}
+          <NowShowing item={FEATURED_REEL[activeIdx]} />
         </div>
       </div>
 
-      {/* Masthead stats ribbon */}
       <StatsRibbon stats={data.bentoStats} />
-
       <BottomMarquee items={data.marquee} />
     </section>
   );
 }
 
-/* ─── PullQuote — testimonial fragment in the right sidebar ─── */
-function PullQuote() {
-  return (
-    <motion.figure
-      initial={{ opacity: 0, x: 18 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.95, delay: 0.7, ease: [0.2, 0.7, 0.2, 1] }}
-      className="relative site-glass overflow-hidden"
-      style={{
-        borderRadius: 14,
-        padding: "1.25rem 1.4rem",
-      }}
-    >
-      <span
-        aria-hidden
-        className="absolute top-0 left-6 right-6"
-        style={{
-          height: 1,
-          background: "linear-gradient(90deg, transparent, var(--site-accent) 50%, transparent)",
-        }}
-      />
-
-      <div className="flex items-center gap-2 mb-4">
-        <span aria-hidden style={{ display: "block", height: 1, width: 18, background: "var(--site-accent)" }} />
-        <span className="site-eyebrow">Pull quote</span>
-      </div>
-
-      <blockquote
-        style={{
-          fontFamily: "var(--font-newsreader), Georgia, serif",
-          fontStyle: "italic",
-          fontWeight: 500,
-          fontSize: "clamp(15px, 1.2vw, 18px)",
-          lineHeight: 1.45,
-          color: "var(--site-fg)",
-        }}
-      >
-        <span style={{ color: "var(--site-accent)" }}>“</span>
-        We came to Monk thinking we needed a logo. We left with a category-of-one brand — and{" "}
-        <span style={{ color: "var(--site-accent)" }}>+312% qualified leads</span> inside 90 days.
-        <span style={{ color: "var(--site-accent)" }}>”</span>
-      </blockquote>
-
-      <figcaption className="mt-4 pt-3 flex items-center justify-between" style={{ borderTop: "1px dashed var(--site-line)" }}>
-        <div className="flex items-center gap-2.5">
-          <span
-            className="inline-grid place-items-center site-mono"
-            style={{
-              width: 28, height: 28, borderRadius: "50%",
-              background: "var(--site-accent)",
-              color: "#0A0807",
-              fontSize: 10,
-              fontWeight: 700,
-            }}
-          >
-            AS
-          </span>
-          <div className="leading-none">
-            <p className="site-display" style={{ fontSize: 12.5, letterSpacing: "-0.01em" }}>
-              Aakshat Sahni
-            </p>
-            <p className="site-mono mt-1" style={{ fontSize: 9.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--site-fg-mute)" }}>
-              CEO · Hive Management
-            </p>
-          </div>
-        </div>
-        <Link
-          href="/case-studies"
-          data-cursor="link"
-          className="site-mono group"
-          style={{
-            fontSize: 9.5,
-            letterSpacing: "0.2em",
-            textTransform: "uppercase",
-            color: "var(--site-accent)",
-          }}
-        >
-          More
-          <span aria-hidden className="ml-1 inline-block group-hover:translate-x-0.5 transition-transform">→</span>
-        </Link>
-      </figcaption>
-    </motion.figure>
-  );
-}
-
-/* ─── FeaturedTag — small "currently shipping" tag below quote ── */
-function FeaturedTag() {
+/* ─── Eyebrow ────────────────────────────────────────────────── */
+function Eyebrow({ text }: { text: string }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 14 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.95, delay: 0.85, ease: [0.2, 0.7, 0.2, 1] }}
-      className="flex items-center justify-between px-4 py-3"
-      style={{
-        border: "1px dashed var(--site-line-strong)",
-        borderRadius: 10,
-      }}
+      transition={{ duration: 0.7, delay: 0.15 }}
+      className="flex items-center gap-3 mb-7"
     >
-      <div className="flex items-center gap-3">
-        <span
-          aria-hidden
-          style={{
-            width: 7, height: 7,
-            borderRadius: "50%",
-            background: "var(--site-accent)",
-            boxShadow: "0 0 12px rgba(255,102,0,0.6)",
-            animation: "tag-pulse 1.8s ease-in-out infinite",
-          }}
-        />
-        <div className="leading-none">
-          <p
-            className="site-mono"
-            style={{
-              fontSize: 9.5,
-              letterSpacing: "0.22em",
-              textTransform: "uppercase",
-              color: "var(--site-fg-mute)",
-            }}
-          >
-            Currently shipping
-          </p>
-          <p className="site-display mt-1" style={{ fontSize: 13, letterSpacing: "-0.012em", color: "var(--site-fg)" }}>
-            Brightlight Solar · launch week
-          </p>
-        </div>
-      </div>
-      <Link
-        href="/portfolio"
-        data-cursor="link"
-        className="site-mono"
-        style={{
-          fontSize: 9.5,
-          letterSpacing: "0.2em",
-          textTransform: "uppercase",
-          color: "var(--site-accent)",
-        }}
-      >
-        Ledger ↗
-      </Link>
-      <style jsx>{`
-        @keyframes tag-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(1.3); }
-        }
-      `}</style>
+      <span aria-hidden style={{ display: "block", height: 1, width: 32, background: "var(--site-accent)" }} />
+      <span className="site-eyebrow" style={{ color: "var(--site-fg-mute)" }}>
+        {text}
+      </span>
     </motion.div>
   );
 }
 
-/* ─── Edition Mark — top-left magazine issue label ─────────── */
-function EditionMark() {
-  return (
-    <div className="flex items-baseline gap-5">
-      <span
-        className="site-mono"
-        style={{
-          fontSize: 10.5,
-          letterSpacing: "0.24em",
-          textTransform: "uppercase",
-          color: "var(--site-fg-mute)",
-        }}
-      >
-        Nº 0142
-      </span>
-      <span
-        aria-hidden
-        style={{
-          display: "inline-block",
-          height: 1,
-          width: 28,
-          background: "var(--site-accent)",
-        }}
-      />
-      <span
-        className="site-mono"
-        style={{
-          fontSize: 10.5,
-          letterSpacing: "0.24em",
-          textTransform: "uppercase",
-          color: "var(--site-fg-mute)",
-        }}
-      >
-        Edition 02
-      </span>
-      <span
-        aria-hidden
-        className="hidden sm:inline-block"
-        style={{
-          height: 1,
-          width: 28,
-          background: "var(--site-line-strong)",
-        }}
-      />
-      <span
-        className="hidden sm:inline site-mono"
-        style={{
-          fontSize: 10.5,
-          letterSpacing: "0.24em",
-          textTransform: "uppercase",
-          color: "var(--site-fg-dim)",
-        }}
-      >
-        Studio Press
-      </span>
-    </div>
-  );
-}
-
-/* ─── Rotating Stamp — the design flex ─────────────────────── */
-function RotatingStamp() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.6, rotate: -20 }}
-      animate={{ opacity: 1, scale: 1, rotate: -8 }}
-      transition={{ duration: 0.95, delay: 0.45, ease: [0.2, 0.7, 0.2, 1] }}
-      className="relative"
-      style={{ width: 124, height: 124 }}
-    >
-      {/* Slow infinite spin of the outer ring */}
-      <motion.svg
-        viewBox="0 0 200 200"
-        width="124"
-        height="124"
-        className="absolute inset-0"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
-      >
-        <defs>
-          <path
-            id="stamp-arc"
-            d="M 100, 100 m -78, 0 a 78,78 0 1,1 156,0 a 78,78 0 1,1 -156,0"
-          />
-        </defs>
-        <text
-          fill="var(--site-fg-mute)"
-          style={{
-            fontFamily: "var(--font-jb-mono), ui-monospace, monospace",
-            fontSize: 14,
-            letterSpacing: "0.35em",
-            textTransform: "uppercase",
-          }}
-        >
-          <textPath href="#stamp-arc" startOffset="0">
-            OPEN · STUDIO · ACCEPTING · Q3 · 2026 ·&nbsp;
-          </textPath>
-        </text>
-        <circle
-          cx="100"
-          cy="100"
-          r="64"
-          fill="none"
-          stroke="var(--site-line-strong)"
-          strokeDasharray="2 4"
-          strokeWidth="0.6"
-        />
-      </motion.svg>
-
-      {/* Static center — "OPEN" stamp */}
-      <div
-        className="absolute inset-0 grid place-items-center"
-        style={{ pointerEvents: "none" }}
-      >
-        <div
-          className="grid place-items-center"
-          style={{
-            width: 78,
-            height: 78,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(255,102,0,0.15) 0%, transparent 70%)",
-          }}
-        >
-          <div className="flex flex-col items-center gap-0.5">
-            <span
-              aria-hidden
-              style={{
-                fontFamily: "var(--font-newsreader), Georgia, serif",
-                fontStyle: "italic",
-                fontSize: 14,
-                color: "var(--site-accent)",
-                lineHeight: 1,
-              }}
-            >
-              ✦
-            </span>
-            <span
-              className="site-display"
-              style={{
-                fontSize: 17,
-                fontWeight: 700,
-                letterSpacing: "-0.01em",
-                color: "var(--site-accent)",
-                textShadow: "0 0 18px rgba(255,102,0,0.55)",
-                lineHeight: 1,
-              }}
-            >
-              OPEN
-            </span>
-            <span
-              className="site-mono"
-              style={{
-                fontSize: 8,
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                color: "var(--site-fg-mute)",
-                lineHeight: 1,
-                marginTop: 2,
-              }}
-            >
-              Q3 / 2026
-            </span>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-/* ─── Statement — three-line headline, mixed treatments ─────── */
+/* ─── Statement — three lines, three typographic treatments ─── */
 function Statement({
   lineA,
   lineB,
@@ -570,16 +297,16 @@ function Statement({
     <h1
       className="site-display"
       style={{
-        fontSize: "clamp(2.75rem, 7.4vw, 7rem)",
+        fontSize: "clamp(2.5rem, 6.8vw, 6.5rem)",
         letterSpacing: "-0.035em",
-        lineHeight: 0.95,
+        lineHeight: 0.96,
         fontWeight: 600,
         color: "var(--site-fg)",
+        textShadow: "0 2px 32px rgba(0,0,0,0.45)",
       }}
     >
-      {/* Line A — filled display */}
       <motion.span
-        initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
+        initial={{ opacity: 0, y: 22, filter: "blur(10px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 1.0, delay: 0.3, ease: [0.2, 0.7, 0.2, 1] }}
         className="block"
@@ -587,16 +314,15 @@ function Statement({
         {lineA}
       </motion.span>
 
-      {/* Line B — OUTLINE STROKE, the design flex */}
       <motion.span
-        initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
+        initial={{ opacity: 0, y: 22, filter: "blur(10px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 1.0, delay: 0.45, ease: [0.2, 0.7, 0.2, 1] }}
         className="block"
         style={{
           color: "transparent",
           WebkitTextStroke: "1.4px var(--site-fg)",
-          // @ts-expect-error — vendor prefix not in type
+          // @ts-expect-error - vendor
           textStroke: "1.4px var(--site-fg)",
           letterSpacing: "-0.02em",
           textTransform: "uppercase",
@@ -605,9 +331,8 @@ function Statement({
         {lineB}
       </motion.span>
 
-      {/* Line C — italic Newsreader, brand orange */}
       <motion.span
-        initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
+        initial={{ opacity: 0, y: 22, filter: "blur(10px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 1.0, delay: 0.6, ease: [0.2, 0.7, 0.2, 1] }}
         className="block"
@@ -656,55 +381,297 @@ function Statement({
   );
 }
 
-/* ─── Index Row — hoverable numbered service link ──────────── */
-function IndexRow({ item }: { item: { num: string; label: string; href: string } }) {
+/* ─── ReelOverlay — vignette + accent wash + dot grid + glow ── */
+function ReelOverlay({ activeIdx }: { activeIdx: number }) {
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const accent = FEATURED_REEL[activeIdx]?.accent || "#FF6600";
+
+  // Cursor-tracking radial glow
+  useEffect(() => {
+    const el = overlayRef.current;
+    if (!el) return;
+    const isTouch =
+      typeof window !== "undefined" &&
+      (window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window);
+    if (isTouch) return;
+
+    let mx = window.innerWidth / 2;
+    let my = window.innerHeight / 2;
+    let cx = mx;
+    let cy = my;
+    let raf = 0;
+
+    function onMove(e: MouseEvent) {
+      mx = e.clientX;
+      my = e.clientY;
+    }
+    function tick() {
+      cx += (mx - cx) * 0.08;
+      cy += (my - cy) * 0.08;
+      if (overlayRef.current) {
+        overlayRef.current.style.setProperty("--gx", `${cx}px`);
+        overlayRef.current.style.setProperty("--gy", `${cy}px`);
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    window.addEventListener("mousemove", onMove);
+    raf = requestAnimationFrame(tick);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
   return (
-    <li>
-      <Link
-        href={item.href}
-        data-cursor="link"
-        className="group flex items-center justify-between py-2.5 transition-colors"
-        style={{ borderBottom: "1px dashed var(--site-line)" }}
+    <>
+      {/* 1. Dark vignette — lighter on the right so the image breathes,
+              stronger on the left for type contrast. */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 1,
+          background:
+            "linear-gradient(95deg, rgba(10,8,7,0.88) 0%, rgba(10,8,7,0.72) 30%, rgba(10,8,7,0.32) 60%, rgba(10,8,7,0.18) 100%), linear-gradient(180deg, rgba(10,8,7,0.45) 0%, transparent 25%, rgba(10,8,7,0.70) 100%)",
+        }}
+      />
+
+      {/* 2. Accent wash — tinted with the active slide's accent */}
+      <motion.div
+        key={accent}
+        aria-hidden
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.18 }}
+        transition={{ duration: 1.2 }}
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 2,
+          background: `radial-gradient(ellipse 70% 60% at 100% 0%, ${accent}88, transparent 60%)`,
+        }}
+      />
+
+      {/* 3. Dot-grid texture — soft, masked center-out */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 3,
+          backgroundImage:
+            "radial-gradient(rgba(245,241,232,0.10) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+          opacity: 0.45,
+          maskImage:
+            "radial-gradient(ellipse 80% 80% at 50% 60%, black 30%, transparent 90%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 80% 80% at 50% 60%, black 30%, transparent 90%)",
+        }}
+      />
+
+      {/* 4. Cursor-tracking radial glow */}
+      <div
+        ref={overlayRef}
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 4,
+          background:
+            "radial-gradient(circle 360px at var(--gx, 50%) var(--gy, 50%), rgba(255,102,0,0.10), transparent 70%)",
+          mixBlendMode: "screen",
+        }}
+      />
+    </>
+  );
+}
+
+/* ─── ReelCounter — right edge: 01/05 + dot navigation ───── */
+function ReelCounter({
+  activeIdx,
+  total,
+  onJump,
+}: {
+  activeIdx: number;
+  total: number;
+  onJump: (i: number) => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 16 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.9, delay: 0.7 }}
+      className="flex flex-col items-end gap-5 site-glass px-5 py-5"
+      style={{ borderRadius: 14, minWidth: 220 }}
+    >
+      <div className="flex items-baseline gap-3 site-mono" style={{ color: "var(--site-fg-mute)" }}>
+        <span
+          className="site-display"
+          style={{
+            fontSize: "clamp(2.4rem, 3.6vw, 3.2rem)",
+            fontWeight: 600,
+            letterSpacing: "-0.03em",
+            color: "var(--site-fg)",
+            lineHeight: 0.85,
+          }}
+        >
+          {String(activeIdx + 1).padStart(2, "0")}
+        </span>
+        <span style={{ fontSize: 12, letterSpacing: "0.22em" }}>/</span>
+        <span style={{ fontSize: 12, letterSpacing: "0.22em" }}>
+          {String(total).padStart(2, "0")}
+        </span>
+      </div>
+
+      <span
+        className="site-eyebrow"
+        style={{ color: "var(--site-fg-mute)" }}
       >
-        <span className="flex items-baseline gap-4">
-          <span
+        Selected work · the reel
+      </span>
+
+      <div className="flex items-center gap-1.5 mt-1">
+        {Array.from({ length: total }).map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => onJump(i)}
+            aria-label={`Show slide ${i + 1}`}
+            data-cursor="link"
+            className="transition-all"
+            style={{
+              width: i === activeIdx ? 28 : 8,
+              height: 3,
+              borderRadius: 2,
+              background:
+                i === activeIdx ? "var(--site-accent)" : "rgba(245,241,232,0.22)",
+              boxShadow:
+                i === activeIdx ? "0 0 12px rgba(255,102,0,0.6)" : "none",
+              cursor: "pointer",
+              border: "none",
+            }}
+          />
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── NowShowing — bottom-anchored live caption ────────────── */
+function NowShowing({ item }: { item: ReelItem }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.95, delay: 1.2 }}
+      className="mt-12 flex items-start justify-between gap-6 flex-wrap"
+      style={{ borderTop: "1px solid rgba(245,241,232,0.12)", paddingTop: 18 }}
+    >
+      <div className="flex items-start gap-5">
+        <span
+          aria-hidden
+          style={{
+            display: "inline-block",
+            marginTop: 6,
+            width: 7,
+            height: 7,
+            borderRadius: "50%",
+            background: "var(--site-accent)",
+            boxShadow: "0 0 10px rgba(255,102,0,0.7)",
+            animation: "reel-pulse 1.6s ease-in-out infinite",
+          }}
+        />
+        <div>
+          <p
             className="site-mono"
             style={{
-              fontSize: 11,
-              letterSpacing: "0.18em",
-              color: "var(--site-fg-dim)",
-              transition: "color 240ms ease",
+              fontSize: 10.5,
+              letterSpacing: "0.24em",
+              textTransform: "uppercase",
+              color: "var(--site-fg-mute)",
             }}
           >
-            {item.num}
-          </span>
-          <span
-            className="site-display"
+            Now showing
+          </p>
+          <motion.p
+            key={`${item.client}-name`}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55 }}
+            className="site-display mt-1"
             style={{
-              fontSize: "clamp(15px, 1.3vw, 17px)",
+              fontSize: "clamp(17px, 1.6vw, 22px)",
               letterSpacing: "-0.018em",
               color: "var(--site-fg)",
-              transition: "color 240ms ease",
             }}
           >
-            <span className="transition-all group-hover:tracking-[0.02em]">
-              {item.label}
+            {item.client}{" "}
+            <span
+              style={{
+                fontFamily: "var(--font-newsreader), Georgia, serif",
+                fontStyle: "italic",
+                fontWeight: 500,
+                color: "var(--site-fg-mute)",
+                fontSize: "0.82em",
+              }}
+            >
+              · {item.discipline}
             </span>
-          </span>
+          </motion.p>
+        </div>
+      </div>
+
+      <motion.div
+        key={`${item.client}-meta`}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, delay: 0.1 }}
+        className="flex items-center gap-5 ml-auto"
+      >
+        <span
+          className="site-mono"
+          style={{
+            fontSize: 11,
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+            color: "var(--site-accent)",
+          }}
+        >
+          {item.outcome}
         </span>
         <span
           aria-hidden
-          className="inline-flex items-center justify-center transition-all group-hover:text-[var(--site-accent)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
           style={{
-            color: "var(--site-fg-dim)",
+            display: "inline-block",
+            width: 1,
+            height: 16,
+            background: "rgba(245,241,232,0.2)",
+          }}
+        />
+        <span
+          className="site-mono"
+          style={{
+            fontSize: 11,
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            color: "var(--site-fg-mute)",
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M2 12 L12 2 M5 2 L12 2 L12 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          {item.year}
         </span>
-      </Link>
-    </li>
+        <Link
+          href="/portfolio"
+          data-cursor="link"
+          className="site-mono group inline-flex items-center gap-1.5"
+          style={{
+            fontSize: 11,
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            color: "var(--site-fg)",
+          }}
+        >
+          Case study
+          <span aria-hidden className="group-hover:translate-x-1 transition-transform">↗</span>
+        </Link>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -713,7 +680,11 @@ function StatusStrip({ status }: { status: string }) {
   return (
     <div
       className="relative z-10 shrink-0"
-      style={{ borderBottom: "1px solid var(--site-line)", background: "rgba(10,8,7,0.65)", backdropFilter: "blur(10px)" }}
+      style={{
+        borderBottom: "1px solid rgba(245,241,232,0.10)",
+        background: "rgba(10,8,7,0.55)",
+        backdropFilter: "blur(10px)",
+      }}
     >
       <div className="container flex items-center justify-between gap-6 py-3.5 site-eyebrow" style={{ color: "var(--site-fg-mute)" }}>
         <span className="flex items-center gap-2.5">
@@ -724,7 +695,7 @@ function StatusStrip({ status }: { status: string }) {
               borderRadius: "50%",
               background: "#30A46C",
               boxShadow: "0 0 10px rgba(48,164,108,0.7)",
-              animation: "site-pulse 1.6s ease-in-out infinite",
+              animation: "site-status-pulse 1.6s ease-in-out infinite",
             }}
           />
           {status}
@@ -736,28 +707,23 @@ function StatusStrip({ status }: { status: string }) {
           Replies inside 4 hrs
         </span>
       </div>
-      <style jsx>{`
-        @keyframes site-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.55; transform: scale(1.25); }
-        }
-      `}</style>
     </div>
   );
 }
 
-/* ─── Stats Ribbon — masthead, monospace ───────────────────── */
+/* ─── Stats Ribbon ─────────────────────────────────────────── */
 function StatsRibbon({ stats }: { stats: BentoStat[] }) {
   return (
     <div
       className="relative z-10 shrink-0"
       style={{
-        borderTop: "1px solid var(--site-line)",
-        borderBottom: "1px solid var(--site-line)",
-        background: "rgba(245,241,232,0.02)",
+        borderTop: "1px solid rgba(245,241,232,0.10)",
+        borderBottom: "1px solid rgba(245,241,232,0.10)",
+        background: "rgba(10,8,7,0.65)",
+        backdropFilter: "blur(10px)",
       }}
     >
-      <div className="container py-4 flex items-center justify-between gap-x-6 gap-y-2 flex-wrap">
+      <div className="container py-3.5 flex items-center justify-between gap-x-6 gap-y-2 flex-wrap">
         {stats.map((s, i) => (
           <div key={s.label} className="flex items-center gap-2.5">
             <span
@@ -773,7 +739,7 @@ function StatsRibbon({ stats }: { stats: BentoStat[] }) {
             <span
               className="site-display admin-tnum"
               style={{
-                fontSize: "clamp(14px, 1vw, 16.5px)",
+                fontSize: "clamp(13px, 1vw, 16px)",
                 letterSpacing: "-0.012em",
                 color: "var(--site-accent)",
                 fontWeight: 600,
@@ -794,7 +760,7 @@ function StatsRibbon({ stats }: { stats: BentoStat[] }) {
               {s.label}
             </span>
             {i < stats.length - 1 ? (
-              <span aria-hidden className="hidden md:inline pl-3" style={{ color: "var(--site-line-strong)" }}>
+              <span aria-hidden className="hidden md:inline pl-3" style={{ color: "rgba(245,241,232,0.18)" }}>
                 ─
               </span>
             ) : null}
@@ -842,37 +808,6 @@ function Counter({ to }: { to: number }) {
     return () => io.disconnect();
   }, [to]);
   return <span ref={ref}>{val}</span>;
-}
-
-/* ─── Paper Texture — dot grid + vignette ──────────────────── */
-function PaperTexture() {
-  return (
-    <>
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage:
-            "radial-gradient(rgba(245,241,232,0.04) 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
-          backgroundPosition: "-1px -1px",
-          opacity: 0.5,
-          maskImage:
-            "radial-gradient(ellipse 70% 80% at 50% 50%, black 30%, transparent 90%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 70% 80% at 50% 50%, black 30%, transparent 90%)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 60% at 90% 30%, rgba(255,102,0,0.10), transparent 60%), radial-gradient(ellipse 80% 60% at 10% 90%, rgba(255,102,0,0.05), transparent 60%)",
-        }}
-      />
-    </>
-  );
 }
 
 /* ─── CTAs ───────────────────────────────────────────────────── */
@@ -951,7 +886,10 @@ function BottomMarquee({ items }: { items: string[] }) {
   return (
     <div
       className="relative z-10 shrink-0"
-      style={{ borderTop: "1px solid var(--site-line)", borderBottom: "1px solid var(--site-line)", background: "var(--site-bg-soft)" }}
+      style={{
+        borderTop: "1px solid rgba(245,241,232,0.10)",
+        background: "var(--site-bg-soft)",
+      }}
     >
       <MarqueeStrip duration={55}>
         {items.map((item, i) => (
