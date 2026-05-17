@@ -1,39 +1,97 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  Briefcase,
+  ChevronRight,
+  ExternalLink,
+  FileText,
+  Gauge,
+  Globe,
+  Image as ImageIcon,
+  LayoutTemplate,
+  LogOut,
+  Menu,
+  MessageSquareMore,
+  Settings,
+  Star,
+} from "lucide-react";
+import { Toaster } from "sonner";
 import { adminApi } from "@/lib/api";
 import {
   clearAdminSession,
   getAdminToken,
-  getRoleHomePath,
   getAdminUser,
   saveAdminSession,
 } from "@/lib/admin-session";
 import type { AdminUser } from "@/lib/types";
+import { CommandPalette } from "@/components/admin/command-palette";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const navItems = [
-  { href: "/admin/dashboard", label: "Overview" },
-  { href: "/admin/dashboard/homepage", label: "Homepage Content" },
-  { href: "/admin/dashboard/services", label: "Services" },
-  { href: "/admin/dashboard/case-studies", label: "Case Studies" },
-  { href: "/admin/dashboard/portfolio", label: "Portfolio" },
-  { href: "/admin/dashboard/blogs", label: "Blogs" },
-  { href: "/admin/dashboard/social-proof", label: "Clients & Testimonials" },
-  { href: "/admin/dashboard/content", label: "Content & Settings" },
-  { href: "/admin/dashboard/enquiries", label: "Enquiries" },
+type NavGroup = {
+  label: string;
+  items: Array<{
+    href: string;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    hint?: string;
+  }>;
+};
+
+const NAV: NavGroup[] = [
+  {
+    label: "Workspace",
+    items: [
+      { href: "/admin/dashboard",          label: "Overview",         icon: Gauge,           hint: "ALL" },
+      { href: "/admin/dashboard/homepage", label: "Homepage Content", icon: Globe,           hint: "8" },
+      { href: "/admin/dashboard/enquiries", label: "Enquiries",       icon: MessageSquareMore, hint: "NEW" },
+    ],
+  },
+  {
+    label: "Content",
+    items: [
+      { href: "/admin/dashboard/services",     label: "Services",      icon: LayoutTemplate },
+      { href: "/admin/dashboard/case-studies", label: "Case studies",  icon: Briefcase },
+      { href: "/admin/dashboard/portfolio",    label: "Portfolio",     icon: ImageIcon },
+      { href: "/admin/dashboard/blogs",        label: "Blogs",         icon: FileText },
+      { href: "/admin/dashboard/social-proof", label: "Clients · Testimonials", icon: Star },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { href: "/admin/dashboard/content", label: "Settings", icon: Settings },
+    ],
+  },
 ];
 
-export default function AdminDashboardLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+const ROUTE_LABELS: Record<string, string> = {
+  "/admin/dashboard":              "Overview",
+  "/admin/dashboard/homepage":     "Homepage Content",
+  "/admin/dashboard/services":     "Services",
+  "/admin/dashboard/case-studies": "Case Studies",
+  "/admin/dashboard/portfolio":    "Portfolio",
+  "/admin/dashboard/blogs":        "Blogs",
+  "/admin/dashboard/social-proof": "Clients & Testimonials",
+  "/admin/dashboard/content":      "Settings",
+  "/admin/dashboard/enquiries":    "Enquiries",
+};
+
+export default function AdminDashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [ready, setReady] = useState(false);
   const [user, setUser] = useState<AdminUser | null>(getAdminUser());
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const token = getAdminToken();
@@ -41,7 +99,6 @@ export default function AdminDashboardLayout({
       router.replace("/admin");
       return;
     }
-
     adminApi
       .me(token)
       .then((response) => {
@@ -55,95 +112,310 @@ export default function AdminDashboardLayout({
       });
   }, [router]);
 
-  function logout() {
-    clearAdminSession();
-    router.push("/admin");
-  }
+  const breadcrumb = useMemo(() => {
+    if (pathname === "/admin/dashboard") return null;
+    if (pathname.startsWith("/admin/dashboard/homepage/")) {
+      const section = pathname.split("/").pop() || "";
+      return [
+        { href: "/admin/dashboard/homepage", label: "Homepage Content" },
+        { href: pathname, label: section.replace(/_/g, " ") },
+      ];
+    }
+    const label = ROUTE_LABELS[pathname];
+    return label ? [{ href: pathname, label }] : null;
+  }, [pathname]);
 
   if (!ready) {
-    return null;
+    return (
+      <div
+        data-admin
+        className="min-h-screen grid place-items-center"
+      >
+        <p className="admin-eyebrow">authenticating…</p>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <aside className="w-[280px] bg-gray-950 flex flex-col fixed inset-y-0 left-0 z-50 overflow-y-auto">
-        <div className="p-8 pb-6 border-b border-gray-800">
-          <p
-            className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF6600]"
-            style={{ fontFamily: "var(--font-outfit)" }}
-          >
-            Creative Monk
-          </p>
-          <h1 className="mt-2 text-2xl font-black text-white" style={{ fontFamily: "var(--font-outfit)" }}>
-            SEO Workspace
-          </h1>
-          <p className="mt-2 text-xs text-gray-400">
-            Content, SEO, social proof, and enquiry operations
-          </p>
-        </div>
-
-        <div className="flex-1 px-4 py-6">
-          <nav className="space-y-1.5">
-            <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">
-              Dashboard
-            </p>
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? "bg-[#FF6600] text-white shadow-lg shadow-orange-500/20"
-                      : "text-gray-400 hover:bg-gray-800/60 hover:text-white"
-                  }`}
-                  style={isActive ? { fontFamily: "var(--font-outfit)" } : {}}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-
-        <div className="p-4 border-t border-gray-800 space-y-3">
-          {/* {user?.role === "super_admin" ? (
-            <button
-              type="button"
-              onClick={() => router.push(getRoleHomePath("super_admin"))}
-              className="w-full rounded-xl border border-orange-500/20 bg-orange-500/10 px-4 py-3 text-sm font-semibold text-orange-300 transition hover:bg-orange-500/15"
-            >
-              Open Super Admin HQ
-            </button>
-          ) : null} */}
-          <button
-            type="button"
-            onClick={logout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 transition-all duration-200 hover:bg-red-500/10 hover:text-red-400"
-          >
-            Sign Out
-          </button>
-        </div>
+    <div data-admin className="min-h-screen flex">
+      {/* Sidebar — desktop */}
+      <aside
+        className="hidden lg:flex flex-col w-[232px] shrink-0 sticky top-0 h-screen"
+        style={{
+          background: "var(--admin-bg)",
+          borderRight: "1px solid var(--admin-border)",
+        }}
+      >
+        <SidebarBrand />
+        <SidebarNav pathname={pathname} onClose={() => setSidebarOpen(false)} />
+        <SidebarFooter user={user} onLogout={handleLogout} />
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 pl-[280px] flex flex-col min-h-screen">
-        <header className="h-20 bg-white border-b border-gray-100 flex items-center px-8 shadow-sm">
-          <div>
-            <p className="text-sm font-medium text-gray-500">
-              Manage dynamic content, SEO metadata, social proof, and customer enquiries.
-            </p>
-            <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[#FF6600]">
-              {user?.name || "Creative Monk SEO Expert"}
-            </p>
+      {/* Sidebar — mobile drawer */}
+      {sidebarOpen ? (
+        <>
+          <div
+            className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            onClick={() => setSidebarOpen(false)}
+          />
+          <aside
+            className="lg:hidden fixed inset-y-0 left-0 z-50 flex flex-col w-[240px]"
+            style={{
+              background: "var(--admin-bg)",
+              borderRight: "1px solid var(--admin-border)",
+            }}
+          >
+            <SidebarBrand />
+            <SidebarNav pathname={pathname} onClose={() => setSidebarOpen(false)} />
+            <SidebarFooter user={user} onLogout={handleLogout} />
+          </aside>
+        </>
+      ) : null}
+
+      {/* Main column */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        <header
+          className="sticky top-0 z-30 flex items-center gap-3 h-12 px-3 md:px-5"
+          style={{
+            background: "rgba(10,10,10,0.85)",
+            backdropFilter: "blur(8px)",
+            borderBottom: "1px solid var(--admin-border)",
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden grid place-items-center h-8 w-8 hover:bg-[var(--admin-surface)]"
+            style={{ borderRadius: "var(--radius-sm)" }}
+          >
+            <Menu className="h-[15px] w-[15px]" />
+          </button>
+
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <Link
+              href="/admin/dashboard"
+              className="admin-eyebrow hover:text-[var(--admin-fg)] transition-colors"
+            >
+              cm/admin
+            </Link>
+            {breadcrumb?.map((crumb) => (
+              <span key={crumb.href} className="flex items-center gap-2 min-w-0">
+                <ChevronRight className="h-3 w-3 text-[var(--admin-fg-dim)] shrink-0" />
+                <Link
+                  href={crumb.href}
+                  className="text-[12.5px] text-[var(--admin-fg)] hover:text-[var(--admin-accent)] truncate"
+                  style={{ fontFamily: "var(--admin-font-mono)", letterSpacing: "0.04em" }}
+                >
+                  {crumb.label}
+                </Link>
+              </span>
+            ))}
           </div>
+
+          <CommandPalette />
+
+          <Link
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:inline-flex items-center gap-1.5 h-8 px-2.5 text-[12px] text-[var(--admin-fg-mute)] hover:text-[var(--admin-fg)] hover:bg-[var(--admin-surface)] transition-colors"
+            style={{ borderRadius: "var(--radius-sm)", fontFamily: "var(--admin-font-mono)", letterSpacing: "0.04em" }}
+          >
+            View site
+            <ExternalLink className="h-3 w-3" />
+          </Link>
+
+          {/* User menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="flex items-center gap-2 h-8 px-2 hover:bg-[var(--admin-surface)] transition-colors"
+              style={{ borderRadius: "var(--radius-sm)" }}
+            >
+              <span
+                className="grid place-items-center h-6 w-6 text-[10.5px] font-semibold uppercase"
+                style={{
+                  background: "var(--admin-accent)",
+                  color: "var(--admin-bg)",
+                  fontFamily: "var(--admin-font-mono)",
+                  borderRadius: "var(--radius-sm)",
+                }}
+              >
+                {(user?.name || user?.email || "A")[0]}
+              </span>
+              <span className="hidden md:inline text-[12px] text-[var(--admin-fg-mute)] tracking-wide">
+                {user?.name?.split(" ")[0]}
+              </span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-56"
+              style={{
+                background: "var(--admin-surface)",
+                border: "1px solid var(--admin-border-strong)",
+                borderRadius: "var(--radius-sm)",
+              }}
+            >
+              <DropdownMenuLabel className="admin-eyebrow">
+                Signed in as
+              </DropdownMenuLabel>
+              <div className="px-2 pb-1.5 text-[12px] text-[var(--admin-fg-mute)] truncate">
+                {user?.email}
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="h-3.5 w-3.5 mr-2" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
 
-        <main className="flex-1 p-8 overflow-y-auto">
-          <div className="max-w-6xl mx-auto space-y-8">{children}</div>
+        <main className="flex-1 min-w-0 px-4 md:px-6 lg:px-8 py-6 md:py-8">
+          {children}
         </main>
+      </div>
+
+      <Toaster
+        theme="dark"
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: "var(--admin-surface)",
+            border: "1px solid var(--admin-border-strong)",
+            color: "var(--admin-fg)",
+            borderRadius: "var(--radius-sm)",
+            fontFamily: "var(--admin-font-body)",
+          },
+        }}
+      />
+    </div>
+  );
+
+  function handleLogout() {
+    clearAdminSession();
+    router.push("/admin");
+  }
+}
+
+function SidebarBrand() {
+  return (
+    <div
+      className="px-5 h-[60px] flex items-center"
+      style={{ borderBottom: "1px solid var(--admin-border)" }}
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className="grid place-items-center h-7 w-7 font-bold text-[12px]"
+          style={{
+            background: "var(--admin-accent)",
+            color: "var(--admin-bg)",
+            fontFamily: "var(--admin-font-mono)",
+            borderRadius: "var(--radius-sm)",
+          }}
+        >
+          C
+        </div>
+        <div className="leading-none">
+          <p className="admin-eyebrow">Creative Monk</p>
+          <p className="text-[13px] mt-0.5 font-medium" style={{ letterSpacing: "-0.01em" }}>
+            Admin
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SidebarNav({
+  pathname,
+  onClose,
+}: {
+  pathname: string;
+  onClose: () => void;
+}) {
+  return (
+    <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-5">
+      {NAV.map((group) => (
+        <div key={group.label}>
+          <p className="admin-eyebrow px-3 pb-1.5">{group.label}</p>
+          {group.items.map((item) => {
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/admin/dashboard" && pathname.startsWith(`${item.href}/`));
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                className="flex items-center gap-2.5 px-3 h-8 text-[13px] transition-colors group"
+                style={{
+                  background: isActive ? "var(--admin-surface)" : "transparent",
+                  color: isActive ? "var(--admin-fg)" : "var(--admin-fg-mute)",
+                  borderLeft: isActive ? "2px solid var(--admin-accent)" : "2px solid transparent",
+                  paddingLeft: "10px",
+                }}
+              >
+                <item.icon className="h-[14px] w-[14px] shrink-0" />
+                <span className="flex-1 truncate">{item.label}</span>
+                {item.hint ? (
+                  <span
+                    className="admin-mono text-[9.5px]"
+                    style={{ color: isActive ? "var(--admin-accent)" : "var(--admin-fg-dim)", letterSpacing: "0.1em" }}
+                  >
+                    {item.hint}
+                  </span>
+                ) : null}
+              </Link>
+            );
+          })}
+        </div>
+      ))}
+    </nav>
+  );
+}
+
+function SidebarFooter({
+  user,
+  onLogout,
+}: {
+  user: AdminUser | null;
+  onLogout: () => void;
+}) {
+  return (
+    <div
+      className="px-3 py-3"
+      style={{ borderTop: "1px solid var(--admin-border)" }}
+    >
+      <div className="flex items-center gap-2.5 px-2 py-1.5">
+        <span
+          className="grid place-items-center h-7 w-7 text-[11px] font-bold uppercase shrink-0"
+          style={{
+            background: "var(--admin-accent)",
+            color: "var(--admin-bg)",
+            fontFamily: "var(--admin-font-mono)",
+            borderRadius: "var(--radius-sm)",
+          }}
+        >
+          {(user?.name || user?.email || "A")[0]}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[12px] text-[var(--admin-fg)] truncate font-medium">
+            {user?.name || "Admin"}
+          </p>
+          <p className="text-[10.5px] text-[var(--admin-fg-dim)] truncate" style={{ fontFamily: "var(--admin-font-mono)" }}>
+            {user?.email}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onLogout}
+          className="grid place-items-center h-7 w-7 text-[var(--admin-fg-dim)] hover:text-[var(--admin-danger)] hover:bg-[var(--admin-surface)] transition-colors"
+          style={{ borderRadius: "var(--radius-sm)" }}
+          title="Sign out"
+        >
+          <LogOut className="h-3.5 w-3.5" />
+        </button>
       </div>
     </div>
   );
