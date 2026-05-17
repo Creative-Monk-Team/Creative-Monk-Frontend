@@ -1387,6 +1387,13 @@
   background: rgba(245, 241, 232, 0.06) !important;
 }
 
+/* "Follow the studio" wrapper card sits on bg-stone-50 — that's the
+   big white slab the user reported in the footer. Convert to glass. */
+[data-theme="dark"] footer .bg-stone-50,
+[data-theme="dark"] header .bg-stone-50 {
+  background: rgba(245, 241, 232, 0.03) !important;
+}
+
 /* Cream surfaces inside nav (mega dropdown bg) + footer body */
 [data-theme="dark"] header .bg-\[\#FAF7F2\],
 [data-theme="dark"] footer.bg-\[\#FAF7F2\],

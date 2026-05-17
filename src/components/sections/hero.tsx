@@ -132,9 +132,10 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Big composition area — vertical centering, asymmetric */}
+          {/* Big composition area — asymmetric: headline cols 1-7,
+              editorial sidebar with pull quote cols 8-12 */}
           <div className="flex-1 grid grid-cols-12 gap-x-8 items-center mt-8 lg:mt-0">
-            <div className="col-span-12 lg:col-span-9 relative">
+            <div className="col-span-12 lg:col-span-7 relative">
               {/* Floating ✦ — top-left, decorative */}
               <motion.span
                 aria-hidden
@@ -160,6 +161,12 @@ export function Hero() {
                 accent={data.accent}
                 lineC={data.lineC}
               />
+            </div>
+
+            {/* Editorial sidebar — pull quote + vertical spine */}
+            <div className="hidden lg:flex col-span-5 flex-col gap-8 pl-6">
+              <PullQuote />
+              <FeaturedTag />
             </div>
           </div>
 
@@ -226,6 +233,155 @@ export function Hero() {
 
       <BottomMarquee items={data.marquee} />
     </section>
+  );
+}
+
+/* ─── PullQuote — testimonial fragment in the right sidebar ─── */
+function PullQuote() {
+  return (
+    <motion.figure
+      initial={{ opacity: 0, x: 18 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.95, delay: 0.7, ease: [0.2, 0.7, 0.2, 1] }}
+      className="relative site-glass overflow-hidden"
+      style={{
+        borderRadius: 14,
+        padding: "1.25rem 1.4rem",
+      }}
+    >
+      <span
+        aria-hidden
+        className="absolute top-0 left-6 right-6"
+        style={{
+          height: 1,
+          background: "linear-gradient(90deg, transparent, var(--site-accent) 50%, transparent)",
+        }}
+      />
+
+      <div className="flex items-center gap-2 mb-4">
+        <span aria-hidden style={{ display: "block", height: 1, width: 18, background: "var(--site-accent)" }} />
+        <span className="site-eyebrow">Pull quote</span>
+      </div>
+
+      <blockquote
+        style={{
+          fontFamily: "var(--font-newsreader), Georgia, serif",
+          fontStyle: "italic",
+          fontWeight: 500,
+          fontSize: "clamp(15px, 1.2vw, 18px)",
+          lineHeight: 1.45,
+          color: "var(--site-fg)",
+        }}
+      >
+        <span style={{ color: "var(--site-accent)" }}>“</span>
+        We came to Monk thinking we needed a logo. We left with a category-of-one brand — and{" "}
+        <span style={{ color: "var(--site-accent)" }}>+312% qualified leads</span> inside 90 days.
+        <span style={{ color: "var(--site-accent)" }}>”</span>
+      </blockquote>
+
+      <figcaption className="mt-4 pt-3 flex items-center justify-between" style={{ borderTop: "1px dashed var(--site-line)" }}>
+        <div className="flex items-center gap-2.5">
+          <span
+            className="inline-grid place-items-center site-mono"
+            style={{
+              width: 28, height: 28, borderRadius: "50%",
+              background: "var(--site-accent)",
+              color: "#0A0807",
+              fontSize: 10,
+              fontWeight: 700,
+            }}
+          >
+            AS
+          </span>
+          <div className="leading-none">
+            <p className="site-display" style={{ fontSize: 12.5, letterSpacing: "-0.01em" }}>
+              Aakshat Sahni
+            </p>
+            <p className="site-mono mt-1" style={{ fontSize: 9.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--site-fg-mute)" }}>
+              CEO · Hive Management
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/case-studies"
+          data-cursor="link"
+          className="site-mono group"
+          style={{
+            fontSize: 9.5,
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+            color: "var(--site-accent)",
+          }}
+        >
+          More
+          <span aria-hidden className="ml-1 inline-block group-hover:translate-x-0.5 transition-transform">→</span>
+        </Link>
+      </figcaption>
+    </motion.figure>
+  );
+}
+
+/* ─── FeaturedTag — small "currently shipping" tag below quote ── */
+function FeaturedTag() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.95, delay: 0.85, ease: [0.2, 0.7, 0.2, 1] }}
+      className="flex items-center justify-between px-4 py-3"
+      style={{
+        border: "1px dashed var(--site-line-strong)",
+        borderRadius: 10,
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden
+          style={{
+            width: 7, height: 7,
+            borderRadius: "50%",
+            background: "var(--site-accent)",
+            boxShadow: "0 0 12px rgba(255,102,0,0.6)",
+            animation: "tag-pulse 1.8s ease-in-out infinite",
+          }}
+        />
+        <div className="leading-none">
+          <p
+            className="site-mono"
+            style={{
+              fontSize: 9.5,
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+              color: "var(--site-fg-mute)",
+            }}
+          >
+            Currently shipping
+          </p>
+          <p className="site-display mt-1" style={{ fontSize: 13, letterSpacing: "-0.012em", color: "var(--site-fg)" }}>
+            Brightlight Solar · launch week
+          </p>
+        </div>
+      </div>
+      <Link
+        href="/portfolio"
+        data-cursor="link"
+        className="site-mono"
+        style={{
+          fontSize: 9.5,
+          letterSpacing: "0.2em",
+          textTransform: "uppercase",
+          color: "var(--site-accent)",
+        }}
+      >
+        Ledger ↗
+      </Link>
+      <style jsx>{`
+        @keyframes tag-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.3); }
+        }
+      `}</style>
+    </motion.div>
   );
 }
 
