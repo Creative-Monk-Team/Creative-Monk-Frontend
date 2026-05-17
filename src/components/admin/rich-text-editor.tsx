@@ -98,14 +98,25 @@ export function RichTextEditor({
   if (!editor) {
     return (
       <div
-        className="rounded-md border border-stone-200 bg-stone-50/50"
-        style={{ minHeight }}
+        style={{
+          minHeight,
+          background: "var(--admin-bg, #0A0A0A)",
+          border: "1px solid var(--admin-border, #262626)",
+          borderRadius: "var(--radius-sm, 3px)",
+        }}
       />
     );
   }
 
   return (
-    <div className="rounded-md border border-stone-200 bg-white">
+    <div
+      style={{
+        background: "var(--admin-bg, #0A0A0A)",
+        border: "1px solid var(--admin-border, #262626)",
+        borderRadius: "var(--radius-sm, 3px)",
+        overflow: "hidden",
+      }}
+    >
       <Toolbar editor={editor} onLink={insertLink} onImage={insertImage} />
       <div style={{ minHeight }}>
         <EditorContent editor={editor} />
@@ -124,10 +135,16 @@ function Toolbar({
   onImage: () => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-stone-200 bg-stone-50/60 px-2 py-1.5">
-      <Btn label="B"   active={editor.isActive("bold")}       onClick={() => editor.chain().focus().toggleBold().run()}       title="Bold"            className="font-bold" />
-      <Btn label="I"   active={editor.isActive("italic")}     onClick={() => editor.chain().focus().toggleItalic().run()}     title="Italic"          className="italic" />
-      <Btn label="S"   active={editor.isActive("strike")}     onClick={() => editor.chain().focus().toggleStrike().run()}     title="Strike"          className="line-through" />
+    <div
+      className="flex flex-wrap items-center gap-1 px-2 py-1.5"
+      style={{
+        background: "var(--admin-surface, #141414)",
+        borderBottom: "1px solid var(--admin-border, #262626)",
+      }}
+    >
+      <Btn label="B"   active={editor.isActive("bold")}       onClick={() => editor.chain().focus().toggleBold().run()}       title="Bold"   bold />
+      <Btn label="I"   active={editor.isActive("italic")}     onClick={() => editor.chain().focus().toggleItalic().run()}     title="Italic" italic />
+      <Btn label="S"   active={editor.isActive("strike")}     onClick={() => editor.chain().focus().toggleStrike().run()}     title="Strikethrough" strike />
       <Divider />
       <Btn label="H2"  active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} title="Heading 2" />
       <Btn label="H3"  active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} title="Heading 3" />
@@ -135,14 +152,14 @@ function Toolbar({
       <Divider />
       <Btn label="•"   active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()} title="Bullet list" />
       <Btn label="1."  active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Ordered list" />
-      <Btn label={"“"} active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="Quote" />
-      <Btn label={"</>"}    active={editor.isActive("codeBlock")}  onClick={() => editor.chain().focus().toggleCodeBlock().run()}  title="Code block" />
+      <Btn label="❝"  active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="Quote" />
+      <Btn label="</>" active={editor.isActive("codeBlock")}  onClick={() => editor.chain().focus().toggleCodeBlock().run()}  title="Code block" mono />
       <Divider />
-      <Btn label="🔗"  active={editor.isActive("link")}       onClick={onLink}                                                  title="Link" />
-      <Btn label="🖼"   active={false}                         onClick={onImage}                                                 title="Image" />
+      <Btn label="Link"  active={editor.isActive("link")}     onClick={onLink}  title="Link" />
+      <Btn label="Image" active={false}                       onClick={onImage} title="Insert image" />
       <Divider />
-      <Btn label="↶"   active={false} onClick={() => editor.chain().focus().undo().run()} title="Undo" disabled={!editor.can().undo()} />
-      <Btn label="↷"   active={false} onClick={() => editor.chain().focus().redo().run()} title="Redo" disabled={!editor.can().redo()} />
+      <Btn label="↶" active={false} onClick={() => editor.chain().focus().undo().run()} title="Undo" disabled={!editor.can().undo()} />
+      <Btn label="↷" active={false} onClick={() => editor.chain().focus().redo().run()} title="Redo" disabled={!editor.can().redo()} />
     </div>
   );
 }
@@ -152,14 +169,20 @@ function Btn({
   active,
   onClick,
   title,
-  className,
+  bold,
+  italic,
+  strike,
+  mono,
   disabled,
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
   title: string;
-  className?: string;
+  bold?: boolean;
+  italic?: boolean;
+  strike?: boolean;
+  mono?: boolean;
   disabled?: boolean;
 }) {
   return (
@@ -168,12 +191,35 @@ function Btn({
       onClick={onClick}
       title={title}
       disabled={disabled}
-      className={[
-        "h-7 min-w-7 rounded px-1.5 text-[12px] font-medium transition-colors",
-        active ? "bg-stone-900 text-white" : "text-stone-700 hover:bg-stone-200",
-        disabled ? "opacity-40 cursor-not-allowed" : "",
-        className || "",
-      ].join(" ")}
+      className="inline-flex items-center justify-center transition-colors"
+      style={{
+        height: 26,
+        minWidth: 28,
+        padding: "0 8px",
+        fontSize: 11.5,
+        fontWeight: bold ? 700 : 500,
+        fontStyle: italic ? "italic" : "normal",
+        textDecoration: strike ? "line-through" : "none",
+        fontFamily: mono ? "var(--admin-font-mono, ui-monospace, monospace)" : "inherit",
+        color: active ? "var(--admin-bg, #0A0A0A)" : "var(--admin-fg-mute, #A1A1A1)",
+        background: active ? "var(--admin-accent, #FF6600)" : "transparent",
+        border: "1px solid transparent",
+        borderRadius: "var(--radius-sm, 3px)",
+        opacity: disabled ? 0.35 : 1,
+        cursor: disabled ? "not-allowed" : "pointer",
+      }}
+      onMouseEnter={(e) => {
+        if (active || disabled) return;
+        const el = e.currentTarget;
+        el.style.background = "var(--admin-surface-hover, #1B1B1B)";
+        el.style.color = "var(--admin-fg, #FAFAFA)";
+      }}
+      onMouseLeave={(e) => {
+        if (active) return;
+        const el = e.currentTarget;
+        el.style.background = "transparent";
+        el.style.color = "var(--admin-fg-mute, #A1A1A1)";
+      }}
     >
       {label}
     </button>
@@ -181,5 +227,15 @@ function Btn({
 }
 
 function Divider() {
-  return <span aria-hidden className="mx-1 inline-block h-5 w-px bg-stone-300" />;
+  return (
+    <span
+      aria-hidden
+      className="mx-1 inline-block"
+      style={{
+        height: 18,
+        width: 1,
+        background: "var(--admin-border, #262626)",
+      }}
+    />
+  );
 }

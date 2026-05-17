@@ -96,6 +96,100 @@ type CmsCollectionManagerProps<T extends { _id: string } & Record<string, unknow
   }>;
 };
 
+/* ─── MediaPreview ────────────────────────────────────────────
+   Guaranteed display area for image previews. Renders a 200px-tall
+   container with a dark checker-pattern backdrop so transparent PNGs
+   and broken URLs both stay visually anchored. On load failure shows
+   an explicit "preview failed" panel instead of the broken-icon strip
+   browsers default to. */
+function MediaPreview({
+  src,
+  alt,
+  height = 200,
+  fit = "contain",
+  bare = false,
+}: {
+  src: string;
+  alt: string;
+  height?: number;
+  fit?: "contain" | "cover";
+  bare?: boolean;
+}) {
+  const [state, setState] = useState<"loading" | "ok" | "error">("loading");
+  useEffect(() => {
+    setState("loading");
+  }, [src]);
+
+  return (
+    <div
+      className="relative overflow-hidden"
+      style={{
+        height,
+        background:
+          "repeating-conic-gradient(rgba(255,255,255,0.04) 0% 25%, transparent 0% 50%) 0 0 / 16px 16px, var(--admin-bg, #0A0A0A)",
+        border: bare ? "none" : "1px solid var(--admin-border, #262626)",
+        borderRadius: bare ? 0 : "var(--radius-sm, 3px)",
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        onLoad={() => setState("ok")}
+        onError={() => setState("error")}
+        className="block w-full h-full"
+        style={{
+          objectFit: fit,
+          opacity: state === "ok" ? 1 : 0,
+          transition: "opacity 160ms ease",
+        }}
+      />
+      {state !== "ok" ? (
+        <div className="absolute inset-0 grid place-items-center text-center px-4 pointer-events-none">
+          {state === "loading" ? (
+            <p
+              className="admin-mono"
+              style={{
+                fontSize: 10.5,
+                letterSpacing: "0.16em",
+                color: "var(--admin-fg-dim, #6B6B6B)",
+                textTransform: "uppercase",
+              }}
+            >
+              Loading preview…
+            </p>
+          ) : (
+            <div className="space-y-1.5">
+              <p
+                className="admin-mono"
+                style={{
+                  fontSize: 10.5,
+                  letterSpacing: "0.16em",
+                  color: "var(--admin-danger, #E5484D)",
+                  textTransform: "uppercase",
+                }}
+              >
+                Preview failed
+              </p>
+              <p
+                style={{
+                  fontSize: 11.5,
+                  color: "var(--admin-fg-mute, #A1A1A1)",
+                  maxWidth: 360,
+                  wordBreak: "break-all",
+                  fontFamily: "var(--admin-font-mono, ui-monospace, monospace)",
+                }}
+              >
+                {src}
+              </p>
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function CmsCollectionManager<T extends { _id: string } & Record<string, unknown>>({
   title,
   description,
@@ -857,15 +951,7 @@ function FieldInput({
             </a>
           ) : null}
         </div>
-        {currentValue ? (
-          <div
-            className="overflow-hidden"
-            style={{ border: "1px solid var(--admin-border)", borderRadius: "var(--radius-sm)" }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={currentValue} alt={field.label} className="block w-full max-h-[200px] object-cover" />
-          </div>
-        ) : null}
+        {currentValue ? <MediaPreview src={currentValue} alt={field.label} /> : null}
         {uploadError ? (
           <p className="text-[12px] text-[var(--admin-danger)]">{uploadError}</p>
         ) : null}
@@ -888,8 +974,7 @@ function FieldInput({
               className="relative group"
               style={{ border: "1px solid var(--admin-border)", borderRadius: "var(--radius-sm)" }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={String(url)} alt={`Media ${idx + 1}`} className="block w-full h-24 object-cover" />
+              <MediaPreview src={String(url)} alt={`Media ${idx + 1}`} height={96} fit="cover" bare />
               <button
                 type="button"
                 onClick={() => {
