@@ -162,7 +162,7 @@ export default function HomepageSectionEditor() {
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Link
             href={section === "about" ? "/about" : "/"}
             target="_blank"

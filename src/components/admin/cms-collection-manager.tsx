@@ -544,7 +544,7 @@ export function CmsCollectionManager<T extends { _id: string } & Record<string, 
       {/* Create dialog */}
       <Dialog open={creating} onOpenChange={(o) => !o && setCreating(false)}>
         <DialogContent
-          className="!max-w-[640px] !w-[640px]"
+          className="!w-[calc(100vw-2rem)] !max-w-[640px]"
           style={{
             background: "var(--admin-surface)",
             border: "1px solid var(--admin-border-strong)",
@@ -576,11 +576,12 @@ export function CmsCollectionManager<T extends { _id: string } & Record<string, 
         </DialogContent>
       </Dialog>
 
-      {/* Edit sheet — half-screen on desktops, capped on giant displays. */}
+      {/* Edit sheet — full-screen on mobile, 80vw on tablet, half on
+          desktop. No min-width: a 480-wide minimum overflowed phones. */}
       <Sheet open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <SheetContent
           side="right"
-          className="!w-[50vw] !min-w-[480px] !max-w-[860px] !sm:max-w-[860px] p-0 overflow-hidden flex flex-col"
+          className="!w-screen !max-w-full sm:!w-[88vw] sm:!max-w-[680px] lg:!w-[58vw] lg:!max-w-[860px] p-0 overflow-hidden flex flex-col"
           style={{
             background: "var(--admin-surface)",
             border: 0,
