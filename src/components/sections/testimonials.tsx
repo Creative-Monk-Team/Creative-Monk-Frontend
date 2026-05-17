@@ -1,10 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-
-/* ─── Static testimonials ──────────────────────────────────────
-   Four named voices. The first is the featured anchor quote (large
-   editorial), the rest are supporting. All copy + outcomes static. */
+import { homepageContentApi } from "@/lib/api";
 
 type Quote = {
   text: string;
@@ -17,9 +15,9 @@ type Quote = {
   accent: string;
 };
 
-const FEATURED: Quote = {
+const FALLBACK_FEATURED: Quote = {
   text:
-    "We came to Monk thinking we needed a logo. We left with a category-of-one brand and a website that actually closes the lead before our sales team gets on a call.",
+    "We came to Monk thinking we needed a logo. We left with a category-of-one brand and a website that closes the lead before our sales team gets on a call. +312% qualified leads in 90 days — and that number has held for two years.",
   name: "Aakshat Sahni",
   role: "CEO",
   company: "Hive Management",
@@ -29,10 +27,10 @@ const FEATURED: Quote = {
   accent: "#FF6600",
 };
 
-const SUPPORTING: Quote[] = [
+const FALLBACK_SUPPORTING: Quote[] = [
   {
     text:
-      "Fastest agency we've worked with — and we've worked with the big Mumbai ones. They reply in hours, ship in days, and the work doesn't look like everyone else's on Behance.",
+      "Fastest agency we've worked with — and we've worked with the big Mumbai ones. They reply in hours, ship in days, and the work doesn't look like everyone else's on Behance. Got us into DMart shelves.",
     name: "Manjeet Chatha",
     role: "Co-founder",
     company: "Chatha Foods",
@@ -43,7 +41,7 @@ const SUPPORTING: Quote[] = [
   },
   {
     text:
-      "Our café went from invisible to a Sector 17 waitlist in three months. Their social team is the only one I've found who actually understands the audience.",
+      "Our café went from invisible to a Sector 17 waitlist in three months. Their social team is the only one I've found who actually understands the audience — and the numbers show it every week.",
     name: "Karan Bhalla",
     role: "Owner",
     company: "Woodhouse Café",
@@ -54,7 +52,7 @@ const SUPPORTING: Quote[] = [
   },
   {
     text:
-      "Their brief alone is worth what most agencies charge for the whole project. We knew within one call we were dealing with a different kind of studio.",
+      "Their brief alone is worth what most agencies charge for the whole project. We knew within one call we were dealing with a different kind of studio. Search traffic tripled inside two quarters.",
     name: "Riya Bansal",
     role: "Marketing Director",
     company: "Brightlight Solar",
@@ -66,6 +64,23 @@ const SUPPORTING: Quote[] = [
 ];
 
 export function Testimonials() {
+  const [FEATURED, setFeatured] = useState<Quote>(FALLBACK_FEATURED);
+  const [SUPPORTING, setSupporting] = useState<Quote[]>(FALLBACK_SUPPORTING);
+
+  useEffect(() => {
+    let cancelled = false;
+    homepageContentApi
+      .get<{ featured?: Quote; supporting?: Quote[] }>("testimonials")
+      .then((data) => {
+        if (cancelled || !data) return;
+        if (data.featured) setFeatured(data.featured);
+        if (data.supporting?.length) setSupporting(data.supporting);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section
       className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden"

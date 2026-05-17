@@ -201,6 +201,63 @@ export async function getCareers() {
   }
 }
 
+/* ── Homepage editable content (M1) ─────────────────────────────
+   Each section is a JSON blob keyed by its identifier. Callers should
+   destructure the `payload` they expect — see /scripts/seed-homepage-
+   content.js on the backend for the canonical shape per section. */
+
+export type HomepageSectionKey =
+  | "hero"
+  | "client_marquee"
+  | "services_deck"
+  | "process"
+  | "testimonials"
+  | "faq"
+  | "cta"
+  | "about";
+
+type HomepageSectionResponse<T> = {
+  section: HomepageSectionKey;
+  payload: T | null;
+};
+
+export async function getHomepageSection<T = Record<string, unknown>>(
+  section: HomepageSectionKey,
+): Promise<T | null> {
+  try {
+    const res = await request<HomepageSectionResponse<T>>(`homepage/${section}`);
+    return (res?.payload as T | null) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getHomepageAllSections(): Promise<
+  Partial<Record<HomepageSectionKey, Record<string, unknown> | null>>
+> {
+  try {
+    return await request("homepage");
+  } catch {
+    return {};
+  }
+}
+
+export const homepageContentApi = {
+  get: getHomepageSection,
+  all: getHomepageAllSections,
+  update<T = Record<string, unknown>>(
+    section: HomepageSectionKey,
+    payload: T,
+    token: string,
+  ) {
+    return request<HomepageSectionResponse<T>>(`admin/homepage/${section}`, {
+      token,
+      method: "PUT",
+      body: JSON.stringify({ payload }),
+    });
+  },
+};
+
 export async function submitEnquiry(payload: {
   name: string;
   email: string;

@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { adminApi } from "@/lib/api";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 
 export type CmsField = {
   name: string;
   label: string;
-  type: "text" | "textarea" | "number" | "checkbox" | "json" | "date" | "media" | "select" | "media-array";
+  type: "text" | "textarea" | "richtext" | "number" | "checkbox" | "json" | "date" | "media" | "select" | "media-array";
   placeholder?: string;
   uploadFolder?: string;
   options?: { label: string; value: string }[];
@@ -272,7 +273,7 @@ export function CmsCollectionManager<T extends { _id: string } & Record<string, 
               <label
                 key={field.name + field.label}
                 className={`space-y-2 text-sm font-medium text-slate-600 ${
-                  field.type === "textarea" || field.type === "json" || field.type === "media-array" ? "md:col-span-2" : ""
+                  field.type === "textarea" || field.type === "richtext" || field.type === "json" || field.type === "media-array" ? "md:col-span-2" : ""
                 }`}
               >
                 <span className="block text-sm font-medium text-slate-600">{field.label}</span>
@@ -331,6 +332,18 @@ function FieldInput({
         placeholder={field.placeholder}
         onChange={(event) => onChange(event.target.value)}
         className="custom-scrollbar w-full rounded-[1.15rem] border border-slate-200 bg-slate-50/45 px-4 py-3 text-[15px] text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white"
+      />
+    );
+  }
+
+  if (field.type === "richtext") {
+    return (
+      <RichTextEditor
+        value={String(value ?? "")}
+        onChange={onChange}
+        placeholder={field.placeholder ?? "Write something compelling…"}
+        token={token}
+        minHeight={260}
       />
     );
   }

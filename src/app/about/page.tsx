@@ -3,12 +3,36 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { CTA } from "@/components/sections/cta";
+import { useEffect, useState } from "react";
+import { homepageContentApi } from "@/lib/api";
 
 /* ═══════════════════════════════════════════════════════════════
-   About page — fully static.
-   Edit the constants below freely. Wire to API later when backend
-   is ready.
+   About page — content lives in the DB under section "about".
+   Seed it via Creative-Monk-Backend/scripts/seed-homepage-content.js.
+   Edit copy in /admin/super/homepage/about.
 ═══════════════════════════════════════════════════════════════ */
+
+type AboutPayload = {
+  hero?: { eyebrow?: string; headline?: string; subhead?: string };
+  studioStats?: Array<{ value: string; label: string; suffix?: string }>;
+  founder?: typeof FOUNDER;
+  principles?: typeof PRINCIPLES;
+  team?: typeof TEAM;
+  milestones?: typeof MILESTONES;
+};
+
+function useAbout() {
+  const [data, setData] = useState<AboutPayload>({});
+  useEffect(() => {
+    let cancelled = false;
+    homepageContentApi.get<AboutPayload>("about").then((res) => {
+      if (cancelled || !res) return;
+      setData(res);
+    });
+    return () => { cancelled = true; };
+  }, []);
+  return data;
+}
 
 const STUDIO_STATS = [
   { value: "8", label: "Years in studio", suffix: "" },
@@ -198,6 +222,9 @@ export default function AboutPage() {
 
 /* ─── Hero ───────────────────────────────────────────────────── */
 function AboutHero() {
+  const remote = useAbout();
+  const stats = remote.studioStats?.length ? remote.studioStats : STUDIO_STATS;
+  const founderLinkedin = remote.founder?.linkedin ?? FOUNDER.linkedin;
   return (
     <section className="relative bg-[#FAF7F2] overflow-hidden">
       <div className="hero-grain-paper" aria-hidden />
@@ -289,7 +316,7 @@ function AboutHero() {
               transition={{ duration: 0.7, delay: 0.35 }}
               className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-3"
             >
-              {STUDIO_STATS.map((s) => (
+              {stats.map((s) => (
                 <div
                   key={s.label}
                   className="group relative rounded-2xl border border-stone-900/10 bg-stone-50 p-4 md:p-5 hover:bg-white hover:border-[#FF6600]/40 transition-all duration-300 cursor-default"
@@ -323,6 +350,8 @@ function AboutHero() {
 /* Vertical "studio postcard" visual element — a passport-style card
    with stamps, codes and an identity strip. Pure CSS/SVG, no images. */
 function StudioPostcard() {
+  const remote = useAbout();
+  const founderLinkedin = remote.founder?.linkedin ?? FOUNDER.linkedin;
   return (
     <div className="relative max-w-[440px] mx-auto">
       {/* Floating "Open since 2018" sticky note */}
@@ -351,7 +380,7 @@ function StudioPostcard() {
 
       {/* Floating LinkedIn pill — bottom left */}
       <motion.a
-        href={FOUNDER.linkedin}
+        href={founderLinkedin}
         target="_blank"
         rel="noopener noreferrer"
         initial={{ opacity: 0, y: 14, x: -10 }}
@@ -564,6 +593,8 @@ function StudioPostcard() {
 
 /* ─── Founder note ───────────────────────────────────────────── */
 function FounderNote() {
+  const remote = useAbout();
+  const founder = remote.founder ?? FOUNDER;
   return (
     <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
       <div className="hero-grain-paper" aria-hidden />
@@ -607,7 +638,7 @@ function FounderNote() {
                   className="absolute inset-0 grid place-items-center font-funnel font-bold text-stone-50 leading-none tracking-[-0.05em] select-none"
                   style={{ fontSize: "clamp(7rem, 14vw, 12rem)", opacity: 0.95 }}
                 >
-                  {FOUNDER.initials}
+                  {founder.initials}
                 </span>
 
                 {/* corner stamps */}
@@ -622,17 +653,17 @@ function FounderNote() {
                 <div className="absolute left-5 right-5 bottom-5 rounded-2xl bg-[#FAF7F2]/95 backdrop-blur-md px-4 py-3 flex items-center justify-between gap-3 border border-stone-900/10">
                   <div>
                     <p className="font-funnel text-[16px] font-bold tracking-[-0.015em] text-stone-900 leading-none">
-                      {FOUNDER.name}
+                      {founder.name}
                     </p>
                     <p className="font-jakarta text-[10.5px] font-semibold uppercase tracking-[0.22em] text-stone-500 mt-1.5">
-                      {FOUNDER.title}
+                      {founder.title}
                     </p>
                   </div>
                   <a
-                    href={FOUNDER.linkedin}
+                    href={founder.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={`${FOUNDER.name} on LinkedIn`}
+                    aria-label={`${founder.name} on LinkedIn`}
                     className="grid place-items-center w-10 h-10 rounded-full bg-[#0A66C2] text-stone-50 hover:bg-stone-900 transition-colors cursor-pointer shrink-0"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -675,7 +706,7 @@ function FounderNote() {
             </h2>
 
             <div className="mt-8 space-y-5 font-jakarta text-[15.5px] md:text-[16.5px] leading-[1.7] text-stone-700 max-w-[62ch]">
-              {FOUNDER.essay.map((p, i) => (
+              {founder.essay.map((p, i) => (
                 <p key={i}>
                   {i === 0 ? (
                     <>
@@ -720,7 +751,7 @@ function FounderNote() {
                 </svg>
                 <div>
                   <p className="font-funnel text-[16px] font-bold tracking-[-0.015em] text-stone-900 leading-none">
-                    {FOUNDER.name}
+                    {founder.name}
                   </p>
                   <p
                     className="font-jakarta text-[12.5px] text-stone-500 mt-1.5"
@@ -730,13 +761,13 @@ function FounderNote() {
                       fontWeight: 400,
                     }}
                   >
-                    {FOUNDER.title} · Mohali
+                    {founder.title} · Mohali
                   </p>
                 </div>
               </div>
 
               <a
-                href={FOUNDER.linkedin}
+                href={founder.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-2 font-jakarta text-[12px] font-semibold uppercase tracking-[0.22em] text-stone-900 cursor-pointer"
@@ -772,6 +803,8 @@ function FounderNote() {
 
 /* ─── Principles ─────────────────────────────────────────────── */
 function Principles() {
+  const remote = useAbout();
+  const principles = remote.principles?.length ? remote.principles : PRINCIPLES;
   return (
     <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
       <div className="hero-grain-paper" aria-hidden />
@@ -820,7 +853,7 @@ function Principles() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-          {PRINCIPLES.map((p, i) => (
+          {principles.map((p, i) => (
             <motion.article
               key={p.no}
               initial={{ opacity: 0, y: 18 }}
@@ -879,6 +912,8 @@ function Principles() {
 
 /* ─── Team grid ──────────────────────────────────────────────── */
 function TeamGrid() {
+  const remote = useAbout();
+  const team = remote.team?.length ? remote.team : TEAM;
   return (
     <section
       id="team"
@@ -902,7 +937,7 @@ function TeamGrid() {
               </span>
             </div>
             <h2 className="font-funnel text-stone-900 font-bold leading-[0.98] tracking-[-0.035em] text-[clamp(2.25rem,4.6vw,4rem)] max-w-[20ch]">
-              The {TEAM.length} people{" "}
+              The {team.length} people{" "}
               <span
                 style={{
                   fontFamily: "var(--font-newsreader), Georgia, serif",
@@ -930,7 +965,7 @@ function TeamGrid() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
-          {TEAM.map((member, i) => (
+          {team.map((member, i) => (
             <motion.article
               key={member.name}
               initial={{ opacity: 0, y: 18 }}
@@ -1070,6 +1105,8 @@ function TeamGrid() {
 
 /* ─── Journey timeline ──────────────────────────────────────── */
 function Journey() {
+  const remote = useAbout();
+  const milestones = remote.milestones?.length ? remote.milestones : MILESTONES;
   return (
     <section className="relative bg-[#FAF7F2] border-t border-stone-900/10 overflow-hidden">
       <div className="hero-grain-paper" aria-hidden />
@@ -1126,7 +1163,7 @@ function Journey() {
           />
 
           <div className="space-y-10">
-            {MILESTONES.map((m, i) => (
+            {milestones.map((m, i) => (
               <motion.article
                 key={m.year}
                 initial={{ opacity: 0, x: -16 }}
@@ -1153,7 +1190,7 @@ function Journey() {
                     >
                       Chapter {String(i + 1).padStart(2, "0")}
                     </span>
-                    {i === MILESTONES.length - 1 && (
+                    {i === milestones.length - 1 && (
                       <span className="inline-flex items-center gap-1.5 font-jakarta text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-700">
                         <span className="inline-block h-1 w-1 rounded-full bg-emerald-500 hero-pulse" />
                         Now

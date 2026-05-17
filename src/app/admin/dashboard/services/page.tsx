@@ -8,7 +8,7 @@ const fields: CmsField[] = [
   { name: "shortTitle", label: "Short Title", type: "text" },
   { name: "tagline", label: "Tagline", type: "textarea" },
   { name: "shortDescription", label: "Short Description", type: "textarea" },
-  { name: "longDescription", label: "Long Description", type: "textarea" },
+  { name: "longDescription", label: "Long Description (rich text)", type: "richtext" },
   { name: "category", label: "Category Slug", type: "text" },
   { name: "icon", label: "Icon Name", type: "text" },
   { name: "image", label: "Image URL", type: "media", uploadFolder: "creative-monk/services" },

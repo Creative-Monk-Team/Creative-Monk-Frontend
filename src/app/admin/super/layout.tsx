@@ -9,6 +9,7 @@ import {
   BriefcaseBusiness,
   ChevronRight,
   Coins,
+  LayoutDashboard,
   LogOut,
   Menu,
   MessageSquareMore,
@@ -26,6 +27,7 @@ import type { AdminUser } from "@/lib/types";
 
 const navItems = [
   { href: "/admin/super", label: "Overview", icon: BarChart3 },
+  { href: "/admin/super/homepage", label: "Homepage", icon: LayoutDashboard },
   { href: "/admin/super/finance", label: "Finance", icon: Coins },
   { href: "/admin/super/employees", label: "Employees", icon: Users2 },
   { href: "/admin/super/clients", label: "Clients", icon: BriefcaseBusiness },
@@ -35,6 +37,7 @@ const navItems = [
 
 const pageTitles: Record<string, { title: string; breadcrumb?: string[] }> = {
   "/admin/super": { title: "Overview" },
+  "/admin/super/homepage": { title: "Homepage Content", breadcrumb: ["Homepage"] },
   "/admin/super/finance": { title: "Finance", breadcrumb: ["Finance"] },
   "/admin/super/employees": { title: "Employees", breadcrumb: ["Employees"] },
   "/admin/super/clients": { title: "Clients", breadcrumb: ["Clients"] },

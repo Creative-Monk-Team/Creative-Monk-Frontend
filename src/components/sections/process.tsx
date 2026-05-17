@@ -1,66 +1,39 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { homepageContentApi } from "@/lib/api";
 
-/* ─── Five-stage studio process ────────────────────────────────
-   Each stage has a date marker, a real deliverable, and an
-   artefact you can actually point at. */
-const STAGES = [
-  {
-    no: "01",
-    day: "Day 0–3",
-    title: "Discovery",
-    italic: "we listen",
-    description:
-      "60-minute founder call, competitive teardown and a one-page creative brief we both sign before any meter starts running.",
-    artefact: "creative_brief.pdf",
-    accent: "#FF6600",
-  },
-  {
-    no: "02",
-    day: "Day 4–10",
-    title: "Direction",
-    italic: "we take a stance",
-    description:
-      "Two clearly opposing creative routes — not three. You pick a side; we don't hide our point of view in a neutral middle option.",
-    artefact: "route_a · route_b",
-    accent: "#0F0C08",
-  },
-  {
-    no: "03",
-    day: "Day 11–25",
-    title: "Craft",
-    italic: "we make the thing",
-    description:
-      "The identity gets built out across applications. The website lands on a staging URL you can show your co-founder on a Saturday.",
-    artefact: "staging.creativemonk.in",
-    accent: "#FF6600",
-  },
-  {
-    no: "04",
-    day: "Day 26–40",
-    title: "Polish",
-    italic: "we sweat the details",
-    description:
-      "Type kerning, micro-copy, edge cases, responsive states, accessibility passes. The hidden 50% that separates good work from great.",
-    artefact: "qa_checklist.md",
-    accent: "#4A5D3A",
-  },
-  {
-    no: "05",
-    day: "Day 41–45",
-    title: "Ship",
-    italic: "then we stay",
-    description:
-      "Launch in your timezone. First 30 days of bugs and tweaks are on us — no support tickets, just WhatsApp.",
-    artefact: "launch_postmortem.md",
-    accent: "#FF6600",
-  },
+type Stage = {
+  no: string;
+  day: string;
+  title: string;
+  italic: string;
+  description: string;
+  artefact: string;
+  accent: string;
+};
+
+const FALLBACK_STAGES: Stage[] = [
+  { no: "01", day: "Day 0–3",   title: "Discovery", italic: "we listen",            description: "Free 30-min founder call, competitive teardown and a one-page creative brief we both sign before any meter starts running.", artefact: "creative_brief.pdf",        accent: "#FF6600" },
+  { no: "02", day: "Day 4–10",  title: "Direction", italic: "we take a stance",     description: "Two clearly opposing creative routes — never three. You pick a side; we don't hide our point of view in a safe middle option.", artefact: "route_a · route_b",        accent: "#0F0C08" },
+  { no: "03", day: "Day 11–25", title: "Craft",     italic: "we make the thing",    description: "The identity gets built out across every application. The website lands on a staging URL you can demo to your co-founder on a Saturday.", artefact: "staging.creativemonk.in", accent: "#FF6600" },
+  { no: "04", day: "Day 26–40", title: "Polish",    italic: "we sweat the details", description: "Type kerning, micro-copy, edge cases, responsive states, accessibility passes. The hidden 50% that separates good work from work clients brag about.", artefact: "qa_checklist.md",  accent: "#4A5D3A" },
+  { no: "05", day: "Day 41–45", title: "Ship",      italic: "then we stay",         description: "Launch in your timezone. First 30 days of bugs and tweaks are on us — no support tickets, just a WhatsApp thread that stays open.", artefact: "launch_postmortem.md",                accent: "#FF6600" },
 ];
 
 export function Process() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [STAGES, setStages] = useState<Stage[]>(FALLBACK_STAGES);
+
+  useEffect(() => {
+    let cancelled = false;
+    homepageContentApi.get<{ stages?: Stage[] }>("process").then((data) => {
+      if (cancelled || !data?.stages?.length) return;
+      setStages(data.stages);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <section

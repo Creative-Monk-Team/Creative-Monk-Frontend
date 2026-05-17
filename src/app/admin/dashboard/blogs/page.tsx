@@ -6,7 +6,7 @@ const fields: CmsField[] = [
   { name: "slug", label: "Slug", type: "text" },
   { name: "title", label: "Title", type: "text" },
   { name: "excerpt", label: "Excerpt", type: "textarea" },
-  { name: "content", label: "Content", type: "textarea" },
+  { name: "content", label: "Content (rich text)", type: "richtext" },
   { name: "coverImage", label: "Cover Image URL", type: "media", uploadFolder: "creative-monk/blogs" },
   { name: "category", label: "Category", type: "text" },
   { name: "tags", label: "Tags JSON", type: "json" },

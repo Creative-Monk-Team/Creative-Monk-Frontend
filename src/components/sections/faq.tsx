@@ -1,47 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { homepageContentApi } from "@/lib/api";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 
-/* ─── Static FAQ content ───────────────────────────────────────
-   Six sales-objection questions — the ones we actually get on
-   every first call. Honest answers, no marketing fluff. */
-const FAQS = [
-  {
-    q: "What does a typical engagement actually cost?",
-    a: "We work on fixed-scope, fixed-fee engagements — no hourly billing, no surprise change orders. The studio is happy to share a detailed estimate after a 30-minute scoping call where we understand the brief. Brand engagements scope smaller than full website builds, which scope smaller than full studio retainers. We'll send a written quote inside 48 hours of the first call.",
-    tag: "Pricing",
-  },
-  {
-    q: "How fast can you start?",
-    a: "Brand work usually inside 7 working days. Web build inside 10. Performance retainers go live in your ad account in 72 hours. We don't take on a project unless we can give it real attention — if our calendar is full for the month, we'll tell you so on the first call instead of overcommitting.",
-    tag: "Timeline",
-  },
-  {
-    q: "Do you work with pre-revenue founders?",
-    a: "Often. About 30% of our work is founders building the brand they wish they had at launch. We offer reduced rates for genuinely early-stage founders who can't afford a full studio engagement — ask about it on the call. We'd rather work with five committed founders than ten cautious ones.",
-    tag: "Stage",
-  },
-  {
-    q: "What's included in a brand engagement?",
-    a: "Discovery + strategy, two opposing creative directions, full identity system (logo, wordmark, colour, type, iconography), brand book and guidelines, packaging or print collateral if your category needs it, a base social system, plus 30 days of post-launch support over WhatsApp. We scope web and motion separately so you only pay for what you actually need.",
-    tag: "Scope",
-  },
-  {
-    q: "Who actually does the work?",
-    a: "We're a 14-person studio — no juniors hidden behind a senior, no offshore subcontractors. The founder sits in every kickoff and every review. The team you meet on the discovery call is the team that ships your project. We deliberately do not scale beyond what we can personally oversee.",
-    tag: "Team",
-  },
-  {
-    q: "Can we keep working with you after the launch?",
-    a: "Yes — about 60% of clients move to a monthly retainer for ongoing design, content or performance work after the initial engagement. Retainers are scoped to your needs (anywhere from one focused workstream to full embedded studio support). Our average client stays with us for 3.2 years.",
-    tag: "Retention",
-  },
+type FaqEntry = { q: string; a?: string; a_html?: string; tag: string };
+
+const FALLBACK_FAQS: FaqEntry[] = [
+  { q: "What does a typical engagement actually cost?", a: "We work on fixed-scope, fixed-fee engagements — no hourly billing, no surprise change orders. Brand work starts at ₹1.5L, full websites from ₹2.5L, monthly performance retainers from ₹75K. We'll send a detailed written quote inside 48 hours of the first call.", tag: "Pricing" },
+  { q: "How fast can you start?", a: "Brand work usually inside 7 working days. Web build inside 10. Performance retainers go live in your ad account in 72 hours.", tag: "Timeline" },
+  { q: "Do you work with pre-revenue or early-stage founders?", a: "Often — about 30% of our work is founders building the brand they wish they had at launch. We offer reduced rates for genuinely early-stage founders.", tag: "Stage" },
+  { q: "What's included in a brand engagement?", a: "Discovery + strategy, two opposing creative directions, full identity system, brand book and guidelines, packaging or print, social system, and 30 days of post-launch support over WhatsApp.", tag: "Scope" },
+  { q: "Who actually does the work?", a: "We're a 14-person studio — no juniors hidden behind a senior, no offshore subcontractors. The founder sits in every kickoff and every review.", tag: "Team" },
+  { q: "What if I don't like the direction?", a: "You see two opposing routes on Day 10. If neither feels right, we explore a third — at no extra cost, before craft begins. Risk on us, not on you.", tag: "Risk" },
+  { q: "Can we keep working with you after the launch?", a: "Yes — about 60% of clients move to a monthly retainer for ongoing design, content or performance work. Our average client stays with us for 3.2 years.", tag: "Retention" },
 ];
 
 export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [FAQS, setFaqs] = useState<FaqEntry[]>(FALLBACK_FAQS);
+
+  useEffect(() => {
+    let cancelled = false;
+    homepageContentApi.get<{ items?: FaqEntry[] }>("faq").then((data) => {
+      if (cancelled || !data?.items?.length) return;
+      setFaqs(data.items);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <section
@@ -164,7 +152,7 @@ function FaqItem({
   onToggle,
   isLast,
 }: {
-  faq: (typeof FAQS)[number];
+  faq: FaqEntry;
   index: number;
   isOpen: boolean;
   onToggle: () => void;
@@ -227,9 +215,15 @@ function FaqItem({
           >
             <div className="px-6 md:px-8 pb-7 pt-1">
               <div className="pl-7 md:pl-9 max-w-[64ch] border-l-2 border-[#FF6600]/30">
-                <p className="font-jakarta text-[14.5px] md:text-[15px] leading-[1.65] text-stone-700 pl-5">
-                  {faq.a}
-                </p>
+                <div className="pl-5">
+                  {faq.a_html ? (
+                    <RichTextContent html={faq.a_html} />
+                  ) : (
+                    <p className="font-jakarta text-[14.5px] md:text-[15px] leading-[1.65] text-stone-700">
+                      {faq.a}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>

@@ -1,30 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { homepageContentApi } from "@/lib/api";
 
-/* ─── Three service buckets ───────────────────────────────────
-   Founders self-select by what they want to feel/buy/spread —
-   not by deliverable name. */
-const BUCKETS = [
+type Bucket = {
+  roman: string;
+  eyebrow: string;
+  italic: string;
+  title: string;
+  description: string;
+  deliverables: string[];
+  timeline: string;
+  deliverableCount: string;
+  href: string;
+  accent: string;
+  panelTone: string;
+  panelInverted?: boolean;
+  priceFrom?: string;
+};
+
+/* Fallback bucket list — used only if the API fetch fails. Source of
+   truth lives in DB; seed it via Creative-Monk-Backend/scripts/
+   seed-homepage-content.js. Edit copy in /admin/super/homepage/services. */
+const FALLBACK_buckets: Bucket[] = [
   {
     roman: "I",
     eyebrow: "Brand & Identity",
     italic: "to feel",
-    title: "Brands people remember",
+    title: "Brands customers remember",
     description:
-      "Logos, identity systems, naming and packaging engineered to outlast a TVC cycle — built around your real difference, not the loudest visual trend.",
+      "Logo, naming, identity system and packaging built around your real difference — so you stop looking like every other agency's portfolio piece and start commanding pricing power.",
     deliverables: [
-      "Logo & wordmark",
-      "Visual identity system",
+      "Logo & wordmark system",
+      "Full identity guidelines",
       "Brand strategy & naming",
       "Packaging & print",
-      "Brand book & guidelines",
-      "Social system",
+      "Social-ready visual system",
+      "30-day post-launch support",
     ],
     timeline: "4–6 weeks",
     deliverableCount: "12+ assets",
+    priceFrom: "From ₹1.5L · fixed scope",
     href: "/services/branding",
     accent: "#FF6600",
     panelTone: "var(--paper-warm, #f3eee2)",
@@ -33,20 +51,21 @@ const BUCKETS = [
     roman: "II",
     eyebrow: "Web & Performance",
     italic: "to convert",
-    title: "Websites that close",
+    title: "Websites that close leads",
     description:
-      "Sites you'd be proud to send to a procurement team. Fast, SEO-clean, conversion-tuned — and a paid-media engine that actually pays back.",
+      "Fast, SEO-clean, conversion-tuned sites paired with a paid-media engine that pays back. Average client sees +312% qualified leads in the first 90 days.",
     deliverables: [
       "Web design & build",
       "Conversion optimisation",
-      "SEO & content",
-      "Performance marketing",
-      "Landing pages",
-      "E-commerce (Shopify, WP)",
+      "SEO foundation + content plan",
+      "Google + Meta ad management",
+      "Landing pages for paid traffic",
+      "Shopify / WordPress / Bespoke",
     ],
     timeline: "6–10 weeks",
     deliverableCount: "20+ deliverables",
-    href: "/services",
+    priceFrom: "From ₹2.5L · fixed scope",
+    href: "/services/web-development",
     accent: "#0F0C08",
     panelTone: "#ECE5D6",
   },
@@ -54,20 +73,21 @@ const BUCKETS = [
     roman: "III",
     eyebrow: "Motion & Story",
     italic: "to spread",
-    title: "Stories worth sharing",
+    title: "Content that earns shares",
     description:
-      "Brand films, social-first reels, photography and editorial direction that earn the share, not just the impression.",
+      "Brand films, social reels, product photography and editorial direction that travel further than ads — because they're built to be watched, not skipped.",
     deliverables: [
-      "Brand films",
-      "Reels & shorts",
+      "Brand films & founder reels",
+      "Short-form social reels (Insta · YT)",
       "Product photography",
-      "Animation & motion",
-      "Social strategy",
+      "Animation & motion graphics",
+      "Monthly social strategy",
       "Editorial direction",
     ],
     timeline: "3–5 weeks",
-    deliverableCount: "Full content library",
-    href: "/services",
+    deliverableCount: "Full quarterly library",
+    priceFrom: "From ₹1L · monthly or one-shot",
+    href: "/services/social-media-marketing",
     accent: "#4A5D3A",
     panelTone: "#1A1410",
     panelInverted: true,
@@ -75,8 +95,23 @@ const BUCKETS = [
 ];
 
 export function Services() {
+  const [buckets, setBuckets] = useState<Bucket[]>(FALLBACK_buckets);
   const [activeIndex, setActiveIndex] = useState(0);
-  const active = BUCKETS[activeIndex];
+
+  useEffect(() => {
+    let cancelled = false;
+    homepageContentApi
+      .get<{ buckets?: Bucket[] }>("services_deck")
+      .then((data) => {
+        if (cancelled || !data?.buckets?.length) return;
+        setBuckets(data.buckets);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const active = buckets[activeIndex] ?? buckets[0];
 
   return (
     <section
@@ -134,7 +169,7 @@ export function Services() {
         <div className="grid grid-cols-12 gap-5 md:gap-7 rounded-[32px] border border-stone-900/10 bg-stone-50 overflow-hidden">
           {/* Tabs column */}
           <div className="col-span-12 lg:col-span-5 flex flex-col">
-            {BUCKETS.map((b, i) => {
+            {buckets.map((b, i) => {
               const isActive = i === activeIndex;
               return (
                 <button
@@ -144,7 +179,7 @@ export function Services() {
                   onClick={() => setActiveIndex(i)}
                   aria-pressed={isActive}
                   className={`group relative text-left p-7 md:p-8 lg:p-10 cursor-pointer transition-all duration-500 overflow-hidden border-stone-900/10 ${
-                    i < BUCKETS.length - 1 ? "border-b" : ""
+                    i < buckets.length - 1 ? "border-b" : ""
                   } ${
                     isActive
                       ? "bg-white"

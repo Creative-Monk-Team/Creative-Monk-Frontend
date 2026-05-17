@@ -1,47 +1,49 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { homepageContentApi } from "@/lib/api";
 
-/* ─── Static brand list ─────────────────────────────────────────
-   Real partners. Rendered as elegant wordmarks (sidesteps hotlink
-   403s from the live WP install). Edit names freely here. */
-const BRANDS = [
-  "IndusInd Bank",
-  "Zomato",
-  "Best Western",
-  "Hive Management",
-  "CII",
-  "TiE",
-  "KJ Foods",
-  "My Trident",
-  "Orane International",
-  "Sashas Holiday Village",
-  "Cardinal Sea Villa",
-  "Agelock Skin Clinics",
-  "Woodhouse Café",
-  "Cafe Zoya",
-  "Avenry",
-  "Brightlight Immigration",
-  "Dolphin Head Hunters",
-  "Triple Six Beer",
-  "Miles Ahead Education",
-  "Fly High Education",
-  "Kalsi Academy",
-  "Dhody & Company",
-  "Residencia",
-  "Tvisva Jewels",
+/* Fallback brand list — used if the API fetch fails so the section
+   never renders empty. Editable copy lives in the DB; the seed at
+   Creative-Monk-Backend/scripts/seed-homepage-content.js hydrates it. */
+const FALLBACK_BRANDS = [
+  "IndusInd Bank", "Zomato", "Best Western", "Hive Management", "CII",
+  "TiE", "KJ Foods", "My Trident", "Orane International", "Sashas Holiday Village",
+  "Cardinal Sea Villa", "Agelock Skin Clinics", "Woodhouse Café", "Cafe Zoya", "Avenry",
+  "Brightlight Immigration", "Dolphin Head Hunters", "Triple Six Beer", "Miles Ahead Education",
+  "Fly High Education", "Kalsi Academy", "Dhody & Company", "Residencia", "Tvisva Jewels",
 ];
 
 const BRAND_COUNT = 142;
 
+type Payload = {
+  brands?: Array<{ name: string; logoUrl?: string }>;
+  eyebrow?: string;
+};
+
 export function ClientMarquee() {
+  const [brands, setBrands] = useState<string[]>(FALLBACK_BRANDS);
+
+  useEffect(() => {
+    let cancelled = false;
+    homepageContentApi.get<Payload>("client_marquee").then((data) => {
+      if (cancelled || !data?.brands?.length) return;
+      const names = data.brands.map((b) => b.name).filter(Boolean);
+      if (names.length) setBrands(names);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   /* Triple the array so the marquee loops without visible seams. */
-  const trackA = [...BRANDS, ...BRANDS, ...BRANDS];
+  const trackA = [...brands, ...brands, ...brands];
   /* Slightly shuffled second row for visual variety. */
   const trackB = [
-    ...[...BRANDS].reverse(),
-    ...[...BRANDS].reverse(),
-    ...[...BRANDS].reverse(),
+    ...[...brands].reverse(),
+    ...[...brands].reverse(),
+    ...[...brands].reverse(),
   ];
 
   return (

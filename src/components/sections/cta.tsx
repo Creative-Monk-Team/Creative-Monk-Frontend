@@ -2,15 +2,30 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { homepageContentApi } from "@/lib/api";
 
-const TRUST_POINTS = [
-  { label: "Avg reply", value: "<4hr" },
-  { label: "Slots open", value: "Q3 · 3 left" },
-  { label: "Studio rating", value: "4.9★" },
-  { label: "Founder-led", value: "Always" },
+type TrustPoint = { label: string; value: string };
+
+const FALLBACK_TRUST_POINTS: TrustPoint[] = [
+  { label: "Avg reply",     value: "<4hr" },
+  { label: "Slots open",    value: "Q3 · 3 left" },
+  { label: "Studio rating", value: "4.9★ · 87 reviews" },
+  { label: "Founder-led",   value: "Every project" },
 ];
 
 export function CTA() {
+  const [TRUST_POINTS, setTrustPoints] = useState<TrustPoint[]>(FALLBACK_TRUST_POINTS);
+
+  useEffect(() => {
+    let cancelled = false;
+    homepageContentApi.get<{ trustPoints?: TrustPoint[] }>("cta").then((data) => {
+      if (cancelled || !data?.trustPoints?.length) return;
+      setTrustPoints(data.trustPoints);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <section
       className="relative bg-stone-900 text-stone-50 overflow-hidden border-t border-stone-50/5"

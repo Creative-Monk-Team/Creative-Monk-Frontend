@@ -8,7 +8,7 @@ const fields: CmsField[] = [
   { name: "client", label: "Client", type: "text" },
   { name: "category", label: "Category", type: "text" },
   { name: "description", label: "Description", type: "textarea" },
-  { name: "content", label: "Overview Content", type: "textarea" },
+  { name: "content", label: "Overview Content (rich text)", type: "richtext" },
   { name: "services", label: "Services JSON", type: "json" },
   { name: "challenges", label: "Challenges JSON", type: "json" },
   { name: "solutions", label: "Solutions JSON", type: "json" },

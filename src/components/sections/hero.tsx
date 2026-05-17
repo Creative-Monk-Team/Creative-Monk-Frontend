@@ -3,76 +3,101 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { homepageContentApi } from "@/lib/api";
 
-const HERO = {
-  status: "Open studio · 3 slots left for Q3",
-  eyebrow: "Independent creative studio",
-  lineA: "We help",
-  lineB: "ambitious",
-  accent: "brands win",
-  lineC: "the internet.",
-  lede:
-    "Identities, websites and growth campaigns for founders who'd rather be unforgettable than safe.",
-  primary: { label: "Start a project", href: "/contact" },
-  secondary: { label: "See selected work", href: "/portfolio" },
+/* Fallback content. The DB is authoritative; this only renders if
+   the API call fails. Edit copy in /admin/super/homepage/hero. */
+type DiaryEntry = { day: string; client: string; activity: string; status: string; progress: number };
+type BentoStat = { value: number | string; suffix?: string; label: string; animate?: boolean };
+type HeroPayload = {
+  status?: string;
+  eyebrow?: string;
+  lineA?: string;
+  lineB?: string;
+  accent?: string;
+  lineC?: string;
+  lede?: string;
+  primary?: { label: string; href: string };
+  secondary?: { label: string; href: string };
+  diaryEntries?: DiaryEntry[];
+  bentoStats?: BentoStat[];
+  marquee?: string[];
 };
 
-const DIARY_ENTRIES = [
-  {
-    day: "Mon",
-    client: "Hive Management",
-    activity: "Brand workshop · Day 03",
-    status: "Shipping",
-    progress: 92,
-  },
-  {
-    day: "Tue",
-    client: "Woodhouse Café",
-    activity: "Photo shoot · Sector 17",
-    status: "In review",
-    progress: 72,
-  },
-  {
-    day: "Wed",
-    client: "Chatha Foods",
-    activity: "Packaging rounds · v3",
-    status: "Designing",
-    progress: 55,
-  },
-  {
-    day: "Fri",
-    client: "Brightlight Solar",
-    activity: "Site launch · go-live",
-    status: "On deck",
-    progress: 18,
-  },
-];
+const FALLBACK_HERO: Required<Omit<HeroPayload, "diaryEntries" | "bentoStats" | "marquee">> & {
+  diaryEntries: DiaryEntry[];
+  bentoStats: BentoStat[];
+  marquee: string[];
+} = {
+  status: "Booking now · 3 founder slots left for Q3",
+  eyebrow: "Founder-led creative studio · since 2018",
+  lineA: "We turn ambitious brands",
+  lineB: "into",
+  accent: "category leaders",
+  lineC: "— in 45 days.",
+  lede:
+    "Brand, website and growth campaigns built by senior craftspeople who pick up the phone. 142 brands shipped. 4.9★ from 87 founders. Fixed scope, fixed fee, no surprises.",
+  primary: { label: "Book a free 30-min audit", href: "/contact" },
+  secondary: { label: "See proof — selected work", href: "/portfolio" },
+  diaryEntries: [
+    { day: "Mon", client: "Hive Management",   activity: "Brand workshop · Day 03", status: "Shipping",  progress: 92 },
+    { day: "Tue", client: "Woodhouse Café",    activity: "Photo shoot · Sector 17", status: "In review", progress: 72 },
+    { day: "Wed", client: "Chatha Foods",      activity: "Packaging rounds · v3",   status: "Designing", progress: 55 },
+    { day: "Fri", client: "Brightlight Solar", activity: "Site launch · go-live",   status: "On deck",   progress: 18 },
+  ],
+  bentoStats: [
+    { value: 142,    suffix: "+",   label: "Brands shipped", animate: true },
+    { value: 312,    suffix: "%",   label: "Avg lead lift",  animate: true },
+    { value: 4.9,    suffix: "★",   label: "From 87 reviews" },
+    { value: "<4hr", label: "Avg reply time" },
+  ],
+  marquee: [
+    "Brand Identity",
+    "Conversion-Focused Websites",
+    "Performance Marketing",
+    "SEO that ranks",
+    "Brand Films & Reels",
+    "Social Strategy",
+    "Product UI",
+    "E-commerce that sells",
+  ],
+};
 
-const BENTO_STATS = [
-  { value: 142, suffix: "+", label: "Brands shipped", animate: true },
-  { value: 8, suffix: "yrs", label: "In studio" },
-  { value: 4.9, suffix: "★", label: "From 87 reviews" },
-  { value: "<4hr", label: "Avg reply" },
-];
-
-const MARQUEE = [
-  "Brand Identity",
-  "Web Design",
-  "Performance Marketing",
-  "SEO & Content",
-  "Motion & Film",
-  "Social Strategy",
-  "Product UI",
-  "E-commerce",
-];
+function useHero() {
+  const [data, setData] = useState(FALLBACK_HERO);
+  useEffect(() => {
+    let cancelled = false;
+    homepageContentApi.get<HeroPayload>("hero").then((res) => {
+      if (cancelled || !res) return;
+      setData({
+        status:        res.status        ?? FALLBACK_HERO.status,
+        eyebrow:       res.eyebrow       ?? FALLBACK_HERO.eyebrow,
+        lineA:         res.lineA         ?? FALLBACK_HERO.lineA,
+        lineB:         res.lineB         ?? FALLBACK_HERO.lineB,
+        accent:        res.accent        ?? FALLBACK_HERO.accent,
+        lineC:         res.lineC         ?? FALLBACK_HERO.lineC,
+        lede:          res.lede          ?? FALLBACK_HERO.lede,
+        primary:       res.primary       ?? FALLBACK_HERO.primary,
+        secondary:     res.secondary     ?? FALLBACK_HERO.secondary,
+        diaryEntries:  res.diaryEntries?.length  ? res.diaryEntries  : FALLBACK_HERO.diaryEntries,
+        bentoStats:    res.bentoStats?.length    ? res.bentoStats    : FALLBACK_HERO.bentoStats,
+        marquee:       res.marquee?.length       ? res.marquee       : FALLBACK_HERO.marquee,
+      });
+    });
+    return () => { cancelled = true; };
+  }, []);
+  return data;
+}
 
 export function Hero() {
+  const data = useHero();
+
   return (
     <section className="relative overflow-hidden bg-[#FAF7F2]">
       <div className="hero-grain-paper" aria-hidden />
       <BackgroundAtmosphere />
 
-      <StatusStrip />
+      <StatusStrip status={data.status} />
 
       <div className="container relative z-10 pt-10 lg:pt-14 pb-8">
         <div className="grid grid-cols-12 gap-x-8 gap-y-14 items-center">
@@ -81,11 +106,11 @@ export function Hero() {
             <div className="flex items-center gap-3 mb-7">
               <span aria-hidden className="block h-px w-9 bg-[#FF6600]" />
               <span className="font-jakarta text-[11px] font-semibold uppercase tracking-[0.26em] text-stone-600">
-                {HERO.eyebrow}
+                {data.eyebrow}
               </span>
             </div>
 
-            <Headline />
+            <Headline lineA={data.lineA} lineB={data.lineB} accent={data.accent} lineC={data.lineC} />
 
             <motion.p
               initial={{ opacity: 0, y: 12 }}
@@ -93,7 +118,7 @@ export function Hero() {
               transition={{ duration: 0.7, delay: 0.9 }}
               className="mt-7 font-jakarta text-[16.5px] md:text-[17.5px] leading-[1.55] text-stone-700 max-w-[54ch]"
             >
-              {HERO.lede}
+              {data.lede}
             </motion.p>
 
             <motion.div
@@ -102,8 +127,8 @@ export function Hero() {
               transition={{ duration: 0.7, delay: 1.05 }}
               className="mt-9 flex flex-wrap items-center gap-4 md:gap-6"
             >
-              <PrimaryCta />
-              <SecondaryCta />
+              <PrimaryCta primary={data.primary} />
+              <SecondaryCta secondary={data.secondary} />
             </motion.div>
 
             <motion.div
@@ -118,14 +143,14 @@ export function Hero() {
 
           {/* RIGHT — Studio Diary board */}
           <div className="col-span-12 lg:col-span-5 relative">
-            <StudioDiary />
+            <StudioDiary entries={data.diaryEntries} />
           </div>
         </div>
 
-        <BentoBar />
+        <BentoBar stats={data.bentoStats} />
       </div>
 
-      <BottomMarquee />
+      <BottomMarquee items={data.marquee} />
     </section>
   );
 }
@@ -135,17 +160,27 @@ export function Hero() {
    The accent uses Fraunces italic (in INK, not orange) for a quiet, classy emphasis,
    with a thin orange underline that sits cleanly under the word.
    No more "graffiti" feel. */
-function Headline() {
+function Headline({
+  lineA,
+  lineB,
+  accent,
+  lineC,
+}: {
+  lineA: string;
+  lineB: string;
+  accent: string;
+  lineC: string;
+}) {
   return (
     <h1 className="font-funnel text-stone-900 font-bold leading-[0.96] tracking-[-0.035em] text-[clamp(2.5rem,6vw,5.25rem)]">
       <span className="block">
         <span className="hero-rise inline-block" style={{ animationDelay: "0.05s" }}>
-          {HERO.lineA}
+          {lineA}
         </span>
       </span>
       <span className="block">
         <span className="hero-rise inline-block mr-[0.22em]" style={{ animationDelay: "0.18s" }}>
-          {HERO.lineB}
+          {lineB}
         </span>
         <span
           className="hero-rise inline-block relative"
@@ -157,7 +192,7 @@ function Headline() {
             color: "#1c1c1c",
           }}
         >
-          {HERO.accent}
+          {accent}
           <svg
             aria-hidden
             viewBox="0 0 320 8"
@@ -176,7 +211,7 @@ function Headline() {
       </span>
       <span className="block">
         <span className="hero-rise inline-block" style={{ animationDelay: "0.42s" }}>
-          {HERO.lineC}
+          {lineC}
         </span>
       </span>
     </h1>
@@ -184,13 +219,13 @@ function Headline() {
 }
 
 /* ─── Status strip ─── */
-function StatusStrip() {
+function StatusStrip({ status }: { status: string }) {
   return (
     <div className="border-b border-stone-900/10 bg-[#FAF7F2]/70 backdrop-blur-sm relative z-10">
       <div className="container flex items-center justify-between gap-6 py-3 font-jakarta text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-700">
         <span className="flex items-center gap-2">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 hero-pulse" />
-          {HERO.status}
+          {status}
         </span>
         <span className="hidden md:inline tracking-[0.28em] text-stone-500">
           Est. 2018 · 142 brands · Worldwide
@@ -205,7 +240,7 @@ function StatusStrip() {
 }
 
 /* ─── Studio Diary board — vertical bulletin showing what's shipping this week ─── */
-function StudioDiary() {
+function StudioDiary({ entries }: { entries: DiaryEntry[] }) {
   return (
     <div className="relative max-w-[440px] mx-auto">
       {/* Decorative pin at top-center */}
@@ -311,7 +346,7 @@ function StudioDiary() {
 
         {/* Diary entries */}
         <ul className="mt-7 space-y-4">
-          {DIARY_ENTRIES.map((entry, i) => (
+          {entries.map((entry, i) => (
             <motion.li
               key={entry.client}
               initial={{ opacity: 0, x: -8 }}
@@ -472,10 +507,10 @@ function RatingCallout() {
   );
 }
 
-function PrimaryCta() {
+function PrimaryCta({ primary }: { primary: { label: string; href: string } }) {
   return (
     <Link
-      href={HERO.primary.href}
+      href={primary.href}
       className="group relative inline-flex items-center gap-3 rounded-full bg-stone-900 text-stone-50 pl-6 pr-2 py-2 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-[0_16px_36px_-18px_rgba(15,12,8,0.5)]"
     >
       <span
@@ -486,7 +521,7 @@ function PrimaryCta() {
         }}
       />
       <span className="relative font-funnel text-[15px] font-semibold tracking-tight">
-        {HERO.primary.label}
+        {primary.label}
       </span>
       <span className="relative inline-grid place-items-center w-9 h-9 rounded-full bg-[#FF6600] text-stone-900 group-hover:bg-stone-50 group-hover:rotate-[-30deg] transition-all duration-300">
         <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
@@ -503,14 +538,14 @@ function PrimaryCta() {
   );
 }
 
-function SecondaryCta() {
+function SecondaryCta({ secondary }: { secondary: { label: string; href: string } }) {
   return (
     <Link
-      href={HERO.secondary.href}
+      href={secondary.href}
       className="group inline-flex items-center gap-3 font-jakarta text-[12px] font-semibold uppercase tracking-[0.22em] text-stone-900 cursor-pointer"
     >
       <span className="relative">
-        {HERO.secondary.label}
+        {secondary.label}
         <span className="absolute left-0 -bottom-1 h-px w-full bg-stone-900 origin-left scale-x-100 group-hover:scale-x-0 transition-transform duration-400" />
         <span className="absolute left-0 -bottom-1 h-px w-full bg-[#FF6600] origin-right scale-x-0 group-hover:scale-x-100 transition-transform duration-400 delay-100" />
       </span>
@@ -533,10 +568,10 @@ function SecondaryCta() {
   );
 }
 
-function BentoBar() {
+function BentoBar({ stats }: { stats: BentoStat[] }) {
   return (
     <div className="mt-16 md:mt-20 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-      {BENTO_STATS.map((s, i) => (
+      {stats.map((s, i) => (
         <motion.div
           key={s.label}
           initial={{ opacity: 0, y: 14 }}
@@ -606,7 +641,7 @@ function Counter({ to }: { to: number }) {
   return <span ref={ref}>{val}</span>;
 }
 
-function BottomMarquee() {
+function BottomMarquee({ items }: { items: string[] }) {
   return (
     <div className="relative z-10 mt-12 md:mt-14 border-y border-stone-900/10 bg-stone-900 text-stone-50 overflow-hidden">
       <div className="hero-marquee py-4">
@@ -616,7 +651,7 @@ function BottomMarquee() {
             aria-hidden={dup === 1}
             className="flex items-center gap-10 pr-10 whitespace-nowrap"
           >
-            {MARQUEE.map((item, i) => (
+            {items.map((item, i) => (
               <span key={`${dup}-${i}`} className="flex items-center gap-10">
                 <span className="font-funnel text-[22px] md:text-[28px] font-bold tracking-[-0.025em] leading-none">
                   {item}
