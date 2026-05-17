@@ -112,6 +112,17 @@ export default function AdminDashboardLayout({ children }: { children: ReactNode
       });
   }, [router]);
 
+  /* Promote the admin token scope to <html> so portaled UI (Sheet,
+     Dialog, DropdownMenu, AlertDialog, CommandPalette) inherits the
+     operator-console theme. Portals attach to document.body and would
+     otherwise escape a wrapper-scoped selector. */
+  useEffect(() => {
+    document.documentElement.setAttribute("data-admin", "true");
+    return () => {
+      document.documentElement.removeAttribute("data-admin");
+    };
+  }, []);
+
   const breadcrumb = useMemo(() => {
     if (pathname === "/admin/dashboard") return null;
     if (pathname.startsWith("/admin/dashboard/homepage/")) {
@@ -138,9 +149,11 @@ export default function AdminDashboardLayout({ children }: { children: ReactNode
 
   return (
     <div data-admin className="min-h-screen flex">
-      {/* Sidebar — desktop */}
+      {/* Sidebar — desktop. `self-start` keeps the flex item from
+          stretching to the parent's content height, which is what
+          breaks `sticky` for sidebars inside a `min-h-screen flex`. */}
       <aside
-        className="hidden lg:flex flex-col w-[232px] shrink-0 sticky top-0 h-screen"
+        className="hidden lg:flex flex-col w-[232px] shrink-0 sticky top-0 h-screen self-start"
         style={{
           background: "var(--admin-bg)",
           borderRight: "1px solid var(--admin-border)",
