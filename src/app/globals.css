@@ -1150,6 +1150,23 @@
   color: var(--site-fg);
 }
 
+/* The base h1–h6 rule earlier in this file hard-pins color to #1a1a1a
+   for the editorial cream theme. Override on dark so headings inherit
+   the paper-white foreground. */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+  color: var(--site-fg);
+}
+[data-theme="dark"] em,
+[data-theme="dark"] i,
+[data-theme="dark"] .editorial-italic {
+  color: inherit;
+}
+
 /* Hide the system cursor on dark theme over interactive layers
    (we draw our own). Falls back to default if cursor primitive
    isn't mounted (e.g., touch devices). */

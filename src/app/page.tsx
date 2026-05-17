@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/sections/hero";
 import { ClientMarquee } from "@/components/sections/client-marquee";
+import { WhyFounders } from "@/components/sections/why-founders";
 import { Services } from "@/components/sections/services";
 import { Process } from "@/components/sections/process";
 import { Testimonials } from "@/components/sections/testimonials";
@@ -120,6 +121,7 @@ export default function Home() {
       <DarkThemeFlag />
       <Hero />
       <ClientMarquee />
+      <WhyFounders />
       <Services />
       <Process />
       <Testimonials />
