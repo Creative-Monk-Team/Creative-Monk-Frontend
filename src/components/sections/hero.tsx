@@ -2,21 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Swiper, SwiperSlide, type SwiperRef } from "swiper/react";
-import { EffectFade, Autoplay, Keyboard } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/effect-fade";
+import { AnimatePresence, motion } from "framer-motion";
 import { homepageContentApi } from "@/lib/api";
 import { Magnetic } from "@/components/motion/magnetic";
 import { MarqueeStrip } from "@/components/motion/marquee-strip";
 
-/* ─── Hero v6 — "The Reel" ──────────────────────────────────────
-   The hero IS the work. Full-bleed Swiper carousel of project visuals
-   slow-pans behind massive editorial typography. Live "Now showing"
-   caption + slide counter on the right edge sync to the active slide.
-   Cursor-tracking radial glow lights the page. The aesthetic and the
-   proof in the same frame — no clicks required to know we can design. */
+/* ─── Hero v7 — "Living Manifesto" ─────────────────────────────
+   No images. The type IS the design. A morphing word at the heart
+   of the headline cycles through what we build (BRANDS / IDENTITIES
+   / FUTURES / STORIES / EXPERIENCES) every 2.4s with a flap-clock
+   mask reveal. Behind: an oversized outlined wordmark drifting
+   slowly, two crossed diagonal marquees, an animated mesh, and a
+   cursor-aware radial glow. SVG annotation marks point to elements
+   like a designer's commented working file. */
 
 type BentoStat = { value: number | string; suffix?: string; label: string; animate?: boolean };
 type HeroPayload = {
@@ -33,63 +31,16 @@ type HeroPayload = {
   marquee?: string[];
 };
 
-/* The featured work reel — five slides, hand-picked for agency
-   aesthetic. Real client wiring lands later via the portfolio API. */
-type ReelItem = {
-  client: string;
-  discipline: string;
-  outcome: string;
-  year: string;
-  image: string;
-  accent: string;
-};
-
-const FEATURED_REEL: ReelItem[] = [
-  {
-    client: "Hive Management",
-    discipline: "Brand · Web · Performance",
-    outcome: "+312% qualified leads · 90 days",
-    year: "2024",
-    image:
-      "https://images.unsplash.com/photo-1561070791-2526d30994b8?w=2400&q=85&auto=format&fit=crop",
-    accent: "#FF6600",
-  },
-  {
-    client: "Chatha Foods",
-    discipline: "Identity · Packaging",
-    outcome: "14 SKUs onto DMart shelves",
-    year: "2024",
-    image:
-      "https://images.unsplash.com/photo-1542435503-956c469947f6?w=2400&q=85&auto=format&fit=crop",
-    accent: "#E5B04A",
-  },
-  {
-    client: "Woodhouse Café",
-    discipline: "Brand · Social · Photography",
-    outcome: "+38K Instagram in 90 days",
-    year: "2024",
-    image:
-      "https://images.unsplash.com/photo-1559028012-481c04fa702d?w=2400&q=85&auto=format&fit=crop",
-    accent: "#4A5D3A",
-  },
-  {
-    client: "Brightlight Solar",
-    discipline: "Web · SEO · Content",
-    outcome: "3× organic search traffic",
-    year: "2025",
-    image:
-      "https://images.unsplash.com/photo-1551434678-e076c223a692?w=2400&q=85&auto=format&fit=crop",
-    accent: "#3E63DD",
-  },
-  {
-    client: "Triple Six Beer",
-    discipline: "Brand · Packaging · Motion",
-    outcome: "Category re-launch, 4 markets",
-    year: "2025",
-    image:
-      "https://images.unsplash.com/photo-1558655146-d09347e92766?w=2400&q=85&auto=format&fit=crop",
-    accent: "#FF6600",
-  },
+/* Words that rotate in the headline's outlined slot.
+   Six words chosen for cadence + meaning. Each gets the spotlight
+   for ~2.4s before flipping up. */
+const MORPHING_WORDS = [
+  "BRANDS",
+  "IDENTITIES",
+  "FUTURES",
+  "STORIES",
+  "EXPERIENCES",
+  "BUSINESSES",
 ];
 
 const FALLBACK_HERO: Required<Omit<HeroPayload, "bentoStats" | "marquee">> & {
@@ -151,8 +102,15 @@ function useHero() {
 
 export function Hero() {
   const data = useHero();
-  const [activeIdx, setActiveIdx] = useState(0);
-  const swiperRef = useRef<SwiperRef | null>(null);
+  const [wordIdx, setWordIdx] = useState(0);
+
+  // Rotate the morphing word
+  useEffect(() => {
+    const id = setInterval(() => {
+      setWordIdx((i) => (i + 1) % MORPHING_WORDS.length);
+    }, 2400);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <section
@@ -163,70 +121,29 @@ export function Hero() {
         color: "var(--site-fg, #F5F1E8)",
       }}
     >
-      {/* ── Background reel ── */}
-      <Swiper
-        ref={swiperRef}
-        modules={[EffectFade, Autoplay, Keyboard]}
-        effect="fade"
-        fadeEffect={{ crossFade: true }}
-        autoplay={{ delay: 6000, disableOnInteraction: false }}
-        loop
-        keyboard={{ enabled: true }}
-        speed={1100}
-        onSlideChange={(swiper) => setActiveIdx(swiper.realIndex)}
-        className="!absolute !inset-0 !w-full !h-full pointer-events-none"
-        style={{ zIndex: 0 }}
-      >
-        {FEATURED_REEL.map((item) => (
-          <SwiperSlide key={item.client}>
-            <div className="relative w-full h-full overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={item.image}
-                alt={`${item.client} — ${item.discipline}`}
-                className="absolute inset-0 w-full h-full object-cover ken-burns"
-                style={{ filter: "saturate(0.92) contrast(1.05)" }}
-                draggable={false}
-              />
-            </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+      <BackdropLayers />
+      <CursorGlow />
+      <AnnotationMarks />
 
-      {/* ── Overlays (stacked z-order) ─────────────────────────────
-         1. dark vignette to make text readable
-         2. orange-tinted gradient from the active slide's accent
-         3. dot grid texture
-         4. cursor-tracking radial glow                              */}
-      <ReelOverlay activeIdx={activeIdx} />
-
-      {/* ── Status strip ── */}
       <StatusStrip status={data.status} />
 
-      {/* ── Stage ── */}
       <div className="relative z-10 flex-1 flex items-center">
-        <div className="container w-full py-10 lg:py-12">
-          <div className="grid grid-cols-12 gap-x-8 gap-y-10 items-end">
+        <div className="container w-full py-8 md:py-12">
+          <div className="grid grid-cols-12 gap-x-8 gap-y-12 items-center">
             {/* LEFT — type column */}
-            <div className="col-span-12 lg:col-span-8">
+            <div className="col-span-12 lg:col-span-9">
               <Eyebrow text={data.eyebrow} />
-              <Statement
-                lineA={data.lineA}
-                lineB={data.lineB}
-                accent={data.accent}
-                lineC={data.lineC}
-              />
+              <Manifesto wordIdx={wordIdx} />
 
               <motion.p
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.85, ease: [0.2, 0.7, 0.2, 1] }}
-                className="mt-7 max-w-[52ch]"
+                transition={{ duration: 0.9, delay: 0.95, ease: [0.2, 0.7, 0.2, 1] }}
+                className="mt-8 max-w-[56ch]"
                 style={{
-                  fontSize: "clamp(15px, 1.15vw, 17.5px)",
+                  fontSize: "clamp(15.5px, 1.2vw, 17.5px)",
                   lineHeight: 1.55,
-                  color: "rgba(245,241,232,0.78)",
-                  textShadow: "0 1px 14px rgba(0,0,0,0.4)",
+                  color: "var(--site-fg-mute)",
                 }}
               >
                 {data.lede}
@@ -235,7 +152,7 @@ export function Hero() {
               <motion.div
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 1.0, ease: [0.2, 0.7, 0.2, 1] }}
+                transition={{ duration: 0.9, delay: 1.1, ease: [0.2, 0.7, 0.2, 1] }}
                 className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4"
               >
                 <PrimaryCta primary={data.primary} />
@@ -243,24 +160,433 @@ export function Hero() {
               </motion.div>
             </div>
 
-            {/* RIGHT — reel meta column */}
-            <div className="hidden lg:flex col-span-4 flex-col items-end gap-8">
-              <ReelCounter
-                activeIdx={activeIdx}
-                total={FEATURED_REEL.length}
-                onJump={(i) => swiperRef.current?.swiper.slideToLoop(i)}
-              />
+            {/* RIGHT — live indicator stack */}
+            <div className="hidden lg:flex col-span-3 flex-col items-end gap-6">
+              <LiveStack wordIdx={wordIdx} />
             </div>
           </div>
-
-          {/* "Now showing" caption row — full width, anchored to the bottom */}
-          <NowShowing item={FEATURED_REEL[activeIdx]} />
         </div>
       </div>
 
       <StatsRibbon stats={data.bentoStats} />
       <BottomMarquee items={data.marquee} />
     </section>
+  );
+}
+
+/* ─── Backdrop layers — ghost wordmark + crossed marquees + mesh ─ */
+function BackdropLayers() {
+  return (
+    <>
+      {/* Gradient mesh */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 0,
+          background:
+            "radial-gradient(ellipse 70% 60% at 0% 0%, rgba(255,102,0,0.18), transparent 55%), radial-gradient(ellipse 60% 50% at 100% 100%, rgba(255,102,0,0.10), transparent 60%), radial-gradient(ellipse 80% 60% at 50% 100%, rgba(20,17,14,0.6), transparent 70%)",
+        }}
+      />
+
+      {/* Dot grid */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 0,
+          backgroundImage:
+            "radial-gradient(rgba(245,241,232,0.06) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+          opacity: 0.4,
+          maskImage:
+            "radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 90%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 90%)",
+        }}
+      />
+
+      {/* Ghost wordmark — massive outlined "CREATIVE MONK" drifting slowly */}
+      <GhostWordmark />
+
+      {/* Two diagonal marquees crossing the canvas at opposite angles */}
+      <DiagonalMarquee
+        items={["BRAND", "WEB", "GROWTH", "MOTION", "STRATEGY", "DESIGN", "STORY", "IDENTITY"]}
+        angle={-9}
+        top="22%"
+        duration={70}
+        direction="forward"
+      />
+      <DiagonalMarquee
+        items={["+312% LEADS", "4.9★ RATED", "142+ BRANDS", "SHIPPED IN 45 DAYS", "FIXED SCOPE", "<4HR REPLY"]}
+        angle={9}
+        top="62%"
+        duration={90}
+        direction="reverse"
+      />
+    </>
+  );
+}
+
+function GhostWordmark() {
+  return (
+    <div
+      aria-hidden
+      className="absolute inset-0 pointer-events-none overflow-hidden"
+      style={{ zIndex: 0 }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 0.55, scale: 1, rotate: [0, -0.6, 0] }}
+        transition={{
+          opacity: { duration: 1.4, delay: 0.3 },
+          scale:   { duration: 1.4, delay: 0.3 },
+          rotate:  { duration: 18, repeat: Infinity, ease: "easeInOut" },
+        }}
+        className="absolute inset-0 grid place-items-center"
+      >
+        <span
+          className="whitespace-nowrap select-none"
+          style={{
+            fontFamily: "var(--font-funnel-display)",
+            fontWeight: 700,
+            fontSize: "clamp(8rem, 18vw, 22rem)",
+            letterSpacing: "-0.05em",
+            lineHeight: 0.85,
+            color: "transparent",
+            WebkitTextStroke: "1px rgba(245,241,232,0.08)",
+            textShadow: "none",
+          }}
+        >
+          CREATIVE&nbsp;MONK
+        </span>
+      </motion.div>
+    </div>
+  );
+}
+
+function DiagonalMarquee({
+  items,
+  angle,
+  top,
+  duration,
+  direction,
+}: {
+  items: string[];
+  angle: number;
+  top: string;
+  duration: number;
+  direction: "forward" | "reverse";
+}) {
+  return (
+    <div
+      aria-hidden
+      className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+      style={{
+        zIndex: 0,
+        top,
+        width: "140vw",
+        transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+        opacity: 0.16,
+      }}
+    >
+      <MarqueeStrip duration={duration} direction={direction} pauseOnHover={false}>
+        {items.map((item, i) => (
+          <span key={i} className="flex items-center gap-10 pr-10 py-3">
+            <span
+              className="whitespace-nowrap"
+              style={{
+                fontFamily: "var(--font-funnel-display)",
+                fontWeight: 600,
+                fontSize: "clamp(2rem, 4.5vw, 4rem)",
+                letterSpacing: "-0.02em",
+                color: "var(--site-fg)",
+              }}
+            >
+              {item}
+            </span>
+            <span
+              aria-hidden
+              style={{ color: "var(--site-accent)", fontSize: 22 }}
+            >
+              ◆
+            </span>
+          </span>
+        ))}
+      </MarqueeStrip>
+    </div>
+  );
+}
+
+/* ─── CursorGlow — radial light following the pointer ───────── */
+function CursorGlow() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const isTouch =
+      typeof window !== "undefined" &&
+      (window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window);
+    if (isTouch) return;
+
+    let mx = window.innerWidth / 2;
+    let my = window.innerHeight / 2;
+    let cx = mx;
+    let cy = my;
+    let raf = 0;
+
+    function onMove(e: MouseEvent) {
+      mx = e.clientX;
+      my = e.clientY;
+    }
+    function tick() {
+      cx += (mx - cx) * 0.1;
+      cy += (my - cy) * 0.1;
+      if (ref.current) {
+        ref.current.style.setProperty("--gx", `${cx}px`);
+        ref.current.style.setProperty("--gy", `${cy}px`);
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    window.addEventListener("mousemove", onMove);
+    raf = requestAnimationFrame(tick);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      aria-hidden
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        zIndex: 1,
+        background:
+          "radial-gradient(circle 480px at var(--gx, 50%) var(--gy, 50%), rgba(255,102,0,0.14), transparent 65%)",
+        mixBlendMode: "screen",
+      }}
+    />
+  );
+}
+
+/* ─── Annotation Marks — designer's working-file callouts ──── */
+function AnnotationMarks() {
+  return (
+    <svg
+      aria-hidden
+      className="absolute inset-0 pointer-events-none hidden lg:block"
+      style={{ zIndex: 2 }}
+      width="100%"
+      height="100%"
+      preserveAspectRatio="none"
+      viewBox="0 0 1440 900"
+    >
+      <defs>
+        <marker
+          id="dot-end"
+          viewBox="0 0 10 10"
+          refX="5"
+          refY="5"
+          markerWidth="5"
+          markerHeight="5"
+        >
+          <circle cx="5" cy="5" r="3" fill="var(--site-accent)" />
+        </marker>
+      </defs>
+
+      {/* Annotation 1 — top right, points to "OPEN" indicator */}
+      <motion.g
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.4 }}
+        transition={{ duration: 1.2, delay: 1.6 }}
+      >
+        <motion.path
+          d="M 1280 200 C 1240 220, 1200 230, 1170 250"
+          fill="none"
+          stroke="var(--site-accent)"
+          strokeWidth="1"
+          strokeDasharray="2 3"
+          markerEnd="url(#dot-end)"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 1.0, delay: 1.6, ease: "easeOut" }}
+        />
+        <text
+          x="1280"
+          y="186"
+          fill="var(--site-accent)"
+          fontFamily="var(--font-jb-mono), monospace"
+          fontSize="10"
+          letterSpacing="0.18em"
+          textAnchor="end"
+        >
+          01 / LIVE
+        </text>
+      </motion.g>
+
+      {/* Annotation 2 — left side, points to morphing word */}
+      <motion.g
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.4 }}
+        transition={{ duration: 1.2, delay: 1.9 }}
+      >
+        <motion.path
+          d="M 80 480 C 140 470, 200 460, 260 470"
+          fill="none"
+          stroke="var(--site-accent)"
+          strokeWidth="1"
+          strokeDasharray="2 3"
+          markerEnd="url(#dot-end)"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 1.0, delay: 1.9, ease: "easeOut" }}
+        />
+        <text
+          x="76"
+          y="468"
+          fill="var(--site-accent)"
+          fontFamily="var(--font-jb-mono), monospace"
+          fontSize="10"
+          letterSpacing="0.18em"
+        >
+          02 / KINETIC
+        </text>
+      </motion.g>
+
+      {/* Annotation 3 — bottom right, points to CTA area */}
+      <motion.g
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.4 }}
+        transition={{ duration: 1.2, delay: 2.2 }}
+      >
+        <motion.path
+          d="M 1280 720 C 1180 700, 1080 680, 980 660"
+          fill="none"
+          stroke="var(--site-accent)"
+          strokeWidth="1"
+          strokeDasharray="2 3"
+          markerEnd="url(#dot-end)"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 1.0, delay: 2.2, ease: "easeOut" }}
+        />
+        <text
+          x="1280"
+          y="708"
+          fill="var(--site-accent)"
+          fontFamily="var(--font-jb-mono), monospace"
+          fontSize="10"
+          letterSpacing="0.18em"
+          textAnchor="end"
+        >
+          03 / 60-SEC BRIEF
+        </text>
+      </motion.g>
+    </svg>
+  );
+}
+
+/* ─── Manifesto — headline with morphing word in the middle ─── */
+function Manifesto({ wordIdx }: { wordIdx: number }) {
+  const currentWord = MORPHING_WORDS[wordIdx];
+
+  return (
+    <h1
+      className="site-display"
+      style={{
+        fontSize: "clamp(2.5rem, 7vw, 6.5rem)",
+        letterSpacing: "-0.038em",
+        lineHeight: 0.96,
+        fontWeight: 600,
+        color: "var(--site-fg)",
+      }}
+    >
+      {/* Line A */}
+      <motion.span
+        initial={{ opacity: 0, y: 22, filter: "blur(10px)" }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        transition={{ duration: 1.0, delay: 0.3, ease: [0.2, 0.7, 0.2, 1] }}
+        className="block"
+      >
+        We design
+      </motion.span>
+
+      {/* Line B — MORPHING WORD with flap-clock mask reveal */}
+      <span
+        className="block relative"
+        style={{
+          height: "1em",
+          overflow: "hidden",
+          // give morphing word breathing room
+          paddingBottom: "0.08em",
+          marginBottom: "-0.08em",
+        }}
+      >
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={currentWord}
+            initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: "0%", opacity: 1 }}
+            exit={{ y: "-100%", opacity: 0 }}
+            transition={{ duration: 0.7, ease: [0.2, 0.7, 0.2, 1] }}
+            className="absolute inset-0 block"
+            style={{
+              color: "transparent",
+              WebkitTextStroke: "1.4px var(--site-accent)",
+              // @ts-expect-error vendor
+              textStroke: "1.4px var(--site-accent)",
+              letterSpacing: "-0.025em",
+              textTransform: "uppercase",
+              textShadow: "0 0 32px rgba(255,102,0,0.18)",
+              willChange: "transform",
+            }}
+          >
+            {currentWord}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+
+      {/* Line C — italic accent */}
+      <motion.span
+        initial={{ opacity: 0, y: 22, filter: "blur(10px)" }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        transition={{ duration: 1.0, delay: 0.65, ease: [0.2, 0.7, 0.2, 1] }}
+        className="block"
+        style={{
+          fontFamily: "var(--font-newsreader), Georgia, serif",
+          fontStyle: "italic",
+          fontWeight: 500,
+        }}
+      >
+        that move{" "}
+        <span style={{ position: "relative", display: "inline-block", color: "var(--site-accent)" }}>
+          markets.
+          <motion.svg
+            aria-hidden
+            viewBox="0 0 320 8"
+            preserveAspectRatio="none"
+            className="absolute left-0"
+            style={{ bottom: "-0.02em", height: "0.1em", width: "100%" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 1.3 }}
+          >
+            <motion.path
+              d="M2 5 Q 80 1, 160 4 T 318 3"
+              fill="none"
+              stroke="var(--site-accent)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 1.1, delay: 1.3, ease: "easeOut" }}
+            />
+          </motion.svg>
+        </span>
+      </motion.span>
+    </h1>
   );
 }
 
@@ -281,396 +607,98 @@ function Eyebrow({ text }: { text: string }) {
   );
 }
 
-/* ─── Statement — three lines, three typographic treatments ─── */
-function Statement({
-  lineA,
-  lineB,
-  accent,
-  lineC,
-}: {
-  lineA: string;
-  lineB: string;
-  accent: string;
-  lineC: string;
-}) {
-  return (
-    <h1
-      className="site-display"
-      style={{
-        fontSize: "clamp(2.5rem, 6.8vw, 6.5rem)",
-        letterSpacing: "-0.035em",
-        lineHeight: 0.96,
-        fontWeight: 600,
-        color: "var(--site-fg)",
-        textShadow: "0 2px 32px rgba(0,0,0,0.45)",
-      }}
-    >
-      <motion.span
-        initial={{ opacity: 0, y: 22, filter: "blur(10px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 1.0, delay: 0.3, ease: [0.2, 0.7, 0.2, 1] }}
-        className="block"
-      >
-        {lineA}
-      </motion.span>
+/* ─── LiveStack — right column status indicators ───────────── */
+function LiveStack({ wordIdx }: { wordIdx: number }) {
+  const word = MORPHING_WORDS[wordIdx];
 
-      <motion.span
-        initial={{ opacity: 0, y: 22, filter: "blur(10px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 1.0, delay: 0.45, ease: [0.2, 0.7, 0.2, 1] }}
-        className="block"
-        style={{
-          color: "transparent",
-          WebkitTextStroke: "1.4px var(--site-fg)",
-          // @ts-expect-error - vendor
-          textStroke: "1.4px var(--site-fg)",
-          letterSpacing: "-0.02em",
-          textTransform: "uppercase",
-        }}
-      >
-        {lineB}
-      </motion.span>
-
-      <motion.span
-        initial={{ opacity: 0, y: 22, filter: "blur(10px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 1.0, delay: 0.6, ease: [0.2, 0.7, 0.2, 1] }}
-        className="block"
-        style={{
-          fontFamily: "var(--font-newsreader), Georgia, serif",
-          fontStyle: "italic",
-          fontWeight: 500,
-          color: "var(--site-fg)",
-        }}
-      >
-        {accent}{" "}
-        <span
-          style={{
-            position: "relative",
-            display: "inline-block",
-            color: "var(--site-accent)",
-          }}
-        >
-          {lineC || ""}
-          {lineC ? (
-            <motion.svg
-              aria-hidden
-              viewBox="0 0 320 8"
-              preserveAspectRatio="none"
-              className="absolute left-0"
-              style={{ bottom: "-0.02em", height: "0.1em", width: "100%" }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4, delay: 1.2 }}
-            >
-              <motion.path
-                d="M2 5 Q 80 1, 160 4 T 318 3"
-                fill="none"
-                stroke="var(--site-accent)"
-                strokeWidth="3"
-                strokeLinecap="round"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 1.1, delay: 1.2, ease: "easeOut" }}
-              />
-            </motion.svg>
-          ) : null}
-        </span>
-      </motion.span>
-    </h1>
-  );
-}
-
-/* ─── ReelOverlay — vignette + accent wash + dot grid + glow ── */
-function ReelOverlay({ activeIdx }: { activeIdx: number }) {
-  const overlayRef = useRef<HTMLDivElement | null>(null);
-  const accent = FEATURED_REEL[activeIdx]?.accent || "#FF6600";
-
-  // Cursor-tracking radial glow
-  useEffect(() => {
-    const el = overlayRef.current;
-    if (!el) return;
-    const isTouch =
-      typeof window !== "undefined" &&
-      (window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window);
-    if (isTouch) return;
-
-    let mx = window.innerWidth / 2;
-    let my = window.innerHeight / 2;
-    let cx = mx;
-    let cy = my;
-    let raf = 0;
-
-    function onMove(e: MouseEvent) {
-      mx = e.clientX;
-      my = e.clientY;
-    }
-    function tick() {
-      cx += (mx - cx) * 0.08;
-      cy += (my - cy) * 0.08;
-      if (overlayRef.current) {
-        overlayRef.current.style.setProperty("--gx", `${cx}px`);
-        overlayRef.current.style.setProperty("--gy", `${cy}px`);
-      }
-      raf = requestAnimationFrame(tick);
-    }
-    window.addEventListener("mousemove", onMove);
-    raf = requestAnimationFrame(tick);
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
-
-  return (
-    <>
-      {/* 1. Dark vignette — lighter on the right so the image breathes,
-              stronger on the left for type contrast. */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          zIndex: 1,
-          background:
-            "linear-gradient(95deg, rgba(10,8,7,0.88) 0%, rgba(10,8,7,0.72) 30%, rgba(10,8,7,0.32) 60%, rgba(10,8,7,0.18) 100%), linear-gradient(180deg, rgba(10,8,7,0.45) 0%, transparent 25%, rgba(10,8,7,0.70) 100%)",
-        }}
-      />
-
-      {/* 2. Accent wash — tinted with the active slide's accent */}
-      <motion.div
-        key={accent}
-        aria-hidden
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.18 }}
-        transition={{ duration: 1.2 }}
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          zIndex: 2,
-          background: `radial-gradient(ellipse 70% 60% at 100% 0%, ${accent}88, transparent 60%)`,
-        }}
-      />
-
-      {/* 3. Dot-grid texture — soft, masked center-out */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          zIndex: 3,
-          backgroundImage:
-            "radial-gradient(rgba(245,241,232,0.10) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-          opacity: 0.45,
-          maskImage:
-            "radial-gradient(ellipse 80% 80% at 50% 60%, black 30%, transparent 90%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 80% 80% at 50% 60%, black 30%, transparent 90%)",
-        }}
-      />
-
-      {/* 4. Cursor-tracking radial glow */}
-      <div
-        ref={overlayRef}
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          zIndex: 4,
-          background:
-            "radial-gradient(circle 360px at var(--gx, 50%) var(--gy, 50%), rgba(255,102,0,0.10), transparent 70%)",
-          mixBlendMode: "screen",
-        }}
-      />
-    </>
-  );
-}
-
-/* ─── ReelCounter — right edge: 01/05 + dot navigation ───── */
-function ReelCounter({
-  activeIdx,
-  total,
-  onJump,
-}: {
-  activeIdx: number;
-  total: number;
-  onJump: (i: number) => void;
-}) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: 16 }}
+      initial={{ opacity: 0, x: 24 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.9, delay: 0.7 }}
-      className="flex flex-col items-end gap-5 site-glass px-5 py-5"
+      transition={{ duration: 0.9, delay: 0.5 }}
+      className="flex flex-col items-end gap-5 site-glass px-6 py-6"
       style={{ borderRadius: 14, minWidth: 220 }}
     >
-      <div className="flex items-baseline gap-3 site-mono" style={{ color: "var(--site-fg-mute)" }}>
-        <span
-          className="site-display"
-          style={{
-            fontSize: "clamp(2.4rem, 3.6vw, 3.2rem)",
-            fontWeight: 600,
-            letterSpacing: "-0.03em",
-            color: "var(--site-fg)",
-            lineHeight: 0.85,
-          }}
-        >
-          {String(activeIdx + 1).padStart(2, "0")}
-        </span>
-        <span style={{ fontSize: 12, letterSpacing: "0.22em" }}>/</span>
-        <span style={{ fontSize: 12, letterSpacing: "0.22em" }}>
-          {String(total).padStart(2, "0")}
-        </span>
-      </div>
-
-      <span
-        className="site-eyebrow"
-        style={{ color: "var(--site-fg-mute)" }}
-      >
-        Selected work · the reel
-      </span>
-
-      <div className="flex items-center gap-1.5 mt-1">
-        {Array.from({ length: total }).map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => onJump(i)}
-            aria-label={`Show slide ${i + 1}`}
-            data-cursor="link"
-            className="transition-all"
-            style={{
-              width: i === activeIdx ? 28 : 8,
-              height: 3,
-              borderRadius: 2,
-              background:
-                i === activeIdx ? "var(--site-accent)" : "rgba(245,241,232,0.22)",
-              boxShadow:
-                i === activeIdx ? "0 0 12px rgba(255,102,0,0.6)" : "none",
-              cursor: "pointer",
-              border: "none",
-            }}
-          />
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
-/* ─── NowShowing — bottom-anchored live caption ────────────── */
-function NowShowing({ item }: { item: ReelItem }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.95, delay: 1.2 }}
-      className="mt-12 flex items-start justify-between gap-6 flex-wrap"
-      style={{ borderTop: "1px solid rgba(245,241,232,0.12)", paddingTop: 18 }}
-    >
-      <div className="flex items-start gap-5">
+      {/* Live dot + label */}
+      <div className="flex items-center gap-2.5">
         <span
           aria-hidden
           style={{
-            display: "inline-block",
-            marginTop: 6,
             width: 7,
             height: 7,
             borderRadius: "50%",
-            background: "var(--site-accent)",
-            boxShadow: "0 0 10px rgba(255,102,0,0.7)",
-            animation: "reel-pulse 1.6s ease-in-out infinite",
+            background: "#30A46C",
+            boxShadow: "0 0 10px rgba(48,164,108,0.7)",
+            animation: "site-status-pulse 1.6s ease-in-out infinite",
           }}
         />
-        <div>
-          <p
-            className="site-mono"
-            style={{
-              fontSize: 10.5,
-              letterSpacing: "0.24em",
-              textTransform: "uppercase",
-              color: "var(--site-fg-mute)",
-            }}
-          >
-            Now showing
-          </p>
-          <motion.p
-            key={`${item.client}-name`}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55 }}
-            className="site-display mt-1"
-            style={{
-              fontSize: "clamp(17px, 1.6vw, 22px)",
-              letterSpacing: "-0.018em",
-              color: "var(--site-fg)",
-            }}
-          >
-            {item.client}{" "}
-            <span
-              style={{
-                fontFamily: "var(--font-newsreader), Georgia, serif",
-                fontStyle: "italic",
-                fontWeight: 500,
-                color: "var(--site-fg-mute)",
-                fontSize: "0.82em",
-              }}
-            >
-              · {item.discipline}
-            </span>
-          </motion.p>
-        </div>
+        <span className="site-eyebrow" style={{ color: "var(--site-fg-mute)" }}>
+          Studio · live
+        </span>
       </div>
 
-      <motion.div
-        key={`${item.client}-meta`}
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, delay: 0.1 }}
-        className="flex items-center gap-5 ml-auto"
+      {/* Big stat */}
+      <div className="text-right">
+        <p
+          className="site-mono"
+          style={{
+            fontSize: 10.5,
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            color: "var(--site-fg-dim)",
+          }}
+        >
+          Currently designing
+        </p>
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={word}
+            initial={{ y: 12, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -12, opacity: 0 }}
+            transition={{ duration: 0.55, ease: [0.2, 0.7, 0.2, 1] }}
+            className="site-display mt-1.5"
+            style={{
+              fontSize: 22,
+              letterSpacing: "-0.025em",
+              color: "var(--site-accent)",
+              fontWeight: 600,
+              lineHeight: 1,
+            }}
+          >
+            {word.toLowerCase()}
+          </motion.p>
+        </AnimatePresence>
+      </div>
+
+      {/* Tiny meta */}
+      <div
+        className="w-full flex items-center justify-between pt-4"
+        style={{ borderTop: "1px dashed var(--site-line-strong)" }}
       >
         <span
           className="site-mono"
           style={{
-            fontSize: 11,
-            letterSpacing: "0.2em",
+            fontSize: 9.5,
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            color: "var(--site-fg-dim)",
+          }}
+        >
+          Q3 / 2026
+        </span>
+        <span
+          className="site-mono"
+          style={{
+            fontSize: 9.5,
+            letterSpacing: "0.22em",
             textTransform: "uppercase",
             color: "var(--site-accent)",
           }}
         >
-          {item.outcome}
+          3 slots open
         </span>
-        <span
-          aria-hidden
-          style={{
-            display: "inline-block",
-            width: 1,
-            height: 16,
-            background: "rgba(245,241,232,0.2)",
-          }}
-        />
-        <span
-          className="site-mono"
-          style={{
-            fontSize: 11,
-            letterSpacing: "0.22em",
-            textTransform: "uppercase",
-            color: "var(--site-fg-mute)",
-          }}
-        >
-          {item.year}
-        </span>
-        <Link
-          href="/portfolio"
-          data-cursor="link"
-          className="site-mono group inline-flex items-center gap-1.5"
-          style={{
-            fontSize: 11,
-            letterSpacing: "0.22em",
-            textTransform: "uppercase",
-            color: "var(--site-fg)",
-          }}
-        >
-          Case study
-          <span aria-hidden className="group-hover:translate-x-1 transition-transform">↗</span>
-        </Link>
-      </motion.div>
+      </div>
     </motion.div>
   );
 }
