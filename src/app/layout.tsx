@@ -18,6 +18,9 @@ import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SmoothScrollProvider } from "@/components/motion/smooth-scroll-provider";
+import { CursorHalo } from "@/components/motion/cursor-halo";
+import { SiteLoader } from "@/components/site/loader";
 
 
 
@@ -231,6 +234,10 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-instrument-sans), system-ui, sans-serif" }}
         className="overflow-x-hidden"
       >
+        <SiteLoader />
+        <SmoothScrollProvider />
+        <CursorHalo />
+        <div className="site-grain" aria-hidden />
         <div className="flex min-h-screen flex-col overflow-x-hidden">
           <Toaster richColors position="top-center" />
           <Navbar />

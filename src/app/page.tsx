@@ -3,12 +3,10 @@ import { Hero } from "@/components/sections/hero";
 import { ClientMarquee } from "@/components/sections/client-marquee";
 import { Services } from "@/components/sections/services";
 import { Process } from "@/components/sections/process";
-import { Portfolio } from "@/components/sections/portfolio";
 import { Testimonials } from "@/components/sections/testimonials";
 import { FAQ } from "@/components/sections/faq";
-import { RecentBlogs } from "@/components/sections/recent-blogs";
-import { ContactForm } from "@/components/sections/contact-form";
 import { CTA } from "@/components/sections/cta";
+import { DarkThemeFlag } from "@/components/site/dark-theme-flag";
 
 export const metadata: Metadata = {
   title: "Top Digital Marketing Company in Chandigarh | The Creative Monk",
@@ -119,15 +117,13 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <DarkThemeFlag />
       <Hero />
       <ClientMarquee />
       <Services />
-      <Portfolio />
       <Process />
       <Testimonials />
-      <RecentBlogs />
       <FAQ />
-      <ContactForm />
       <CTA />
     </>
   );

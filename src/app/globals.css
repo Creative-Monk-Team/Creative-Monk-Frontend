@@ -1124,6 +1124,276 @@
   pointer-events: none;
 }
 
+/* ── Public site: "After-hours Studio" dark aesthetic ────────
+   Token set used by the redesigned homepage. Scoped to the body
+   element via [data-theme="dark"] which the root layout sets when
+   on routes that opt into the dark aesthetic. */
+:root,
+[data-theme="dark"] {
+  --site-bg:            #0A0807;   /* warm near-black */
+  --site-bg-soft:       #14110E;
+  --site-bg-elevated:   #1A1612;
+  --site-fg:            #F5F1E8;   /* paper-white */
+  --site-fg-mute:       rgba(245,241,232,0.62);
+  --site-fg-dim:        rgba(245,241,232,0.36);
+  --site-line:          rgba(245,241,232,0.10);
+  --site-line-strong:   rgba(245,241,232,0.18);
+  --site-accent:        #FF6600;   /* brand */
+  --site-accent-hot:    #FF8A33;
+  --site-accent-deep:   #C24A00;
+  --site-glow:          rgba(255, 102, 0, 0.35);
+  --site-glow-soft:     rgba(255, 102, 0, 0.12);
+}
+
+[data-theme="dark"] body {
+  background: var(--site-bg);
+  color: var(--site-fg);
+}
+
+/* Hide the system cursor on dark theme over interactive layers
+   (we draw our own). Falls back to default if cursor primitive
+   isn't mounted (e.g., touch devices). */
+[data-theme="dark"][data-cursor-active="true"] body,
+[data-theme="dark"][data-cursor-active="true"] body * {
+  cursor: none;
+}
+
+/* ── Site utilities ────────────────────────────────────────── */
+.site-eyebrow {
+  font-family: var(--font-jb-mono, ui-monospace, monospace);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--site-fg-mute);
+}
+.site-display {
+  font-family: var(--font-funnel-display), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 0.96;
+}
+.site-italic {
+  font-family: var(--font-newsreader), Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+}
+.site-mono {
+  font-family: var(--font-jb-mono), ui-monospace, monospace;
+  font-feature-settings: "tnum", "ss02";
+}
+
+/* Grain overlay — adds tactile film texture, very subtle */
+.site-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Word-reveal helper — used by TextReveal */
+.word-reveal {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: baseline;
+  padding: 0 0.06em 0.18em 0.06em;
+  margin: 0 -0.06em;
+}
+.word-reveal > span {
+  display: inline-block;
+  transform: translateY(110%);
+  will-change: transform;
+}
+
+/* Glow utility */
+.site-neon {
+  box-shadow:
+    0 0 0 1px rgba(255,102,0,0.6),
+    0 0 24px -6px rgba(255,102,0,0.55),
+    0 0 56px -10px rgba(255,102,0,0.28);
+}
+.site-neon-text {
+  text-shadow:
+    0 0 24px rgba(255,102,0,0.45),
+    0 0 60px rgba(255,102,0,0.25);
+}
+
+/* Glass panel — light frost on the dark canvas */
+.site-glass {
+  background: rgba(245, 241, 232, 0.03);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid var(--site-line);
+}
+
+/* Animated gradient mesh — sits behind hero/cta */
+.site-mesh {
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(80px);
+  opacity: 0.55;
+}
+.site-mesh::before,
+.site-mesh::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+}
+.site-mesh::before {
+  left: 8%;
+  top: 12%;
+  width: 38vw;
+  height: 38vw;
+  background: radial-gradient(circle, rgba(255,102,0,0.55) 0%, transparent 65%);
+  animation: site-mesh-a 22s ease-in-out infinite alternate;
+}
+.site-mesh::after {
+  right: 4%;
+  bottom: 10%;
+  width: 44vw;
+  height: 44vw;
+  background: radial-gradient(circle, rgba(140,70,200,0.32) 0%, transparent 60%);
+  animation: site-mesh-b 28s ease-in-out infinite alternate;
+}
+@keyframes site-mesh-a {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(8vw, -6vh) scale(1.18); }
+  100% { transform: translate(-4vw, 4vh) scale(0.92); }
+}
+@keyframes site-mesh-b {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-6vw, 8vh) scale(1.12); }
+  100% { transform: translate(6vw, -4vh) scale(0.86); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-mesh::before,
+  .site-mesh::after {
+    animation: none;
+  }
+}
+
+/* ── Theme-aware overrides for the existing Navbar/Footer ──────
+   The nav + footer use cream `#FAF7F2` and `text-stone-*` classes
+   that read fine on the original editorial theme but invert on
+   dark. These overrides take effect only on routes that opt into
+   the dark theme via [data-theme="dark"] on <html>. */
+
+/* Header background — beats the inline style via attr selector + !important */
+[data-theme="dark"] header[style*="rgba(250, 247, 242"] {
+  background: rgba(10, 8, 7, 0.78) !important;
+  border-bottom-color: var(--site-line) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(140%) !important;
+  backdrop-filter: blur(14px) saturate(140%) !important;
+}
+
+/* Generic stone-text and stone-borders inside nav + footer */
+[data-theme="dark"] header,
+[data-theme="dark"] footer {
+  color: var(--site-fg);
+}
+[data-theme="dark"] header .text-stone-900,
+[data-theme="dark"] footer .text-stone-900 {
+  color: var(--site-fg) !important;
+}
+[data-theme="dark"] header .text-stone-700,
+[data-theme="dark"] footer .text-stone-700 {
+  color: var(--site-fg) !important;
+}
+[data-theme="dark"] header .text-stone-600,
+[data-theme="dark"] footer .text-stone-600 {
+  color: var(--site-fg-mute) !important;
+}
+[data-theme="dark"] header .text-stone-500,
+[data-theme="dark"] footer .text-stone-500 {
+  color: var(--site-fg-mute) !important;
+}
+[data-theme="dark"] header .text-stone-400,
+[data-theme="dark"] footer .text-stone-400 {
+  color: var(--site-fg-dim) !important;
+}
+[data-theme="dark"] header .text-stone-300,
+[data-theme="dark"] footer .text-stone-300 {
+  color: var(--site-fg-mute) !important;
+}
+[data-theme="dark"] header .text-stone-100,
+[data-theme="dark"] footer .text-stone-100 {
+  color: var(--site-fg) !important;
+}
+[data-theme="dark"] header .text-stone-50,
+[data-theme="dark"] footer .text-stone-50 {
+  color: var(--site-bg) !important;
+}
+
+[data-theme="dark"] header .border-stone-900\/10,
+[data-theme="dark"] header .border-stone-900\/15,
+[data-theme="dark"] footer .border-stone-900\/10,
+[data-theme="dark"] footer .border-stone-900\/15 {
+  border-color: var(--site-line) !important;
+}
+
+/* Stone-900 backgrounds (e.g. nav top utility, mobile menu toggle,
+   "Start a project" CTA) — swap to paper-white pill on dark canvas */
+[data-theme="dark"] header .bg-stone-900,
+[data-theme="dark"] footer .bg-stone-900 {
+  background: var(--site-fg) !important;
+  color: var(--site-bg) !important;
+}
+[data-theme="dark"] header .bg-stone-900 .text-stone-50,
+[data-theme="dark"] footer .bg-stone-900 .text-stone-50 {
+  color: var(--site-bg) !important;
+}
+
+/* Cream surfaces inside nav (mega dropdown bg) + footer body */
+[data-theme="dark"] header .bg-\[\#FAF7F2\],
+[data-theme="dark"] footer.bg-\[\#FAF7F2\],
+[data-theme="dark"] footer .bg-\[\#FAF7F2\] {
+  background: var(--site-bg-soft) !important;
+  border-color: var(--site-line) !important;
+}
+
+/* Hover-to-white states inside dropdowns */
+[data-theme="dark"] header .hover\:bg-white:hover,
+[data-theme="dark"] footer .hover\:bg-white:hover {
+  background: var(--site-bg-elevated) !important;
+}
+
+/* Mobile menu fullscreen overlay */
+[data-theme="dark"] .xl\:hidden.bg-\[\#FAF7F2\] {
+  background: var(--site-bg) !important;
+}
+
+/* Paper-grain on footer — kill or invert subtly */
+[data-theme="dark"] footer .hero-grain-paper {
+  display: none;
+}
+
+/* Active link dot on dark — stays orange */
+[data-theme="dark"] header .bg-\[\#FF6600\] {
+  background: var(--site-accent) !important;
+}
+
+/* Marquee — used by client wall, hero strip etc. */
+.site-marquee {
+  display: flex;
+  width: max-content;
+  animation: site-marquee var(--marquee-dur, 50s) linear infinite;
+}
+.site-marquee[data-direction="reverse"] {
+  animation-direction: reverse;
+}
+.site-marquee-pause:hover .site-marquee {
+  animation-play-state: paused;
+}
+@keyframes site-marquee {
+  to { transform: translateX(-50%); }
+}
+
 /* Grid backdrop — used on overview/login for atmosphere */
 .admin-grid-bg {
   background-image:
