@@ -39,7 +39,7 @@ export default function HomepageAdminIndex() {
         {SECTIONS.map((section) => (
           <Link
             key={section.key}
-            href={`/admin/super/homepage/${section.key}`}
+            href={`/admin/dashboard/homepage/${section.key}`}
             className="group flex items-start justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 transition-all hover:border-[#FF6600]/40 hover:shadow-sm"
           >
             <div className="min-w-0 flex-1">

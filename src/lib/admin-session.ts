@@ -34,7 +34,6 @@ export function clearAdminSession() {
   localStorage.removeItem(USER_KEY);
 }
 
-export function getRoleHomePath(role: AdminRole) {
-  return "/admin/dashboard"; // Force all roles to the SEO expert dashboard
-  // return role === "super_admin" ? "/admin/super" : "/admin/dashboard";
+export function getRoleHomePath(_role?: AdminRole) {
+  return "/admin/dashboard";
 }

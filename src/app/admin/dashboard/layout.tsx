@@ -15,6 +15,7 @@ import type { AdminUser } from "@/lib/types";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Overview" },
+  { href: "/admin/dashboard/homepage", label: "Homepage Content" },
   { href: "/admin/dashboard/services", label: "Services" },
   { href: "/admin/dashboard/case-studies", label: "Case Studies" },
   { href: "/admin/dashboard/portfolio", label: "Portfolio" },

@@ -23,7 +23,7 @@ type Bucket = {
 
 /* Fallback bucket list — used only if the API fetch fails. Source of
    truth lives in DB; seed it via Creative-Monk-Backend/scripts/
-   seed-homepage-content.js. Edit copy in /admin/super/homepage/services. */
+   seed-homepage-content.js. Edit copy in /admin/dashboard/homepage/services. */
 const FALLBACK_buckets: Bucket[] = [
   {
     roman: "I",

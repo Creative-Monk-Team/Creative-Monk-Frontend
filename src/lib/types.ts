@@ -275,7 +275,7 @@ export type DashboardStats = {
   careers: number;
 };
 
-export type AdminRole = "seo_admin" | "super_admin";
+export type AdminRole = "super_admin";
 
 export type AdminUser = {
   email: string;

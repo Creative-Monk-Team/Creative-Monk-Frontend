@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { homepageContentApi } from "@/lib/api";
 
 /* Fallback content. The DB is authoritative; this only renders if
-   the API call fails. Edit copy in /admin/super/homepage/hero. */
+   the API call fails. Edit copy in /admin/dashboard/homepage/hero. */
 type DiaryEntry = { day: string; client: string; activity: string; status: string; progress: number };
 type BentoStat = { value: number | string; suffix?: string; label: string; animate?: boolean };
 type HeroPayload = {

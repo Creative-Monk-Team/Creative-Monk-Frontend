@@ -9,7 +9,7 @@ import { homepageContentApi } from "@/lib/api";
 /* ═══════════════════════════════════════════════════════════════
    About page — content lives in the DB under section "about".
    Seed it via Creative-Monk-Backend/scripts/seed-homepage-content.js.
-   Edit copy in /admin/super/homepage/about.
+   Edit copy in /admin/dashboard/homepage/about.
 ═══════════════════════════════════════════════════════════════ */
 
 type AboutPayload = {
