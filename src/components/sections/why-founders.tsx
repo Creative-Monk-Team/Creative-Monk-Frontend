@@ -21,12 +21,12 @@ type Pillar = {
 const PILLARS: Pillar[] = [
   {
     num: "01",
-    big: "<4",
-    bigSuffix: "hr",
-    title: "Founder replies, not a portal",
+    big: "100",
+    bigSuffix: "%",
+    title: "Senior craft on every project",
     description:
-      "Email, WhatsApp, Slack — pick the channel. We answer inside four working hours, every working day. The team you meet on the call is the team that ships.",
-    evidence: "87 founders · 0 ghost replies",
+      "No junior teams hiding behind a senior pitch. The strategists, designers and engineers in the kickoff are the same people who ship the work — from first sketch to launch day.",
+    evidence: "Zero outsourcing · 14-person team",
   },
   {
     num: "02",
@@ -34,35 +34,36 @@ const PILLARS: Pillar[] = [
     bigSuffix: "days",
     title: "Fixed scope. Fixed fee.",
     description:
-      "No hourly billing. No mystery change orders. You see the milestone calendar and the total on day zero — and we sign it before the meter starts.",
-    evidence: "Written quote inside 48 hrs",
+      "No hourly billing, no mystery change orders. You see the milestone calendar and the total on day one — and we sign it before any work begins. Predictable from start to ship.",
+    evidence: "Quote inside 48 hours",
   },
   {
     num: "03",
     big: "2",
-    bigSuffix: "routes",
-    title: "We take a stance",
+    bigSuffix: "directions",
+    title: "Strategy with a point of view",
     description:
-      "Two clearly opposing creative directions on Day 10 — never three. You pick a side instead of compromising to a safe middle. We don't hide behind options.",
+      "On Day 10 you see two clearly opposing creative directions — never three. You pick a side instead of compromising to a safe middle. We back our recommendation in writing.",
     evidence: "+312% avg lead lift in 90 days",
   },
   {
     num: "04",
     big: "3.2",
     bigSuffix: "yrs",
-    title: "Built for year two",
+    title: "Built to compound",
     description:
-      "We don't optimise for the first 90 days. Every system we ship — identity, website, content — is designed to keep paying back two years out. That's why clients stay.",
-    evidence: "60% move to a retainer",
+      "Every system we ship — identity, website, content, growth — is designed to keep paying back two years out. That's why the average client stays for over three.",
+    evidence: "60% move to long-term retainer",
   },
 ];
 
 export function WhyFounders() {
   return (
     <section
+      id="why"
       className="relative overflow-hidden"
       style={{ background: "var(--site-bg)", color: "var(--site-fg)" }}
-      aria-label="Why founders pick us"
+      aria-label="Why ambitious brands work with us"
     >
       <div className="container relative z-10 py-24 md:py-32">
         {/* Header */}
@@ -76,22 +77,21 @@ export function WhyFounders() {
           >
             <div className="flex items-center gap-3 mb-6">
               <span aria-hidden style={{ display: "block", height: 1, width: 36, background: "var(--site-accent)" }} />
-              <span className="site-eyebrow">Why founders pick us</span>
+              <span className="site-eyebrow">Why work with us</span>
             </div>
             <h2
               className="site-display"
               style={{
-                fontSize: "clamp(2.25rem, 5.4vw, 4.75rem)",
-                letterSpacing: "-0.03em",
-                lineHeight: 0.96,
+                fontSize: "clamp(2rem, 4.8vw, 4rem)",
+                letterSpacing: "-0.028em",
+                lineHeight: 1,
                 color: "var(--site-fg)",
               }}
             >
-              Four reasons{" "}
+              Built different,{" "}
               <span style={{ fontFamily: "var(--font-newsreader), Georgia, serif", fontStyle: "italic", color: "var(--site-accent)" }}>
-                the call
-              </span>{" "}
-              becomes a contract.
+                on purpose.
+              </span>
             </h2>
           </motion.div>
           <motion.p
@@ -102,9 +102,9 @@ export function WhyFounders() {
             className="col-span-12 md:col-span-4"
             style={{ fontSize: 15, lineHeight: 1.65, color: "var(--site-fg-mute)" }}
           >
-            We don&apos;t pitch deck our way in. The work, the process and the
-            people speak for themselves — these are the four things every
-            founder tells us they didn&apos;t find at the last agency.
+            We&apos;re an independent studio — small enough to care, senior
+            enough to execute. The four pillars below are what clients tell us
+            they couldn&apos;t find at a bigger agency.
           </motion.p>
         </div>
 
@@ -127,8 +127,8 @@ export function WhyFounders() {
           className="mt-12 flex flex-wrap items-center justify-between gap-5"
         >
           <p className="site-italic max-w-[44ch]" style={{ fontSize: "clamp(15px, 1.3vw, 17px)", color: "var(--site-fg-mute)" }}>
-            We say no to most inbound. If we say yes, it&apos;s because we know
-            we can do something memorable for you.
+            We&apos;re selective about who we work with — because the work
+            deserves it, and so do you.
           </p>
           <Magnetic strength={0.32}>
             <Link

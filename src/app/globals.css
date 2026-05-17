@@ -1354,16 +1354,37 @@
   border-color: var(--site-line) !important;
 }
 
-/* Stone-900 backgrounds (e.g. nav top utility, mobile menu toggle,
-   "Start a project" CTA) — swap to paper-white pill on dark canvas */
-[data-theme="dark"] header .bg-stone-900,
-[data-theme="dark"] footer .bg-stone-900 {
+/* Stone-900 ROUNDED PILLS (nav CTA, mobile toggle, footer chips)
+   invert to paper-white on dark so they read as solid buttons. The
+   nav's top utility strip is also stone-900 but block-shaped — we
+   handle it separately (below) so it doesn't become a white bar
+   slicing the top of every page. */
+[data-theme="dark"] header .rounded-full.bg-stone-900,
+[data-theme="dark"] footer .rounded-full.bg-stone-900 {
   background: var(--site-fg) !important;
   color: var(--site-bg) !important;
 }
-[data-theme="dark"] header .bg-stone-900 .text-stone-50,
-[data-theme="dark"] footer .bg-stone-900 .text-stone-50 {
+[data-theme="dark"] header .rounded-full.bg-stone-900 .text-stone-50,
+[data-theme="dark"] footer .rounded-full.bg-stone-900 .text-stone-50 {
   color: var(--site-bg) !important;
+}
+
+/* Nav's top utility strip (phone + email) — block stone-900. On dark
+   it should blend into the canvas, not flip to white. */
+[data-theme="dark"] header > .hidden.xl\:block.bg-stone-900 {
+  background: rgba(245, 241, 232, 0.02) !important;
+  border-bottom-color: var(--site-line) !important;
+  color: var(--site-fg-mute) !important;
+}
+
+/* Footer social tiles — outer card was bg-white/70 (cream theme),
+   becomes a glass dark tile on the dark canvas. */
+[data-theme="dark"] footer .bg-white\/70,
+[data-theme="dark"] footer .bg-white {
+  background: rgba(245, 241, 232, 0.03) !important;
+}
+[data-theme="dark"] footer .hover\:bg-white:hover {
+  background: rgba(245, 241, 232, 0.06) !important;
 }
 
 /* Cream surfaces inside nav (mega dropdown bg) + footer body */

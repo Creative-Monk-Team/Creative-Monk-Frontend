@@ -8,13 +8,12 @@ import { Magnetic } from "@/components/motion/magnetic";
 import { MeshBackdrop } from "@/components/motion/mesh-backdrop";
 import { MarqueeStrip } from "@/components/motion/marquee-strip";
 
-/* ─── Hero v3 — "Manifest" ─────────────────────────────────────
-   One container. Full-height. Editorial. The hero reads like an
-   open project file: a header strip, a big stated promise, a meta
-   line that ties the brief to the visitor, the action, and the
-   proof — all in one stage. */
+/* ─── Hero v4 — refined editorial ──────────────────────────────
+   One container, full height, but lighter than v3: type capped at
+   ~5rem, less decoration, more whitespace. Generic agency copy in
+   the same vein as Active Theory / Ueno / Heco — outcome over
+   biography. */
 
-type DiaryEntry = { day: string; client: string; activity: string; status: string; progress: number };
 type BentoStat = { value: number | string; suffix?: string; label: string; animate?: boolean };
 type HeroPayload = {
   status?: string;
@@ -26,38 +25,39 @@ type HeroPayload = {
   lede?: string;
   primary?: { label: string; href: string };
   secondary?: { label: string; href: string };
-  diaryEntries?: DiaryEntry[];
   bentoStats?: BentoStat[];
   marquee?: string[];
 };
 
-const FALLBACK_HERO = {
-  status: "Booking now · 3 founder slots left for Q3",
-  eyebrow: "Founder-led creative studio · since 2018",
-  lineA: "We turn ambitious brands",
-  lineB: "into",
-  accent: "category leaders",
-  lineC: "— in 45 days.",
+const FALLBACK_HERO: Required<Omit<HeroPayload, "bentoStats" | "marquee">> & {
+  bentoStats: BentoStat[];
+  marquee: string[];
+} = {
+  status: "Now booking · 3 founder slots open for Q3",
+  eyebrow: "Independent creative studio · est. 2018",
+  lineA: "Bold brands.",
+  lineB: "Built fast,",
+  accent: "built to lead.",
+  lineC: "",
   lede:
-    "Brand, website and growth campaigns built by senior craft. Fixed scope. Fixed fee. No bait-and-switch.",
-  primary: { label: "Book a free 30-min audit", href: "/contact" },
-  secondary: { label: "See selected work", href: "/portfolio" },
-  diaryEntries: [] as DiaryEntry[],
+    "Identity, websites, and growth marketing — engineered together for ambitious brands ready to define the category.",
+  primary: { label: "Start a project", href: "/contact" },
+  secondary: { label: "View selected work", href: "/portfolio" },
   bentoStats: [
     { value: 142,    suffix: "+", label: "Brands shipped", animate: true },
-    { value: 312,    suffix: "%", label: "Avg lead lift",  animate: true },
     { value: 4.9,    suffix: "★", label: "From 87 reviews" },
-    { value: "<4hr",            label: "Avg reply time" },
-  ] as BentoStat[],
+    { value: 312,    suffix: "%", label: "Avg lead lift",  animate: true },
+    { value: "<4hr",            label: "Reply time" },
+  ],
   marquee: [
     "Brand Identity",
-    "Conversion-Focused Websites",
+    "Web Design & Build",
     "Performance Marketing",
-    "SEO that ranks",
-    "Brand Films & Reels",
+    "SEO & Content",
+    "Brand Films",
     "Social Strategy",
-    "Product UI",
-    "E-commerce that sells",
+    "E-commerce",
+    "Motion Design",
   ],
 };
 
@@ -68,18 +68,17 @@ function useHero() {
     homepageContentApi.get<HeroPayload>("hero").then((res) => {
       if (cancelled || !res) return;
       setData({
-        status:        res.status        ?? FALLBACK_HERO.status,
-        eyebrow:       res.eyebrow       ?? FALLBACK_HERO.eyebrow,
-        lineA:         res.lineA         ?? FALLBACK_HERO.lineA,
-        lineB:         res.lineB         ?? FALLBACK_HERO.lineB,
-        accent:        res.accent        ?? FALLBACK_HERO.accent,
-        lineC:         res.lineC         ?? FALLBACK_HERO.lineC,
-        lede:          res.lede          ?? FALLBACK_HERO.lede,
-        primary:       res.primary       ?? FALLBACK_HERO.primary,
-        secondary:     res.secondary     ?? FALLBACK_HERO.secondary,
-        diaryEntries:  res.diaryEntries  ?? FALLBACK_HERO.diaryEntries,
-        bentoStats:    res.bentoStats?.length ? res.bentoStats : FALLBACK_HERO.bentoStats,
-        marquee:       res.marquee?.length    ? res.marquee    : FALLBACK_HERO.marquee,
+        status:     res.status     ?? FALLBACK_HERO.status,
+        eyebrow:    res.eyebrow    ?? FALLBACK_HERO.eyebrow,
+        lineA:      res.lineA      ?? FALLBACK_HERO.lineA,
+        lineB:      res.lineB      ?? FALLBACK_HERO.lineB,
+        accent:     res.accent     ?? FALLBACK_HERO.accent,
+        lineC:      res.lineC      ?? FALLBACK_HERO.lineC,
+        lede:       res.lede       ?? FALLBACK_HERO.lede,
+        primary:    res.primary    ?? FALLBACK_HERO.primary,
+        secondary:  res.secondary  ?? FALLBACK_HERO.secondary,
+        bentoStats: res.bentoStats?.length ? res.bentoStats : FALLBACK_HERO.bentoStats,
+        marquee:    res.marquee?.length    ? res.marquee    : FALLBACK_HERO.marquee,
       });
     });
     return () => { cancelled = true; };
@@ -95,8 +94,7 @@ export function Hero() {
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  const meshY = useTransform(scrollYProgress, [0, 1], [0, 140]);
-  const contentY = useTransform(scrollYProgress, [0, 1], [0, -40]);
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, -32]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0.35]);
 
   return (
@@ -109,13 +107,9 @@ export function Hero() {
         color: "var(--site-fg, #F5F1E8)",
       }}
     >
-      {/* Backdrop layers */}
-      <motion.div style={{ y: meshY }} className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none opacity-60">
         <MeshBackdrop />
-      </motion.div>
-
-      {/* Faint scrolling-text rail behind the headline */}
-      <BackdropMarquee />
+      </div>
 
       <StatusStrip status={data.status} />
 
@@ -125,37 +119,20 @@ export function Hero() {
         className="relative z-10 flex-1 flex items-center"
       >
         <div className="container w-full">
-          <div className="mx-auto max-w-[1080px] flex flex-col items-center text-center relative">
-            {/* Floating mark — a small editorial star on the upper-right of the column */}
+          <div className="mx-auto max-w-[920px] flex flex-col items-center text-center">
+            {/* Single subtle accent mark above eyebrow */}
             <motion.span
               aria-hidden
-              initial={{ opacity: 0, scale: 0.6, rotate: -12 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ duration: 1.1, delay: 0.5, ease: [0.2, 0.7, 0.2, 1] }}
-              className="hidden lg:block absolute right-0 -top-10"
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.9, delay: 0.15 }}
+              className="mb-7 inline-block"
               style={{
                 color: "var(--site-accent)",
                 fontFamily: "var(--font-newsreader), Georgia, serif",
                 fontStyle: "italic",
-                fontSize: 88,
-                lineHeight: 0.6,
-                filter: "drop-shadow(0 0 24px rgba(255,102,0,0.5))",
-              }}
-            >
-              ✦
-            </motion.span>
-            <motion.span
-              aria-hidden
-              initial={{ opacity: 0, scale: 0.6, rotate: 12 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ duration: 1.1, delay: 0.7, ease: [0.2, 0.7, 0.2, 1] }}
-              className="hidden lg:block absolute left-0 top-[55%]"
-              style={{
-                color: "var(--site-fg-dim)",
-                fontFamily: "var(--font-newsreader), Georgia, serif",
-                fontStyle: "italic",
-                fontSize: 56,
-                lineHeight: 0.6,
+                fontSize: 22,
+                lineHeight: 1,
               }}
             >
               ✦
@@ -163,27 +140,34 @@ export function Hero() {
 
             {/* Eyebrow */}
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
+              transition={{ duration: 0.8, delay: 0.18 }}
               className="flex items-center gap-3 mb-7"
             >
-              <span aria-hidden style={{ display: "block", height: 1, width: 32, background: "var(--site-accent)" }} />
-              <span className="site-eyebrow" style={{ color: "var(--site-fg-mute)" }}>{data.eyebrow}</span>
-              <span aria-hidden style={{ display: "block", height: 1, width: 32, background: "var(--site-accent)" }} />
+              <span aria-hidden style={{ display: "block", height: 1, width: 28, background: "var(--site-accent)" }} />
+              <span className="site-eyebrow" style={{ color: "var(--site-fg-mute)" }}>
+                {data.eyebrow}
+              </span>
+              <span aria-hidden style={{ display: "block", height: 1, width: 28, background: "var(--site-accent)" }} />
             </motion.div>
 
-            {/* Massive headline */}
-            <Statement lines={data} />
+            {/* Headline — refined editorial, ~5rem cap */}
+            <Statement
+              lineA={data.lineA}
+              lineB={data.lineB}
+              accent={data.accent}
+              lineC={data.lineC}
+            />
 
             {/* Lede */}
             <motion.p
-              initial={{ opacity: 0, y: 14 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.7, ease: [0.2, 0.7, 0.2, 1] }}
-              className="mt-8 max-w-[60ch]"
+              className="mt-7 max-w-[60ch]"
               style={{
-                fontSize: "clamp(16px, 1.3vw, 18.5px)",
+                fontSize: "clamp(15.5px, 1.2vw, 18px)",
                 lineHeight: 1.55,
                 color: "var(--site-fg-mute)",
               }}
@@ -193,29 +177,29 @@ export function Hero() {
 
             {/* CTAs */}
             <motion.div
-              initial={{ opacity: 0, y: 14 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.85, ease: [0.2, 0.7, 0.2, 1] }}
-              className="mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-5"
+              className="mt-9 flex flex-wrap items-center justify-center gap-x-7 gap-y-5"
             >
               <PrimaryCta primary={data.primary} />
               <SecondaryCta secondary={data.secondary} />
             </motion.div>
 
-            {/* Inline proof row — small, balanced, dot-separated */}
+            {/* Proof row — small, dot-separated, refined */}
             <motion.div
-              initial={{ opacity: 0, y: 14 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 1.0, ease: [0.2, 0.7, 0.2, 1] }}
-              className="mt-12 md:mt-14 flex flex-wrap items-center justify-center gap-x-3 gap-y-2"
+              className="mt-11 flex flex-wrap items-center justify-center gap-x-3 gap-y-2"
             >
               {data.bentoStats.map((s, i) => (
-                <div key={s.label} className="flex items-center gap-3">
+                <span key={s.label} className="flex items-center gap-3">
                   <ProofItem stat={s} />
                   {i < data.bentoStats.length - 1 ? (
                     <span aria-hidden className="hidden sm:inline" style={{ color: "var(--site-line-strong)" }}>·</span>
                   ) : null}
-                </div>
+                </span>
               ))}
             </motion.div>
           </div>
@@ -228,39 +212,48 @@ export function Hero() {
   );
 }
 
-/* ─── Statement ───────────────────────────────────────────────── */
+/* ─── Statement ────────────────────────────────────────────────
+   Lighter than v3. ~5rem cap. Optional third line — many copy
+   variants will only have 2 lines + accent. */
 function Statement({
-  lines,
+  lineA,
+  lineB,
+  accent,
+  lineC,
 }: {
-  lines: { lineA: string; lineB: string; accent: string; lineC: string };
+  lineA: string;
+  lineB: string;
+  accent: string;
+  lineC: string;
 }) {
   return (
     <h1
       className="site-display"
       style={{
-        fontSize: "clamp(2.6rem, 8.4vw, 7.5rem)",
-        letterSpacing: "-0.04em",
-        lineHeight: 0.94,
+        fontSize: "clamp(2.5rem, 5.6vw, 5rem)",
+        letterSpacing: "-0.035em",
+        lineHeight: 1.02,
         fontWeight: 600,
         color: "var(--site-fg)",
+        maxWidth: "20ch",
       }}
     >
       <motion.span
-        initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}
+        initial={{ opacity: 0, y: 18, filter: "blur(10px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 1.05, delay: 0.2, ease: [0.2, 0.7, 0.2, 1] }}
+        transition={{ duration: 0.95, delay: 0.25, ease: [0.2, 0.7, 0.2, 1] }}
         className="block"
       >
-        {lines.lineA}
+        {lineA}
       </motion.span>
 
       <motion.span
-        initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}
+        initial={{ opacity: 0, y: 18, filter: "blur(10px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 1.05, delay: 0.35, ease: [0.2, 0.7, 0.2, 1] }}
+        transition={{ duration: 0.95, delay: 0.4, ease: [0.2, 0.7, 0.2, 1] }}
         className="block"
       >
-        {lines.lineB}{" "}
+        {lineB}{" "}
         <span
           style={{
             position: "relative",
@@ -271,16 +264,16 @@ function Statement({
             color: "var(--site-accent)",
           }}
         >
-          {lines.accent}
+          {accent}
           <motion.svg
             aria-hidden
             viewBox="0 0 320 8"
             preserveAspectRatio="none"
             className="absolute left-0"
-            style={{ bottom: "-0.02em", height: "0.12em", width: "100%" }}
+            style={{ bottom: "-0.02em", height: "0.1em", width: "100%" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 1.1 }}
+            transition={{ duration: 0.4, delay: 1.05 }}
           >
             <motion.path
               d="M2 5 Q 80 1, 160 4 T 318 3"
@@ -290,20 +283,22 @@ function Statement({
               strokeLinecap="round"
               initial={{ pathLength: 0 }}
               animate={{ pathLength: 1 }}
-              transition={{ duration: 1.1, delay: 1.1, ease: "easeOut" }}
+              transition={{ duration: 1.0, delay: 1.05, ease: "easeOut" }}
             />
           </motion.svg>
         </span>
       </motion.span>
 
-      <motion.span
-        initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 1.05, delay: 0.5, ease: [0.2, 0.7, 0.2, 1] }}
-        className="block"
-      >
-        {lines.lineC}
-      </motion.span>
+      {lineC ? (
+        <motion.span
+          initial={{ opacity: 0, y: 18, filter: "blur(10px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ duration: 0.95, delay: 0.55, ease: [0.2, 0.7, 0.2, 1] }}
+          className="block"
+        >
+          {lineC}
+        </motion.span>
+      ) : null}
     </h1>
   );
 }
@@ -330,10 +325,10 @@ function StatusStrip({ status }: { status: string }) {
           {status}
         </span>
         <span className="hidden md:inline" style={{ color: "var(--site-fg-dim)" }}>
-          Est. 2018 · 142 brands · Worldwide
+          Mohali · serving worldwide
         </span>
         <span className="hidden sm:inline" style={{ color: "var(--site-fg-dim)" }}>
-          Next slot · Aug 12
+          Replies inside 4 hrs
         </span>
       </div>
       <style jsx>{`
@@ -346,35 +341,6 @@ function StatusStrip({ status }: { status: string }) {
   );
 }
 
-/* ─── Faint scrolling rail behind the hero, ambient depth ──── */
-function BackdropMarquee() {
-  return (
-    <div
-      aria-hidden
-      className="absolute inset-x-0 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden"
-      style={{ opacity: 0.06 }}
-    >
-      <MarqueeStrip duration={120} pauseOnHover={false}>
-        {Array.from({ length: 4 }).map((_, i) => (
-          <span
-            key={i}
-            className="site-display whitespace-nowrap pr-16"
-            style={{
-              fontSize: "clamp(8rem, 16vw, 16rem)",
-              letterSpacing: "-0.04em",
-              color: "var(--site-fg)",
-              fontStyle: i % 2 ? "italic" : "normal",
-              fontFamily: i % 2 ? "var(--font-newsreader), Georgia, serif" : "var(--font-funnel-display)",
-            }}
-          >
-            CREATIVE&nbsp;·&nbsp;MONK&nbsp;·&nbsp;
-          </span>
-        ))}
-      </MarqueeStrip>
-    </div>
-  );
-}
-
 /* ─── Proof items ────────────────────────────────────────────── */
 function ProofItem({ stat }: { stat: BentoStat }) {
   return (
@@ -382,7 +348,7 @@ function ProofItem({ stat }: { stat: BentoStat }) {
       <span
         className="site-display admin-tnum"
         style={{
-          fontSize: "clamp(18px, 1.5vw, 22px)",
+          fontSize: "clamp(16px, 1.3vw, 19px)",
           letterSpacing: "-0.02em",
           color: "var(--site-accent)",
           fontWeight: 600,
@@ -395,7 +361,7 @@ function ProofItem({ stat }: { stat: BentoStat }) {
         className="site-mono"
         style={{
           fontSize: 10.5,
-          letterSpacing: "0.18em",
+          letterSpacing: "0.16em",
           textTransform: "uppercase",
           color: "var(--site-fg-mute)",
         }}
@@ -452,10 +418,10 @@ function ScrollHint() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8, delay: 1.4 }}
-      className="relative z-10 shrink-0 flex items-center justify-center pb-4 md:pb-6"
+      className="relative z-10 shrink-0 flex items-center justify-center pb-6"
     >
       <a
-        href="#services"
+        href="#why"
         data-cursor="link"
         className="group flex flex-col items-center gap-2"
         aria-label="Scroll to next section"
@@ -470,7 +436,7 @@ function ScrollHint() {
           style={{
             display: "inline-block",
             width: 1,
-            height: 32,
+            height: 28,
             background: "linear-gradient(180deg, var(--site-accent) 0%, transparent 100%)",
             transformOrigin: "top",
           }}
@@ -483,11 +449,11 @@ function ScrollHint() {
 /* ─── CTAs ───────────────────────────────────────────────────── */
 function PrimaryCta({ primary }: { primary: { label: string; href: string } }) {
   return (
-    <Magnetic strength={0.4} radius={160}>
+    <Magnetic strength={0.36} radius={140}>
       <Link
         href={primary.href}
         data-cursor="link"
-        className="group relative inline-flex items-center gap-3 overflow-hidden pl-7 pr-3 py-3 site-neon"
+        className="group relative inline-flex items-center gap-3 overflow-hidden pl-7 pr-2.5 py-2.5 site-neon"
         style={{
           background: "var(--site-accent)",
           color: "#0A0807",
@@ -502,19 +468,19 @@ function PrimaryCta({ primary }: { primary: { label: string; href: string } }) {
         />
         <span
           className="relative z-10"
-          style={{ fontFamily: "var(--font-funnel-display)", fontSize: 15, letterSpacing: "-0.005em" }}
+          style={{ fontFamily: "var(--font-funnel-display)", fontSize: 14.5, letterSpacing: "-0.005em" }}
         >
           {primary.label}
         </span>
         <span
           className="relative z-10 inline-grid place-items-center transition-transform duration-300 group-hover:rotate-[-30deg]"
           style={{
-            width: 38, height: 38, borderRadius: "50%",
+            width: 34, height: 34, borderRadius: "50%",
             background: "#0A0807",
             color: "var(--site-accent)",
           }}
         >
-          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
             <path d="M2 12 L12 2 M5 2 L12 2 L12 9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
@@ -563,7 +529,7 @@ function BottomMarquee({ items }: { items: string[] }) {
           <span key={i} className="flex items-center gap-12 pr-12 py-5">
             <span
               className="site-display whitespace-nowrap"
-              style={{ fontSize: "clamp(1.5rem, 2vw, 2rem)", letterSpacing: "-0.022em", color: "var(--site-fg)" }}
+              style={{ fontSize: "clamp(1.35rem, 1.8vw, 1.85rem)", letterSpacing: "-0.022em", color: "var(--site-fg)" }}
             >
               {item}
             </span>

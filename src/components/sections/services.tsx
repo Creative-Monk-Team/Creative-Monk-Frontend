@@ -131,22 +131,21 @@ export function Services() {
           >
             <div className="flex items-center gap-3 mb-6">
               <span aria-hidden style={{ display: "block", height: 1, width: 36, background: "var(--site-accent)" }} />
-              <span className="site-eyebrow">What you can hire us for</span>
+              <span className="site-eyebrow">Services</span>
             </div>
             <h2
               className="site-display"
               style={{
-                fontSize: "clamp(2.25rem, 5.4vw, 4.75rem)",
-                letterSpacing: "-0.03em",
-                lineHeight: 0.96,
+                fontSize: "clamp(2rem, 4.8vw, 4rem)",
+                letterSpacing: "-0.028em",
+                lineHeight: 1,
                 color: "var(--site-fg)",
               }}
             >
-              Three engines.{" "}
+              Brand. Web. Growth.{" "}
               <span style={{ fontFamily: "var(--font-newsreader), Georgia, serif", fontStyle: "italic", color: "var(--site-accent)" }}>
-                Each billed
-              </span>{" "}
-              for the result.
+                Engineered together.
+              </span>
             </h2>
           </motion.div>
           <motion.p
@@ -157,9 +156,8 @@ export function Services() {
             className="col-span-12 md:col-span-4"
             style={{ fontSize: 15, lineHeight: 1.65, color: "var(--site-fg-mute)" }}
           >
-            Pick what your business needs next — or talk to us and we&apos;ll
-            tell you which one to start with. Fixed scope, fixed fee,
-            no hourly billing.
+            Three disciplines built around one outcome — making your business
+            unmissable. Hire one engine, two, or the full system.
           </motion.p>
         </div>
 
