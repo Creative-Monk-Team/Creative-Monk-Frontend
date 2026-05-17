@@ -354,7 +354,7 @@ export function EnquiriesManager({ token }: { token: string }) {
       <Sheet open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <SheetContent
           side="right"
-          className="!w-[min(640px,94vw)] !sm:max-w-none p-0 overflow-hidden flex flex-col"
+          className="!w-[50vw] !min-w-[480px] !max-w-[760px] !sm:max-w-[760px] p-0 overflow-hidden flex flex-col"
           style={{
             background: "var(--admin-surface)",
             border: 0,

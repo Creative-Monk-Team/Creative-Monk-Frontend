@@ -482,11 +482,11 @@ export function CmsCollectionManager<T extends { _id: string } & Record<string, 
         </DialogContent>
       </Dialog>
 
-      {/* Edit sheet */}
+      {/* Edit sheet — half-screen on desktops, capped on giant displays. */}
       <Sheet open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <SheetContent
           side="right"
-          className="!w-[min(720px,94vw)] !sm:max-w-none p-0 overflow-hidden flex flex-col"
+          className="!w-[50vw] !min-w-[480px] !max-w-[860px] !sm:max-w-[860px] p-0 overflow-hidden flex flex-col"
           style={{
             background: "var(--admin-surface)",
             border: 0,

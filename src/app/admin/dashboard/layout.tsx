@@ -114,12 +114,17 @@ export default function AdminDashboardLayout({ children }: { children: ReactNode
 
   /* Promote the admin token scope to <html> so portaled UI (Sheet,
      Dialog, DropdownMenu, AlertDialog, CommandPalette) inherits the
-     operator-console theme. Portals attach to document.body and would
-     otherwise escape a wrapper-scoped selector. */
+     operator-console theme. Also lock the body scroll — the admin
+     shell owns its own viewport via position:fixed and any residual
+     body scroll behind it (from the public-site wrapper that hosts
+     this layout) would be invisible and confusing. */
   useEffect(() => {
     document.documentElement.setAttribute("data-admin", "true");
+    const prevBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
       document.documentElement.removeAttribute("data-admin");
+      document.body.style.overflow = prevBodyOverflow;
     };
   }, []);
 
@@ -140,7 +145,8 @@ export default function AdminDashboardLayout({ children }: { children: ReactNode
     return (
       <div
         data-admin
-        className="min-h-screen grid place-items-center"
+        className="fixed inset-0 z-50 grid place-items-center"
+        style={{ background: "var(--admin-bg)" }}
       >
         <p className="admin-eyebrow">authenticating…</p>
       </div>
@@ -148,12 +154,16 @@ export default function AdminDashboardLayout({ children }: { children: ReactNode
   }
 
   return (
-    <div data-admin className="min-h-screen flex">
-      {/* Sidebar — desktop. `self-start` keeps the flex item from
-          stretching to the parent's content height, which is what
-          breaks `sticky` for sidebars inside a `min-h-screen flex`. */}
+    <div
+      data-admin
+      className="fixed inset-0 z-50 flex overflow-hidden"
+      style={{ background: "var(--admin-bg)" }}
+    >
+      {/* Sidebar — desktop. Lives in its own static left lane; no
+          sticky needed because the parent is fixed to the viewport
+          and only the right column scrolls. */}
       <aside
-        className="hidden lg:flex flex-col w-[232px] shrink-0 sticky top-0 h-screen self-start"
+        className="hidden lg:flex flex-col w-[232px] shrink-0 h-full"
         style={{
           background: "var(--admin-bg)",
           borderRight: "1px solid var(--admin-border)",
@@ -164,15 +174,15 @@ export default function AdminDashboardLayout({ children }: { children: ReactNode
         <SidebarFooter user={user} onLogout={handleLogout} />
       </aside>
 
-      {/* Sidebar — mobile drawer */}
+      {/* Sidebar — mobile drawer. Stacks above the fixed admin shell. */}
       {sidebarOpen ? (
         <>
           <div
-            className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            className="lg:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
           <aside
-            className="lg:hidden fixed inset-y-0 left-0 z-50 flex flex-col w-[240px]"
+            className="lg:hidden fixed inset-y-0 left-0 z-[61] flex flex-col w-[240px]"
             style={{
               background: "var(--admin-bg)",
               borderRight: "1px solid var(--admin-border)",
@@ -185,8 +195,9 @@ export default function AdminDashboardLayout({ children }: { children: ReactNode
         </>
       ) : null}
 
-      {/* Main column */}
-      <div className="flex-1 min-w-0 flex flex-col">
+      {/* Main column — owns its own scroll; sticky header pins
+          relative to this container, not the body. */}
+      <div className="flex-1 min-w-0 flex flex-col overflow-y-auto">
         <header
           className="sticky top-0 z-30 flex items-center gap-3 h-12 px-3 md:px-5"
           style={{
